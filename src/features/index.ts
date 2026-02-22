@@ -1,6 +1,7 @@
-// diatonic-chords
+// chord-board
+export { ChordBoard, ChordCard, type ChordCardData, ModeSelector } from "./chord-board";
 
-// chord-progression
+// chord-progression stores
 export {
   _resetChordProgressionForTesting,
   addChord,
@@ -13,7 +14,6 @@ export {
   useChordProgressionSnapshot,
   useSelectedChord,
 } from "./chord-progression/stores/chord-progression-store";
-export { DiatonicChordCard, DiatonicChordList } from "./diatonic-chords/components";
 
 // fretboard hooks
 export { useFretboardPositions } from "./fretboard/hooks/use-fretboard-positions";
@@ -35,8 +35,11 @@ export { ChordTypeSelector, KeySelector, RootNoteSelector } from "./key-selectio
 // key-selection stores
 export {
   _resetKeyStoreForTesting,
+  type PaletteChordInfo,
   setChordType,
   setRootName,
+  setSelectedMode,
+  useCurrentModeChords,
   useDiatonicChords,
   useKeySnapshot,
   useModalInterchangeChords,

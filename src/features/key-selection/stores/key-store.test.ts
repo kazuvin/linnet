@@ -3,6 +3,8 @@ import {
   _resetKeyStoreForTesting,
   setChordType,
   setRootName,
+  setSelectedMode,
+  useCurrentModeChords,
   useDiatonicChords,
   useKeySnapshot,
   useModalInterchangeChords,
@@ -184,5 +186,115 @@ describe("key-store", () => {
 
     expect(result.current.rootName).toBe("C");
     expect(result.current.chordType).toBe("triad");
+  });
+
+  // 10. selectedMode と useCurrentModeChords
+  describe("selectedMode と useCurrentModeChords", () => {
+    // 初期状態は selectedMode: "diatonic"
+    it('初期状態は selectedMode: "diatonic"', () => {
+      const { result } = renderHook(() => useKeySnapshot());
+      expect(result.current.selectedMode).toBe("diatonic");
+    });
+
+    // setSelectedMode で selectedMode が変更される
+    it("setSelectedMode で selectedMode が変更される", async () => {
+      const { result } = renderHook(() => useKeySnapshot());
+
+      await act(async () => {
+        setSelectedMode("dorian");
+      });
+
+      expect(result.current.selectedMode).toBe("dorian");
+    });
+
+    // useCurrentModeChords が diatonic モードで 7 コード（全て isAvailable: true）を返す
+    it("useCurrentModeChords が diatonic モードで 7 コードを返す（全て isAvailable: true）", () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      expect(result.current).toHaveLength(7);
+      for (const chord of result.current) {
+        expect(chord.isAvailable).toBe(true);
+      }
+    });
+
+    // useCurrentModeChords が diatonic モードのコードに chordFunction がある
+    it("useCurrentModeChords が diatonic モードのコードに chordFunction がある", () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      const functions = result.current.map((c) => c.chordFunction);
+      // C メジャーのダイアトニックコードの機能
+      expect(functions).toEqual([
+        "tonic",
+        "subdominant",
+        "tonic",
+        "subdominant",
+        "dominant",
+        "tonic",
+        "dominant",
+      ]);
+    });
+
+    // useCurrentModeChords が modal interchange モードで 7 コードを返す（全て isAvailable: true）
+    it("useCurrentModeChords が modal interchange モードで 7 コードを返す（全て isAvailable: true）", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      await act(async () => {
+        setSelectedMode("lydian");
+      });
+
+      expect(result.current).toHaveLength(7);
+      // 全てのコードが isAvailable: true
+      for (const chord of result.current) {
+        expect(chord.isAvailable).toBe(true);
+      }
+    });
+
+    // useCurrentModeChords が modal interchange モードのコードにも chordFunction がある
+    it("useCurrentModeChords が modal interchange モードのコードにも chordFunction がある", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      await act(async () => {
+        setSelectedMode("dorian");
+      });
+
+      for (const chord of result.current) {
+        expect(["tonic", "subdominant", "dominant"]).toContain(chord.chordFunction);
+      }
+    });
+
+    // rootName/chordType 変更に追従する
+    it("rootName/chordType 変更に追従する", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      // 初期状態: C メジャー triad
+      expect(result.current[0].chord.root.name).toBe("C");
+      expect(result.current[0].chord.notes).toHaveLength(3);
+
+      await act(async () => {
+        setRootName("G");
+        setChordType("seventh");
+      });
+
+      // G メジャー seventh に変わる
+      expect(result.current[0].chord.root.name).toBe("G");
+      expect(result.current[0].chord.notes).toHaveLength(4);
+    });
+
+    // _resetKeyStoreForTesting で selectedMode も "diatonic" に戻る
+    it('_resetKeyStoreForTesting で selectedMode も "diatonic" に戻る', async () => {
+      const { result } = renderHook(() => useKeySnapshot());
+
+      await act(async () => {
+        setSelectedMode("phrygian");
+      });
+
+      expect(result.current.selectedMode).toBe("phrygian");
+
+      await act(async () => {
+        _resetKeyStoreForTesting();
+      });
+
+      expect(result.current.selectedMode).toBe("diatonic");
+    });
   });
 });

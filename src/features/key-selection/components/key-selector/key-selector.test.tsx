@@ -16,12 +16,11 @@ describe("KeySelector", () => {
       expect(screen.getByText("Key")).toBeInTheDocument();
     });
 
-    it("初期状態で C と Triad が選択されている", () => {
+    it("初期状態で C が選択されている", () => {
       render(<KeySelector />);
 
-      const comboboxes = screen.getAllByRole("combobox");
-      expect(comboboxes[0]).toHaveTextContent("C");
-      expect(comboboxes[1]).toHaveTextContent("Triad");
+      const combobox = screen.getByRole("combobox");
+      expect(combobox).toHaveTextContent("C");
     });
   });
 
@@ -30,22 +29,11 @@ describe("KeySelector", () => {
       const user = userEvent.setup();
       render(<KeySelector />);
 
-      const rootSelect = screen.getAllByRole("combobox")[0];
+      const rootSelect = screen.getByRole("combobox");
       await user.click(rootSelect);
       await user.click(screen.getByRole("option", { name: "G" }));
 
-      expect(screen.getAllByRole("combobox")[0]).toHaveTextContent("G");
-    });
-
-    it("コードタイプを変更するとストアが更新され UI に反映される", async () => {
-      const user = userEvent.setup();
-      render(<KeySelector />);
-
-      const chordTypeSelect = screen.getAllByRole("combobox")[1];
-      await user.click(chordTypeSelect);
-      await user.click(screen.getByRole("option", { name: "Seventh" }));
-
-      expect(screen.getAllByRole("combobox")[1]).toHaveTextContent("Seventh");
+      expect(screen.getByRole("combobox")).toHaveTextContent("G");
     });
   });
 });

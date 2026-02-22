@@ -1,12 +1,26 @@
 import { useMemo } from "react";
 import { proxy, useSnapshot } from "valtio";
-import { type Chord, type ChordQuality, createChord, formatChordSymbol } from "@/lib/music-theory";
+import {
+  type Chord,
+  type ChordFunction,
+  type ChordQuality,
+  createChord,
+  createNote,
+  formatChordSymbol,
+  type ScaleType,
+  shouldPreferFlat,
+  transposeNote,
+} from "@/lib/music-theory";
 
 export type ProgressionChord = {
   id: string;
   rootName: string;
   quality: ChordQuality;
   symbol: string;
+  source: "diatonic" | ScaleType;
+  chordFunction: ChordFunction;
+  romanNumeral: string;
+  degree: number;
 };
 
 export type ChordProgressionState = {
@@ -37,13 +51,26 @@ export function useSelectedChord(): Chord | null {
   }, [snap.selectedChordId, snap.chords]);
 }
 
-export function addChord(rootName: string, quality: ChordQuality): void {
+export function addChord(
+  rootName: string,
+  quality: ChordQuality,
+  source: "diatonic" | ScaleType,
+  chordFunction: ChordFunction,
+  romanNumeral: string,
+  degree: number
+): string {
+  const id = crypto.randomUUID();
   state.chords.push({
-    id: crypto.randomUUID(),
+    id,
     rootName,
     quality,
     symbol: formatChordSymbol(rootName, quality),
+    source,
+    chordFunction,
+    romanNumeral,
+    degree,
   });
+  return id;
 }
 
 export function removeChord(id: string): void {
@@ -63,6 +90,17 @@ export function reorderChords(fromIndex: number, toIndex: number): void {
 
 export function selectChord(id: string | null): void {
   state.selectedChordId = id;
+}
+
+export function transposeAllChords(semitones: number, newRootName: string): void {
+  if (semitones === 0) return;
+  const preferFlat = shouldPreferFlat(newRootName);
+  for (const chord of state.chords) {
+    const note = createNote(chord.rootName);
+    const transposed = transposeNote(note, semitones, preferFlat);
+    chord.rootName = transposed.name;
+    chord.symbol = formatChordSymbol(transposed.name, chord.quality);
+  }
 }
 
 export function clearProgression(): void {

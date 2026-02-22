@@ -1,0 +1,46 @@
+"use client";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { setSelectedMode, useKeySnapshot } from "@/features/key-selection/stores/key-store";
+import { ALL_MODE_SOURCES, MODE_DISPLAY_NAMES, type ScaleType } from "@/lib/music-theory";
+
+type ModeOption = {
+  value: "diatonic" | ScaleType;
+  label: string;
+};
+
+const MODE_OPTIONS: readonly ModeOption[] = [
+  { value: "diatonic", label: "Ionian" },
+  ...ALL_MODE_SOURCES.map((source) => ({
+    value: source as ScaleType,
+    label: MODE_DISPLAY_NAMES[source],
+  })),
+];
+
+export function ModeSelector() {
+  const { selectedMode } = useKeySnapshot();
+
+  return (
+    <Select
+      value={selectedMode}
+      onValueChange={(value) => setSelectedMode(value as "diatonic" | ScaleType)}
+    >
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {MODE_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
