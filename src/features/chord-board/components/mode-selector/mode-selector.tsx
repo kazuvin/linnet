@@ -32,7 +32,9 @@ export function ModeSelector() {
       onValueChange={(value) => setSelectedMode(value as "diatonic" | ScaleType)}
     >
       <SelectTrigger>
-        <SelectValue />
+        <SelectValue placeholder="選択">
+          {MODE_OPTIONS.find((o) => o.value === selectedMode)?.label}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {MODE_OPTIONS.map((option) => (
