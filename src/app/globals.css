@@ -2,62 +2,105 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Primary (blue: 264) */
-  --color-primary: oklch(0.55 0.22 264);
-  --color-primary-hover: oklch(0.5 0.23 264);
-  --color-primary-active: oklch(0.45 0.24 264);
+  /* ============================================
+     Base Colors
+     ============================================ */
 
   /* Neutral */
-  --color-background: oklch(1 0 0);
+  --color-background: oklch(0.955 0 0);
   --color-foreground: oklch(0.2 0 0);
+  --color-card: oklch(1 0 0);
   --color-surface: oklch(0.97 0 0);
   --color-surface-elevated: oklch(0.99 0 0);
   --color-border: oklch(0.92 0 0);
   --color-muted: oklch(0.55 0 0);
+  --color-muted-foreground: oklch(0.45 0 0);
+
+  /* Primary (blue: 264) */
+  --color-primary: oklch(0.55 0.18 264);
+  --color-primary-hover: oklch(0.5 0.19 264);
+  --color-primary-active: oklch(0.45 0.2 264);
+  --color-primary-subtle: oklch(0.93 0.04 264);
+
+  /* ============================================
+     Music Theory Colors
+     Pastel bg + dark same-hue fg
+     ============================================ */
+
+  /* Tonic (I, IIIm, VIm) — Purple / Lavender (hue 290) */
+  --color-tonic: oklch(0.8 0.09 290);
+  --color-tonic-fg: oklch(0.3 0.09 290);
+  --color-tonic-subtle: oklch(0.93 0.04 290);
+
+  /* Subdominant (IIm, IV) — Sage / Green (hue 160) */
+  --color-subdominant: oklch(0.82 0.08 160);
+  --color-subdominant-fg: oklch(0.3 0.08 160);
+  --color-subdominant-subtle: oklch(0.93 0.04 160);
+
+  /* Dominant (V, VIIdim) — Rose / Pink (hue 10) */
+  --color-dominant: oklch(0.78 0.1 10);
+  --color-dominant-fg: oklch(0.32 0.1 10);
+  --color-dominant-subtle: oklch(0.93 0.04 10);
 
   /* Semantic */
   --color-success: oklch(0.72 0.19 145);
   --color-warning: oklch(0.75 0.18 75);
   --color-error: oklch(0.63 0.24 27);
 
-  /* Typography */
+  /* ============================================
+     Typography
+     ============================================ */
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  /* Radius */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
+  /* ============================================
+     Radius — generous, soft feel
+     ============================================ */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1);
+  /* ============================================
+     Shadows
+     ============================================ */
+  --shadow-card: 0 1px 3px oklch(0 0 0 / 0.04), 0 1px 2px oklch(0 0 0 / 0.02);
+  --shadow-card-hover: 0 4px 12px oklch(0 0 0 / 0.06), 0 2px 4px oklch(0 0 0 / 0.03);
+  --shadow-dropdown: 0 8px 24px oklch(0 0 0 / 0.08);
 
-  /* Animation */
+  /* ============================================
+     Spacing
+     ============================================ */
+  --space-xs: 0.375rem;
+  --space-sm: 0.75rem;
+  --space-md: 1.25rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+
+  /* ============================================
+     Layout
+     ============================================ */
+  --container-max: 72rem;
+  --grid-gap: 1.25rem;
+  --grid-gap-sm: 1rem;
+
+  /* ============================================
+     Animation
+     ============================================ */
   --ease-default: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-spring: cubic-bezier(0.34, 1.46, 0.74, 1);
 
-  /* Custom container max-width: narrower for better readability */
-  --container-max: 36rem; /* 576px - very narrow for simple text */
-
-  /* Page transition animation */
   --animate-fade-in: fade-in 0.2s ease;
-
-  /* Pop animation - springy micro-interaction */
   --animate-pop: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* Fade in up animation - scroll reveal */
   --animate-fade-in-up: fade-in-up 0.6s ease forwards;
-
-  /* Check bounce animation - success micro-interaction */
   --animate-check-bounce: check-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
-
-  /* Shake animation - error micro-interaction */
   --animate-shake: shake 0.4s ease 0.3s both;
-
-  /* Draw stroke animation - for SVG path reveal */
   --animate-draw: draw 0.3s ease forwards 0.15s;
 }
+
+/* ============================================
+   Keyframes
+   ============================================ */
 
 @keyframes fade-in {
   from {
@@ -258,13 +301,17 @@
   animation-duration: 200ms;
 }
 
+/* ============================================
+   Global Styles
+   ============================================ */
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
 }
 
-/* Override default container max-width for narrower layout */
+/* Override default container max-width */
 @utility container {
   width: 100%;
   max-width: var(--container-max);
