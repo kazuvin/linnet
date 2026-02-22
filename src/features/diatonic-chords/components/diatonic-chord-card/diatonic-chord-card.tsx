@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 
 export type DiatonicChordCardProps = ComponentProps<"div"> & {
   chordInfo: DiatonicChordInfo;
+  dimmed?: boolean;
+  compact?: boolean;
 };
 
 const FUNCTION_LABEL: Record<ChordFunction, string> = {
@@ -28,24 +30,37 @@ function formatChordNotes(chordInfo: DiatonicChordInfo): string {
   return chordInfo.chord.notes.map((note) => note.name).join(" - ");
 }
 
-export function DiatonicChordCard({ chordInfo, className, ...props }: DiatonicChordCardProps) {
+export function DiatonicChordCard({
+  chordInfo,
+  dimmed,
+  compact,
+  className,
+  ...props
+}: DiatonicChordCardProps) {
   const { romanNumeral, chord, chordFunction } = chordInfo;
 
   return (
     <div
       className={cn(
-        "flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border shadow-card transition-shadow hover:shadow-card-hover",
+        "flex aspect-square flex-col items-center justify-center rounded-2xl border shadow-card transition-shadow hover:shadow-card-hover",
+        compact ? "gap-1" : "gap-2",
         CARD_BG_STYLES[chordFunction],
+        dimmed && "opacity-40",
         className
       )}
       {...props}
     >
-      <span className="font-mono text-muted text-sm">{romanNumeral}</span>
-      <span className="font-bold font-mono text-xl">{chord.symbol}</span>
-      <span className="text-muted text-xs">{formatChordNotes(chordInfo)}</span>
+      <span className={cn("font-mono text-muted", compact ? "text-[10px]" : "text-sm")}>
+        {romanNumeral}
+      </span>
+      <span className={cn("font-bold font-mono", compact ? "text-base" : "text-xl")}>
+        {chord.symbol}
+      </span>
+      {!compact && <span className="text-muted text-xs">{formatChordNotes(chordInfo)}</span>}
       <span
         className={cn(
-          "mt-1 inline-flex items-center rounded-full px-2 py-0.5 font-semibold text-xs",
+          "mt-1 inline-flex items-center rounded-full py-0.5 font-semibold",
+          compact ? "px-1.5 text-[10px]" : "px-2 text-xs",
           BADGE_STYLES[chordFunction]
         )}
       >

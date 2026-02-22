@@ -1,9 +1,15 @@
-import { type Chord, type ChordQuality, createChord } from "./chord";
-import { type DiatonicChordInfo, formatRomanNumeral, getDiatonicTriads } from "./diatonic";
+import { type Chord, type ChordQuality, createChord, extendToSeventh } from "./chord";
+import {
+  type DiatonicChordInfo,
+  formatRomanNumeral,
+  getDiatonicChords,
+  getDiatonicTriads,
+} from "./diatonic";
 import type { ScaleType } from "./scale";
 import { createScale, getScaleDegreeNote, shouldPreferFlat } from "./scale";
 
 export type ModalInterchangeChordInfo = {
+  readonly degree: number;
   readonly chord: Chord;
   readonly source: ScaleType;
   readonly romanNumeral: string;
@@ -29,6 +35,26 @@ const DEFAULT_SOURCES: readonly ScaleType[] = [
   "mixolydian",
 ];
 
+export const ALL_MODE_SOURCES: readonly ScaleType[] = [
+  "natural-minor",
+  "harmonic-minor",
+  "melodic-minor",
+  "dorian",
+  "phrygian",
+  "lydian",
+  "mixolydian",
+];
+
+export const MODE_DISPLAY_NAMES: Record<string, string> = {
+  "natural-minor": "Natural Minor",
+  "harmonic-minor": "Harmonic Minor",
+  "melodic-minor": "Melodic Minor",
+  dorian: "Dorian",
+  phrygian: "Phrygian",
+  lydian: "Lydian",
+  mixolydian: "Mixolydian",
+};
+
 function isDiatonicChord(chord: Chord, diatonicChords: readonly DiatonicChordInfo[]): boolean {
   return diatonicChords.some(
     (d) => d.chord.root.pitchClass === chord.root.pitchClass && d.chord.quality === chord.quality
@@ -37,7 +63,8 @@ function isDiatonicChord(chord: Chord, diatonicChords: readonly DiatonicChordInf
 
 export function getModalInterchangeChords(
   rootName: string,
-  source: ScaleType
+  source: ScaleType,
+  seventh?: boolean
 ): readonly ModalInterchangeChordInfo[] {
   const qualities = MODE_TRIAD_QUALITIES[source];
   if (!qualities) {
@@ -46,15 +73,18 @@ export function getModalInterchangeChords(
 
   const scale = createScale(rootName, source);
   const preferFlat = shouldPreferFlat(rootName) || source !== "major";
-  const diatonicChords = getDiatonicTriads(rootName);
+  const diatonicChords = getDiatonicChords(rootName, seventh);
 
   return qualities.map((quality, index) => {
     const degree = index + 1;
     const scaleNote = getScaleDegreeNote(scale, degree);
-    const chord = createChord(scaleNote.name, quality, preferFlat);
-    const romanNumeral = formatRomanNumeral(degree, quality);
+    const chord = seventh
+      ? extendToSeventh(scaleNote.name, quality, preferFlat)
+      : createChord(scaleNote.name, quality, preferFlat);
+    const romanNumeral = formatRomanNumeral(degree, chord.quality);
 
     return {
+      degree,
       chord,
       source,
       romanNumeral,

@@ -6,6 +6,7 @@ import {
   useDiatonicChords,
   useKeySnapshot,
   useModalInterchangeChords,
+  useModalInterchangeChordsByMode,
 } from "./key-store";
 
 describe("key-store", () => {
@@ -112,7 +113,60 @@ describe("key-store", () => {
     expect(rootNames).toEqual(["G", "A", "B", "C", "D", "E", "F#"]);
   });
 
-  // 8. _resetKeyStoreForTesting で初期状態に戻る
+  // 8. useModalInterchangeChordsByMode
+  describe("useModalInterchangeChordsByMode", () => {
+    it("7つのモードのデータを返す", () => {
+      const { result } = renderHook(() => useModalInterchangeChordsByMode());
+      expect(result.current).toHaveLength(7);
+    });
+
+    it("各モードに source, displayName, chords を持つ", () => {
+      const { result } = renderHook(() => useModalInterchangeChordsByMode());
+      for (const mode of result.current) {
+        expect(mode.source).toBeDefined();
+        expect(mode.displayName).toBeDefined();
+        expect(mode.chords).toBeDefined();
+        expect(mode.chords.length).toBeGreaterThan(0);
+      }
+    });
+
+    it("各モードのコードは7つずつある", () => {
+      const { result } = renderHook(() => useModalInterchangeChordsByMode());
+      for (const mode of result.current) {
+        expect(mode.chords).toHaveLength(7);
+      }
+    });
+
+    it("chordType を seventh に変更するとセブンスコードが返される", async () => {
+      const { result } = renderHook(() => useModalInterchangeChordsByMode());
+
+      await act(async () => {
+        setChordType("seventh");
+      });
+
+      // 全モードのコードが4音（セブンス）
+      for (const mode of result.current) {
+        for (const chord of mode.chords) {
+          expect(chord.chord.notes).toHaveLength(4);
+        }
+      }
+    });
+
+    it("rootName 変更後にデータが更新される", async () => {
+      const { result } = renderHook(() => useModalInterchangeChordsByMode());
+      const initialFirst = result.current[0].chords[0].chord.root.name;
+
+      await act(async () => {
+        setRootName("G");
+      });
+
+      // G キーでは異なるルート音になる
+      const updatedFirst = result.current[0].chords[0].chord.root.name;
+      expect(updatedFirst).not.toBe(initialFirst);
+    });
+  });
+
+  // 9. _resetKeyStoreForTesting で初期状態に戻る
   it("_resetKeyStoreForTesting で初期状態に戻る", async () => {
     const { result } = renderHook(() => useKeySnapshot());
 
