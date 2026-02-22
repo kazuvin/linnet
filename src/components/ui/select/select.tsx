@@ -1,8 +1,9 @@
 "use client";
 
 import * as SelectPrimitive from "@radix-ui/react-select";
-import type { ComponentProps } from "react";
+import { type ComponentProps, useRef } from "react";
 import { CheckIcon, ChevronDownIcon } from "@/components/icons";
+import { useElementDimensions } from "@/lib/animation";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -18,18 +19,25 @@ export const Select = SelectPrimitive.Root;
 export type SelectTriggerProps = ComponentProps<typeof SelectPrimitive.Trigger>;
 
 export function SelectTrigger({ className, children, ...props }: SelectTriggerProps) {
+  const contentRef = useRef<HTMLSpanElement>(null);
+  const { width } = useElementDimensions(contentRef, { type: "width" });
+
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "inline-flex items-center justify-between gap-2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-sm",
+        "inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-sm",
         "transition-all duration-300 ease-default",
-        "hover:bg-foreground/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2",
+        "hover:bg-foreground/5 focus:outline-none",
         "data-[placeholder]:text-foreground/50",
         className
       )}
       {...props}
     >
-      {children}
+      <span className="inline-flex transition-[width] duration-300 ease-default" style={{ width }}>
+        <span ref={contentRef} className="whitespace-nowrap">
+          {children}
+        </span>
+      </span>
       <SelectPrimitive.Icon>
         <ChevronDownIcon className="h-4 w-4 opacity-50" />
       </SelectPrimitive.Icon>
