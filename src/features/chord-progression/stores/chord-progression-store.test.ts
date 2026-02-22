@@ -1,0 +1,260 @@
+import { act, renderHook } from "@testing-library/react";
+import {
+  _resetChordProgressionForTesting,
+  addChord,
+  clearProgression,
+  removeChord,
+  reorderChords,
+  selectChord,
+  useChordProgressionSnapshot,
+  useSelectedChord,
+} from "./chord-progression-store";
+
+/**
+ * Valtio の useSnapshot はレンダリング中にアクセスされたプロパティのみを追跡する。
+ * テスト用ヘルパーとして、hook 内で chords と selectedChordId の両方にアクセスし、
+ * どちらの変更でも再レンダリングがトリガーされるようにする。
+ */
+function useChordProgressionSnapshotForTest() {
+  const snap = useChordProgressionSnapshot();
+  // レンダリング中に両プロパティにアクセスしてトラッキングさせる
+  return { chords: snap.chords, selectedChordId: snap.selectedChordId };
+}
+
+describe("chord-progression-store", () => {
+  beforeEach(() => {
+    _resetChordProgressionForTesting();
+  });
+
+  // 1. 初期状態は chords: [], selectedChordId: null
+  it("初期状態は chords: [], selectedChordId: null", () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+    expect(result.current.chords).toEqual([]);
+    expect(result.current.selectedChordId).toBeNull();
+  });
+
+  // 2. addChord でコードが追加される（id, rootName, quality, symbol を検証）
+  it("addChord でコードが追加される", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+    });
+
+    expect(result.current.chords).toHaveLength(1);
+    const chord = result.current.chords[0];
+    expect(chord.id).toBeTruthy();
+    expect(chord.rootName).toBe("C");
+    expect(chord.quality).toBe("major");
+    expect(chord.symbol).toBe("C");
+  });
+
+  // 3. addChord で複数コードを追加できる
+  it("addChord で複数コードを追加できる", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+      addChord("G", "major");
+      addChord("A", "minor");
+    });
+
+    expect(result.current.chords).toHaveLength(3);
+    expect(result.current.chords[0].rootName).toBe("C");
+    expect(result.current.chords[1].rootName).toBe("G");
+    expect(result.current.chords[2].rootName).toBe("A");
+    expect(result.current.chords[2].quality).toBe("minor");
+    expect(result.current.chords[2].symbol).toBe("Am");
+  });
+
+  // 4. removeChord でコードが削除される
+  it("removeChord でコードが削除される", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+      addChord("G", "major");
+    });
+
+    const idToRemove = result.current.chords[0].id;
+
+    await act(async () => {
+      removeChord(idToRemove);
+    });
+
+    expect(result.current.chords).toHaveLength(1);
+    expect(result.current.chords[0].rootName).toBe("G");
+  });
+
+  // 5. removeChord で選択中のコードを削除すると selectedChordId が null になる
+  it("removeChord で選択中のコードを削除すると selectedChordId が null になる", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+      addChord("G", "major");
+    });
+
+    const selectedId = result.current.chords[0].id;
+
+    await act(async () => {
+      selectChord(selectedId);
+    });
+
+    expect(result.current.selectedChordId).toBe(selectedId);
+
+    await act(async () => {
+      removeChord(selectedId);
+    });
+
+    expect(result.current.selectedChordId).toBeNull();
+    expect(result.current.chords).toHaveLength(1);
+  });
+
+  // 6. reorderChords でコードの順番が変わる（0→2 のケース）
+  it("reorderChords でコードの順番が変わる", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+      addChord("D", "minor");
+      addChord("E", "minor");
+    });
+
+    const originalFirst = result.current.chords[0].id;
+
+    await act(async () => {
+      reorderChords(0, 2);
+    });
+
+    expect(result.current.chords[0].rootName).toBe("D");
+    expect(result.current.chords[1].rootName).toBe("E");
+    expect(result.current.chords[2].rootName).toBe("C");
+    expect(result.current.chords[2].id).toBe(originalFirst);
+  });
+
+  // 7. selectChord でコードを選択できる
+  it("selectChord でコードを選択できる", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+      addChord("G", "major");
+    });
+
+    const targetId = result.current.chords[1].id;
+
+    await act(async () => {
+      selectChord(targetId);
+    });
+
+    expect(result.current.selectedChordId).toBe(targetId);
+  });
+
+  // 8. selectChord(null) で選択解除
+  it("selectChord(null) で選択解除", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+    });
+
+    const chordId = result.current.chords[0].id;
+
+    await act(async () => {
+      selectChord(chordId);
+    });
+
+    expect(result.current.selectedChordId).toBe(chordId);
+
+    await act(async () => {
+      selectChord(null);
+    });
+
+    expect(result.current.selectedChordId).toBeNull();
+  });
+
+  // 9. clearProgression で全コードと選択がクリアされる
+  it("clearProgression で全コードと選択がクリアされる", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+      addChord("G", "major");
+      addChord("A", "minor");
+    });
+
+    const chordId = result.current.chords[1].id;
+
+    await act(async () => {
+      selectChord(chordId);
+    });
+
+    expect(result.current.chords).toHaveLength(3);
+    expect(result.current.selectedChordId).toBe(chordId);
+
+    await act(async () => {
+      clearProgression();
+    });
+
+    expect(result.current.chords).toEqual([]);
+    expect(result.current.selectedChordId).toBeNull();
+  });
+
+  // 10. useSelectedChord が選択中コードの Chord オブジェクトを返す
+  it("useSelectedChord が選択中コードの Chord オブジェクトを返す", async () => {
+    const { result } = renderHook(() => useSelectedChord());
+
+    await act(async () => {
+      addChord("A", "minor7");
+    });
+
+    // snapshot を取得して id を確認するために別の hook も使う
+    const { result: snapResult } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    const chordId = snapResult.current.chords[0].id;
+
+    await act(async () => {
+      selectChord(chordId);
+    });
+
+    expect(result.current).not.toBeNull();
+    expect(result.current?.root.name).toBe("A");
+    expect(result.current?.quality).toBe("minor7");
+    expect(result.current?.symbol).toBe("Am7");
+    expect(result.current?.notes).toBeDefined();
+    expect(result.current?.notes.length).toBeGreaterThan(0);
+  });
+
+  // 11. useSelectedChord が未選択時に null を返す
+  it("useSelectedChord が未選択時に null を返す", () => {
+    const { result } = renderHook(() => useSelectedChord());
+    expect(result.current).toBeNull();
+  });
+
+  // 12. _resetChordProgressionForTesting で初期状態に戻る
+  it("_resetChordProgressionForTesting で初期状態に戻る", async () => {
+    const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+    await act(async () => {
+      addChord("C", "major");
+      addChord("G", "major");
+    });
+
+    const chordId = result.current.chords[0].id;
+
+    await act(async () => {
+      selectChord(chordId);
+    });
+
+    expect(result.current.chords).toHaveLength(2);
+    expect(result.current.selectedChordId).toBe(chordId);
+
+    await act(async () => {
+      _resetChordProgressionForTesting();
+    });
+
+    expect(result.current.chords).toEqual([]);
+    expect(result.current.selectedChordId).toBeNull();
+  });
+});
