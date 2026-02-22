@@ -1,0 +1,284 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Primary (blue: 264) */
+  --color-primary: oklch(0.55 0.22 264);
+  --color-primary-hover: oklch(0.5 0.23 264);
+  --color-primary-active: oklch(0.45 0.24 264);
+
+  /* Neutral */
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.2 0 0);
+  --color-surface: oklch(0.97 0 0);
+  --color-surface-elevated: oklch(0.99 0 0);
+  --color-border: oklch(0.92 0 0);
+  --color-muted: oklch(0.55 0 0);
+
+  /* Semantic */
+  --color-success: oklch(0.72 0.19 145);
+  --color-warning: oklch(0.75 0.18 75);
+  --color-error: oklch(0.63 0.24 27);
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1);
+
+  /* Animation */
+  --ease-default: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring: cubic-bezier(0.34, 1.46, 0.74, 1);
+
+  /* Custom container max-width: narrower for better readability */
+  --container-max: 36rem; /* 576px - very narrow for simple text */
+
+  /* Page transition animation */
+  --animate-fade-in: fade-in 0.2s ease;
+
+  /* Pop animation - springy micro-interaction */
+  --animate-pop: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Fade in up animation - scroll reveal */
+  --animate-fade-in-up: fade-in-up 0.6s ease forwards;
+
+  /* Check bounce animation - success micro-interaction */
+  --animate-check-bounce: check-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+
+  /* Shake animation - error micro-interaction */
+  --animate-shake: shake 0.4s ease 0.3s both;
+
+  /* Draw stroke animation - for SVG path reveal */
+  --animate-draw: draw 0.3s ease forwards 0.15s;
+}
+
+.dark {
+  --color-primary: oklch(0.62 0.21 264);
+  --color-background: oklch(0.15 0 0);
+  --color-foreground: oklch(0.95 0 0);
+  --color-surface: oklch(0.22 0 0);
+  --color-surface-elevated: oklch(0.27 0 0);
+  --color-border: oklch(0.27 0 0);
+  --color-muted: oklch(0.7 0 0);
+  --color-success: oklch(0.8 0.18 145);
+  --color-warning: oklch(0.82 0.17 80);
+  --color-error: oklch(0.7 0.19 25);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.04);
+  }
+  60% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes check-bounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ============================================
+   Enter/Exit Animations (tailwindcss-animate pattern)
+   Used for Dropdown, Dialog, and overlay components
+   ============================================ */
+
+@keyframes enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0)
+      scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1))
+      rotate(var(--tw-enter-rotate, 0));
+  }
+}
+
+@keyframes exit {
+  to {
+    opacity: var(--tw-exit-opacity, 1);
+    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0)
+      scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1))
+      rotate(var(--tw-exit-rotate, 0));
+  }
+}
+
+/* Base animation utilities */
+@utility animate-in {
+  animation-name: enter;
+  animation-duration: 150ms;
+  --tw-enter-opacity: initial;
+  --tw-enter-scale: initial;
+  --tw-enter-rotate: initial;
+  --tw-enter-translate-x: initial;
+  --tw-enter-translate-y: initial;
+}
+
+@utility animate-out {
+  animation-name: exit;
+  animation-duration: 150ms;
+  --tw-exit-opacity: initial;
+  --tw-exit-scale: initial;
+  --tw-exit-rotate: initial;
+  --tw-exit-translate-x: initial;
+  --tw-exit-translate-y: initial;
+}
+
+/* Fade animations */
+@utility fade-in-0 {
+  --tw-enter-opacity: 0;
+}
+
+@utility fade-out-0 {
+  --tw-exit-opacity: 0;
+}
+
+/* Zoom/Scale animations */
+@utility zoom-in-95 {
+  --tw-enter-scale: 0.95;
+}
+
+@utility zoom-out-95 {
+  --tw-exit-scale: 0.95;
+}
+
+/* Slide in from directions */
+@utility slide-in-from-top-2 {
+  --tw-enter-translate-y: -0.5rem;
+}
+
+@utility slide-in-from-bottom-2 {
+  --tw-enter-translate-y: 0.5rem;
+}
+
+@utility slide-in-from-left-2 {
+  --tw-enter-translate-x: -0.5rem;
+}
+
+@utility slide-in-from-right-2 {
+  --tw-enter-translate-x: 0.5rem;
+}
+
+/* Slide out to directions */
+@utility slide-out-to-top-2 {
+  --tw-exit-translate-y: -0.5rem;
+}
+
+@utility slide-out-to-bottom-2 {
+  --tw-exit-translate-y: 0.5rem;
+}
+
+@utility slide-out-to-left-2 {
+  --tw-exit-translate-x: -0.5rem;
+}
+
+@utility slide-out-to-right-2 {
+  --tw-exit-translate-x: 0.5rem;
+}
+
+/* Dialog/Sheet specific: center positioning with percentage-based slides */
+@utility slide-in-from-left-half {
+  --tw-enter-translate-x: -50%;
+}
+
+@utility slide-in-from-top-48pct {
+  --tw-enter-translate-y: -48%;
+}
+
+@utility slide-out-to-left-half {
+  --tw-exit-translate-x: -50%;
+}
+
+@utility slide-out-to-top-48pct {
+  --tw-exit-translate-y: -48%;
+}
+
+/* Animation duration utility */
+@utility duration-200 {
+  animation-duration: 200ms;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* Override default container max-width for narrower layout */
+@utility container {
+  width: 100%;
+  max-width: var(--container-max);
+}
