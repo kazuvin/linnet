@@ -22,7 +22,7 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
     <SelectPrimitive.Trigger
       className={cn(
         "inline-flex items-center justify-between gap-2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-sm",
-        "transition-colors duration-200 ease-default",
+        "transition-all duration-300 ease-default",
         "hover:bg-foreground/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2",
         "data-[placeholder]:text-foreground/50",
         className
@@ -83,7 +83,7 @@ export function SelectItem({ className, children, ...props }: SelectItemProps) {
     <SelectPrimitive.Item
       className={cn(
         "relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none",
-        "transition-colors duration-200 ease-default",
+        "transition-all duration-300 ease-default",
         "focus:bg-foreground/5",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
