@@ -1,37 +1,39 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { Select } from "./select";
-
-const OPTIONS = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "cherry", label: "Cherry" },
-];
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
 describe("Select", () => {
+  function renderSelect({ value = "apple", onValueChange = vi.fn(), placeholder = "選択" } = {}) {
+    return render(
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="cherry">Cherry</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+  }
+
   describe("レンダリング", () => {
     it("トリガーボタンが表示される", () => {
-      render(<Select value="apple" onValueChange={() => {}} options={OPTIONS} />);
+      renderSelect();
 
       expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 
     it("選択中の値のラベルがトリガーに表示される", () => {
-      render(<Select value="banana" onValueChange={() => {}} options={OPTIONS} />);
+      renderSelect({ value: "banana" });
 
       expect(screen.getByRole("combobox")).toHaveTextContent("Banana");
     });
 
     it("placeholder が表示される（値未選択時）", () => {
-      render(
-        <Select
-          value=""
-          onValueChange={() => {}}
-          options={OPTIONS}
-          placeholder="選択してください"
-        />
-      );
+      renderSelect({ value: "", placeholder: "選択してください" });
 
       expect(screen.getByRole("combobox")).toHaveTextContent("選択してください");
     });
@@ -40,7 +42,7 @@ describe("Select", () => {
   describe("インタラクション", () => {
     it("クリックでオプション一覧が表示される", async () => {
       const user = userEvent.setup();
-      render(<Select value="apple" onValueChange={() => {}} options={OPTIONS} />);
+      renderSelect();
 
       await user.click(screen.getByRole("combobox"));
 
@@ -52,7 +54,7 @@ describe("Select", () => {
     it("オプションを選択すると onValueChange が呼ばれる", async () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();
-      render(<Select value="apple" onValueChange={onValueChange} options={OPTIONS} />);
+      renderSelect({ onValueChange });
 
       await user.click(screen.getByRole("combobox"));
       await user.click(screen.getByRole("option", { name: "Cherry" }));

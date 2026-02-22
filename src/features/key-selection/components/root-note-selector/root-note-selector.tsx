@@ -1,7 +1,13 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FLAT_NOTE_NAMES, NOTE_NAMES, noteNameToPitchClass } from "@/lib/music-theory/note";
 
 export type RootNoteSelectorProps = Omit<ComponentProps<"div">, "onChange"> & {
@@ -21,12 +27,22 @@ export function RootNoteSelector({
   className,
   ...props
 }: RootNoteSelectorProps) {
-  // Normalize flat names to sharp names for the Select value
   const normalizedValue = NOTE_NAMES[noteNameToPitchClass(value)];
 
   return (
     <div className={className} {...props}>
-      <Select value={normalizedValue} onValueChange={onValueChange} options={ROOT_NOTE_OPTIONS} />
+      <Select value={normalizedValue} onValueChange={onValueChange}>
+        <SelectTrigger>
+          <SelectValue placeholder="選択" />
+        </SelectTrigger>
+        <SelectContent>
+          {ROOT_NOTE_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

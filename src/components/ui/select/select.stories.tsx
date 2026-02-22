@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
-import { Select } from "./select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
 const meta = {
   title: "UI/Select",
@@ -14,24 +14,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const FRUIT_OPTIONS = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "cherry", label: "Cherry" },
-  { value: "grape", label: "Grape" },
-];
-
 export const Default: Story = {
-  args: {
-    value: "apple",
-    onValueChange: () => {},
-    options: FRUIT_OPTIONS,
-  },
   render: function Render() {
     const [value, setValue] = useState("apple");
     return (
       <div className="flex flex-col items-center gap-4">
-        <Select value={value} onValueChange={setValue} options={FRUIT_OPTIONS} />
+        <Select value={value} onValueChange={setValue}>
+          <SelectTrigger>
+            <SelectValue placeholder="選択" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="apple">Apple</SelectItem>
+            <SelectItem value="banana">Banana</SelectItem>
+            <SelectItem value="cherry">Cherry</SelectItem>
+            <SelectItem value="grape">Grape</SelectItem>
+          </SelectContent>
+        </Select>
         <p className="text-foreground/70 text-sm">
           Selected: <span className="font-medium text-foreground">{value}</span>
         </p>
@@ -41,21 +39,19 @@ export const Default: Story = {
 };
 
 export const WithPlaceholder: Story = {
-  args: {
-    value: "",
-    onValueChange: () => {},
-    options: FRUIT_OPTIONS,
-    placeholder: "Choose a fruit...",
-  },
   render: function Render() {
     const [value, setValue] = useState("");
     return (
-      <Select
-        value={value}
-        onValueChange={setValue}
-        options={FRUIT_OPTIONS}
-        placeholder="Choose a fruit..."
-      />
+      <Select value={value} onValueChange={setValue}>
+        <SelectTrigger>
+          <SelectValue placeholder="Choose a fruit..." />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="cherry">Cherry</SelectItem>
+        </SelectContent>
+      </Select>
     );
   },
 };
