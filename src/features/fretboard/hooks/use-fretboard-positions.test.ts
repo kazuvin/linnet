@@ -30,7 +30,7 @@ describe("useFretboardPositions", () => {
   // 2. chord-tones モードでコード選択時、構成音のポジションを返す
   it("chord-tones モードでコード選択時、Cメジャーの構成音ポジションを返す", async () => {
     // コードを追加して選択する
-    addChord("C", "major");
+    addChord("C", "major", "diatonic", "tonic", "I", 1);
 
     // addChord で追加されたコードの id を取得するために snapshot を使う
     const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());

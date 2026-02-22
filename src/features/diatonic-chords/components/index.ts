@@ -1,2 +1,1 @@
-export { DiatonicChordCard } from "./diatonic-chord-card";
-export { DiatonicChordList } from "./diatonic-chord-list";
+// DiatonicChordCard は chord-board/ChordCard に統合済み
