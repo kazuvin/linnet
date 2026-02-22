@@ -34,7 +34,7 @@ export function DiatonicChordCard({ chordInfo, className, ...props }: DiatonicCh
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-2 rounded-2xl border px-4 py-5 shadow-card transition-shadow hover:shadow-card-hover",
+        "flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border shadow-card transition-shadow hover:shadow-card-hover",
         CARD_BG_STYLES[chordFunction],
         className
       )}

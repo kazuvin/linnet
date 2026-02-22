@@ -105,6 +105,15 @@ describe("DiatonicChordCard", () => {
   });
 
   describe("スタイリング", () => {
+    it("カードが正方形（aspect-square）である", () => {
+      const chordInfo = createTestChordInfo();
+
+      const { container } = render(<DiatonicChordCard chordInfo={chordInfo} />);
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.className).toContain("aspect-square");
+    });
+
     it("トニック機能のカードにトニックの色が適用される", () => {
       const chordInfo = createTestChordInfo({ chordFunction: "tonic" });
 

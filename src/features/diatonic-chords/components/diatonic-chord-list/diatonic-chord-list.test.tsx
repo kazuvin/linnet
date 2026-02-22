@@ -83,6 +83,22 @@ describe("DiatonicChordList", () => {
     });
   });
 
+  describe("レイアウト", () => {
+    it("リストが横スクロール可能である", () => {
+      render(<DiatonicChordList />);
+
+      const list = screen.getByRole("list");
+      expect(list.className).toContain("overflow-x-auto");
+    });
+
+    it("container の余白を打ち消すネガティブマージンが適用される", () => {
+      render(<DiatonicChordList />);
+
+      const list = screen.getByRole("list");
+      expect(list.className).toContain("-mx-4");
+    });
+  });
+
   describe("アクセシビリティ", () => {
     it("list ロールを持つ", () => {
       render(<DiatonicChordList />);

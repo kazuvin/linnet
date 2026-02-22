@@ -13,10 +13,10 @@ export function DiatonicChordList({ className, ...props }: DiatonicChordListProp
   return (
     <section className={cn("flex flex-col gap-4", className)} {...props}>
       <h2 className="font-bold text-lg">Diatonic Chords</h2>
-      <ul className="grid grid-cols-4 gap-3 sm:grid-cols-7">
+      <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
         {chords.map((chordInfo) => (
-          <li key={chordInfo.degree}>
-            <DiatonicChordCard chordInfo={chordInfo} />
+          <li key={chordInfo.degree} className="shrink-0">
+            <DiatonicChordCard chordInfo={chordInfo} className="w-28" />
           </li>
         ))}
       </ul>
