@@ -1,3 +1,5 @@
+// diatonic-chords
+
 // chord-progression
 export {
   _resetChordProgressionForTesting,
@@ -11,6 +13,7 @@ export {
   useChordProgressionSnapshot,
   useSelectedChord,
 } from "./chord-progression/stores/chord-progression-store";
+export { DiatonicChordCard, DiatonicChordList } from "./diatonic-chords/components";
 
 // fretboard hooks
 export { useFretboardPositions } from "./fretboard/hooks/use-fretboard-positions";
