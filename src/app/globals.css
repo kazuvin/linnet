@@ -59,19 +59,6 @@
   --animate-draw: draw 0.3s ease forwards 0.15s;
 }
 
-.dark {
-  --color-primary: oklch(0.62 0.21 264);
-  --color-background: oklch(0.15 0 0);
-  --color-foreground: oklch(0.95 0 0);
-  --color-surface: oklch(0.22 0 0);
-  --color-surface-elevated: oklch(0.27 0 0);
-  --color-border: oklch(0.27 0 0);
-  --color-muted: oklch(0.7 0 0);
-  --color-success: oklch(0.8 0.18 145);
-  --color-warning: oklch(0.82 0.17 80);
-  --color-error: oklch(0.7 0.19 25);
-}
-
 @keyframes fade-in {
   from {
     opacity: 0;
