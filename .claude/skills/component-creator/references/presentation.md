@@ -57,7 +57,7 @@ export type { ButtonProps } from "./button";
 4. Typed variants (not magic strings)
 5. Sensible defaults
 6. No business logic / API calls
-7. No global state (no Jotai, no Context)
+7. No global state (no Valtio, no Context)
 8. No forwardRef (React 19: ref in ComponentProps)
 
 ## cn() Utility
