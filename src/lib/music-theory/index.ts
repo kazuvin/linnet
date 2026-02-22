@@ -45,9 +45,11 @@ export {
 } from "./interval";
 // Modal Interchange
 export {
+  ALL_MODE_SOURCES,
   filterNonDiatonicChords,
   getAllModalInterchangeChords,
   getModalInterchangeChords,
+  MODE_DISPLAY_NAMES,
   type ModalInterchangeChordInfo,
 } from "./modal-interchange";
 export {

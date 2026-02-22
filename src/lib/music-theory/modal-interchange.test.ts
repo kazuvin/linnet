@@ -1,8 +1,10 @@
 import { getDiatonicTriads } from "./diatonic";
 import {
+  ALL_MODE_SOURCES,
   filterNonDiatonicChords,
   getAllModalInterchangeChords,
   getModalInterchangeChords,
+  MODE_DISPLAY_NAMES,
 } from "./modal-interchange";
 
 describe("modal-interchange", () => {
@@ -24,6 +26,12 @@ describe("modal-interchange", () => {
         expect(info.source).toBe("natural-minor");
         expect(typeof info.isAvailable).toBe("boolean");
       }
+    });
+
+    it("各コードに degree フィールドが含まれる（1〜7）", () => {
+      const chords = getModalInterchangeChords("C", "natural-minor");
+      const degrees = chords.map((c) => c.degree);
+      expect(degrees).toEqual([1, 2, 3, 4, 5, 6, 7]);
     });
 
     it("Cナチュラルマイナー由来のbIIIはEbメジャー", () => {
@@ -69,6 +77,36 @@ describe("modal-interchange", () => {
     it("ミクソリディアン由来のコードを返す", () => {
       const chords = getModalInterchangeChords("C", "mixolydian");
       expect(chords).toHaveLength(7);
+    });
+
+    it("seventh=true でセブンスコードを返す", () => {
+      const chords = getModalInterchangeChords("C", "natural-minor", true);
+      expect(chords).toHaveLength(7);
+      // 全てのコードが4音（セブンス）
+      for (const info of chords) {
+        expect(info.chord.notes).toHaveLength(4);
+      }
+    });
+
+    it("Cナチュラルマイナー由来のセブンスで Cm7 が含まれる", () => {
+      const chords = getModalInterchangeChords("C", "natural-minor", true);
+      const cm7 = chords.find((c) => c.chord.symbol === "Cm7");
+      expect(cm7).toBeDefined();
+      expect(cm7?.degree).toBe(1);
+    });
+
+    it("Cナチュラルマイナー由来のセブンスで EbM7 が含まれる", () => {
+      const chords = getModalInterchangeChords("C", "natural-minor", true);
+      const ebM7 = chords.find((c) => c.chord.root.name === "Eb" && c.chord.quality === "major7");
+      expect(ebM7).toBeDefined();
+      expect(ebM7?.degree).toBe(3);
+    });
+
+    it("seventh=true のとき isAvailable がセブンスダイアトニックと比較される", () => {
+      const chords = getModalInterchangeChords("C", "natural-minor", true);
+      // Cm7 はCメジャーのセブンスダイアトニック(CM7, Dm7, Em7, FM7, G7, Am7, Bm7b5)に含まれないので available
+      const cm7 = chords.find((c) => c.chord.symbol === "Cm7");
+      expect(cm7?.isAvailable).toBe(true);
     });
 
     it("Fメジャーに対するナチュラルマイナー由来でフラット表記が使われる", () => {
@@ -147,6 +185,35 @@ describe("modal-interchange", () => {
     it("空の配列を渡すと空の配列を返す", () => {
       const filtered = filterNonDiatonicChords("C", []);
       expect(filtered).toEqual([]);
+    });
+  });
+
+  describe("ALL_MODE_SOURCES", () => {
+    it("7つのモードソースを含む", () => {
+      expect(ALL_MODE_SOURCES).toHaveLength(7);
+    });
+
+    it("全てのモードが含まれる", () => {
+      expect(ALL_MODE_SOURCES).toContain("natural-minor");
+      expect(ALL_MODE_SOURCES).toContain("harmonic-minor");
+      expect(ALL_MODE_SOURCES).toContain("melodic-minor");
+      expect(ALL_MODE_SOURCES).toContain("dorian");
+      expect(ALL_MODE_SOURCES).toContain("phrygian");
+      expect(ALL_MODE_SOURCES).toContain("lydian");
+      expect(ALL_MODE_SOURCES).toContain("mixolydian");
+    });
+  });
+
+  describe("MODE_DISPLAY_NAMES", () => {
+    it("全モードの表示名が定義されている", () => {
+      for (const source of ALL_MODE_SOURCES) {
+        expect(MODE_DISPLAY_NAMES[source]).toBeDefined();
+        expect(typeof MODE_DISPLAY_NAMES[source]).toBe("string");
+      }
+    });
+
+    it("ナチュラルマイナーの表示名が正しい", () => {
+      expect(MODE_DISPLAY_NAMES["natural-minor"]).toBe("Natural Minor");
     });
   });
 });

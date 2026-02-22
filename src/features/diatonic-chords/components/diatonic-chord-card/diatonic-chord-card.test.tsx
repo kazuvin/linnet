@@ -104,6 +104,58 @@ describe("DiatonicChordCard", () => {
     });
   });
 
+  describe("dimmed 表示", () => {
+    it("dimmed=true のカードは opacity-40 で表示される", () => {
+      const chordInfo = createTestChordInfo();
+
+      const { container } = render(<DiatonicChordCard chordInfo={chordInfo} dimmed />);
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.className).toContain("opacity-40");
+    });
+
+    it("dimmed が指定されない場合は opacity-40 が適用されない", () => {
+      const chordInfo = createTestChordInfo();
+
+      const { container } = render(<DiatonicChordCard chordInfo={chordInfo} />);
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.className).not.toContain("opacity-40");
+    });
+  });
+
+  describe("compact 表示", () => {
+    it("compact=true のとき構成音が表示されない", () => {
+      const chordInfo = createTestChordInfo({
+        chord: createChord("C", "major"),
+      });
+
+      render(<DiatonicChordCard chordInfo={chordInfo} compact />);
+
+      expect(screen.queryByText("C - E - G")).not.toBeInTheDocument();
+    });
+
+    it("compact が指定されないとき構成音が表示される", () => {
+      const chordInfo = createTestChordInfo({
+        chord: createChord("C", "major"),
+      });
+
+      render(<DiatonicChordCard chordInfo={chordInfo} />);
+
+      expect(screen.getByText("C - E - G")).toBeInTheDocument();
+    });
+
+    it("compact=true のとき gap-1 クラスが適用される", () => {
+      const chordInfo = createTestChordInfo();
+
+      const { container } = render(<DiatonicChordCard chordInfo={chordInfo} compact />);
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.className).toContain("gap-1");
+      expect(card.className).not.toContain("gap-2");
+    });
+  });
+
   describe("スタイリング", () => {
     it("カードが正方形（aspect-square）である", () => {
       const chordInfo = createTestChordInfo();
