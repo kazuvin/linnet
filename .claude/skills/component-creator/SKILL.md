@@ -1,12 +1,12 @@
 ---
 name: component-creator
-description: Create React components following project conventions. Use when asked to create, add, or build components, UI elements, or features. Handles both presentation components (src/components/) and container/feature components (src/features/ with Jotai). For container components, also use jotai-patterns skill for atom design. For styling, also use project-design skill for design tokens.
+description: Create React components following project conventions. Use when asked to create, add, or build components, UI elements, or features. Handles both presentation components (src/components/) and container/feature components (src/features/ with Valtio). For container components, also use valtio-patterns skill for store design. For styling, also use project-design skill for design tokens.
 ---
 
 # Component Creator
 
 Related skills:
-- **jotai-patterns**: Atom design for containers
+- **valtio-patterns**: Store design for containers
 - **project-design**: Styling (tokens, patterns)
 
 ## Decision Guide
@@ -18,7 +18,7 @@ Related skills:
 | Login form with auth logic | Container    | `src/features/auth/`   |
 | Dashboard with data fetch  | Container    | `src/features/dashboard/` |
 
-**Rule**: Jotai atoms or API calls → Container. Pure UI → Presentation.
+**Rule**: Valtio stores or API calls → Container. Pure UI → Presentation.
 
 ## Existing UI Components
 
@@ -51,12 +51,10 @@ export function Button({ variant = "primary", className, ...props }: ButtonProps
 
 ```tsx
 "use client";
-import { useAtomValue, useSetAtom } from "jotai";
-import { isLoadingAtom, loginAtom } from "../stores/auth-atoms";
+import { useAuthSnapshot, login } from "../stores/auth-store";
 
 export function LoginForm() {
-  const isLoading = useAtomValue(isLoadingAtom);
-  const login = useSetAtom(loginAtom);
+  const { isLoading } = useAuthSnapshot();
   // ...
 }
 ```

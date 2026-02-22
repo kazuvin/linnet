@@ -1,13 +1,13 @@
-# Container Components (Features + Jotai)
+# Container Components (Features + Valtio)
 
-Atom design: see **jotai-patterns** skill.
+Store design: see **valtio-patterns** skill.
 
 ## Directory Structure
 
 ```
 src/features/{feature}/
 ├── components/     # Feature UI
-├── stores/         # Jotai atoms
+├── stores/         # Valtio stores
 ├── hooks/          # Custom hooks (optional)
 ├── types/          # Types
 └── index.ts        # Public API
@@ -17,14 +17,11 @@ src/features/{feature}/
 
 ```tsx
 "use client";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAuthSnapshot, login } from "../stores/auth-store";
 import { LoginFormPresentation } from "@/components/auth/login-form";
-import { isLoadingAtom, errorValueAtom, loginAtom } from "../stores/auth-atoms";
 
 export function LoginFormContainer() {
-  const isLoading = useAtomValue(isLoadingAtom);
-  const error = useAtomValue(errorValueAtom);
-  const login = useSetAtom(loginAtom);
+  const { isLoading, error } = useAuthSnapshot();
 
   return (
     <LoginFormPresentation
@@ -42,7 +39,7 @@ export function LoginFormContainer() {
 // features/auth/index.ts
 export { LoginFormContainer } from "./components/login-form";
 export { useAuth } from "./hooks/use-auth";
-export { isAuthenticatedAtom, userValueAtom } from "./stores/auth-atoms";
+export { useAuthSnapshot, login, logout } from "./stores/auth-store";
 export type { User, LoginCredentials } from "./types";
 ```
 
@@ -51,23 +48,5 @@ export type { User, LoginCredentials } from "./types";
 1. Colocation: components, stores, hooks, types in feature folder
 2. Container/Presentation split
 3. Export only what others need
-4. `"use client"` required for Jotai hooks
-5. Atom encapsulation: follow **jotai-patterns**
-
-## Provider Setup
-
-```tsx
-// src/app/providers.tsx
-"use client";
-import { Provider } from "jotai";
-
-export function Providers({ children }: { children: React.ReactNode }) {
-  return <Provider>{children}</Provider>;
-}
-
-// src/app/layout.tsx
-import { Providers } from "./providers";
-export default function RootLayout({ children }) {
-  return <html><body><Providers>{children}</Providers></body></html>;
-}
-```
+4. `"use client"` required for Valtio hooks (useSnapshot)
+5. Store encapsulation: follow **valtio-patterns**
