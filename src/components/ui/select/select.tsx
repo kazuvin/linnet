@@ -33,7 +33,13 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
       )}
       {...props}
     >
-      <span className="inline-flex transition-[width] duration-300 ease-default" style={{ width }}>
+      <span
+        className={cn(
+          "inline-flex",
+          width !== undefined && "transition-[width] duration-300 ease-default"
+        )}
+        style={{ width }}
+      >
         <span ref={contentRef} className="whitespace-nowrap">
           {children}
         </span>

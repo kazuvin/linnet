@@ -28,12 +28,13 @@ export function RootNoteSelector({
   ...props
 }: RootNoteSelectorProps) {
   const normalizedValue = NOTE_NAMES[noteNameToPitchClass(value)];
+  const displayLabel = ROOT_NOTE_OPTIONS.find((o) => o.value === normalizedValue)?.label;
 
   return (
     <div className={className} {...props}>
       <Select value={normalizedValue} onValueChange={onValueChange}>
         <SelectTrigger>
-          <SelectValue placeholder="選択" />
+          <SelectValue placeholder="選択">{displayLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {ROOT_NOTE_OPTIONS.map((option) => (
