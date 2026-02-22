@@ -10,6 +10,20 @@ class MockResizeObserver {
 }
 global.ResizeObserver = MockResizeObserver;
 
+// Mock pointer capture methods for Radix UI components
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+}
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = vi.fn();
+}
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = vi.fn();
+}
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn();
+}
+
 // Cleanup after each test
 afterEach(() => {
   cleanup();

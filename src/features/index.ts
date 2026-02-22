@@ -1,5 +1,3 @@
-// key-selection
-
 // chord-progression
 export {
   _resetChordProgressionForTesting,
@@ -13,6 +11,7 @@ export {
   useChordProgressionSnapshot,
   useSelectedChord,
 } from "./chord-progression/stores/chord-progression-store";
+
 // fretboard hooks
 export { useFretboardPositions } from "./fretboard/hooks/use-fretboard-positions";
 
@@ -26,6 +25,11 @@ export {
   setScaleType,
   useFretboardSnapshot,
 } from "./fretboard/stores/fretboard-store";
+
+// key-selection components
+export { ChordTypeSelector, KeySelector, RootNoteSelector } from "./key-selection/components";
+
+// key-selection stores
 export {
   _resetKeyStoreForTesting,
   setChordType,
