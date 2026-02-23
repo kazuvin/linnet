@@ -64,8 +64,7 @@ export function ChordBoard() {
     try {
       for (const chord of chords) {
         if (getIsMuted()) break;
-        await playChord(chord.rootName, chord.quality, { duration: "2n" });
-        await new Promise((resolve) => setTimeout(resolve, 700));
+        await playChord(chord.rootName, chord.quality);
       }
     } finally {
       setPlaying(false);

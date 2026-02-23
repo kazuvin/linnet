@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { chordToToneNotes, noteNameToToneNotation } from "./chord-player";
+import {
+  chordToToneNotes,
+  DEFAULT_CHORD_DURATION_SEC,
+  noteNameToToneNotation,
+} from "./chord-player";
 
 describe("noteNameToToneNotation", () => {
   it("C を C4 に変換する", () => {
@@ -63,5 +67,16 @@ describe("chordToToneNotes", () => {
   it("minor7b5 コードを正しく変換する", () => {
     const notes = chordToToneNotes("B", "minor7b5");
     expect(notes).toEqual(["B4", "D5", "F5", "A5"]);
+  });
+});
+
+describe("DEFAULT_CHORD_DURATION_SEC", () => {
+  it("デフォルトのコード再生時間が正の数である", () => {
+    expect(DEFAULT_CHORD_DURATION_SEC).toBeGreaterThan(0);
+  });
+
+  it("デフォルトのコード再生時間が妥当な範囲（0.3〜3秒）である", () => {
+    expect(DEFAULT_CHORD_DURATION_SEC).toBeGreaterThanOrEqual(0.3);
+    expect(DEFAULT_CHORD_DURATION_SEC).toBeLessThanOrEqual(3);
   });
 });
