@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { proxy, useSnapshot } from "valtio";
+import { resetSelectedScaleType } from "@/features/fretboard/stores/fretboard-store";
 import {
   type Chord,
   type ChordFunction,
@@ -113,6 +114,7 @@ export function reorderChords(fromIndex: number, toIndex: number): void {
 
 export function selectChord(id: string | null): void {
   state.selectedChordId = id;
+  resetSelectedScaleType();
 }
 
 export function transposeAllChords(semitones: number, newRootName: string): void {

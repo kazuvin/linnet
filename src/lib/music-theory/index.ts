@@ -1,3 +1,5 @@
+// Available Scales
+export { type AvailableScaleInfo, findAvailableScalesForChord } from "./available-scales";
 // Note
 
 // Chord

@@ -1,13 +1,18 @@
 "use client";
 
+import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
+import { useAvailableScales } from "@/features/fretboard/hooks/use-available-scales";
 import { useFretboardPositions } from "@/features/fretboard/hooks/use-fretboard-positions";
 import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-store";
 import { FretboardControls } from "../fretboard-controls";
 import { FretboardGrid } from "../fretboard-grid";
+import { ScaleChecker } from "../scale-checker";
 
 export function Fretboard() {
-  const positions = useFretboardPositions();
   const { maxFret } = useFretboardSnapshot();
+  const { availableScales, activeScaleType } = useAvailableScales();
+  const positions = useFretboardPositions(activeScaleType);
+  const selectedChord = useSelectedProgressionChord();
 
   return (
     <section className="flex flex-col gap-4">
@@ -15,6 +20,13 @@ export function Fretboard() {
         <h2 className="font-bold text-lg">Fretboard</h2>
         <FretboardControls maxFret={maxFret} />
       </div>
+      {selectedChord && (
+        <ScaleChecker
+          availableScales={availableScales}
+          activeScaleType={activeScaleType}
+          chordSymbol={selectedChord.symbol}
+        />
+      )}
       <FretboardGrid positions={positions} maxFret={maxFret} />
       {positions.length === 0 && (
         <p className="text-center text-muted text-sm">
