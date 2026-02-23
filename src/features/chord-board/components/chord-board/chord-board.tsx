@@ -1,5 +1,7 @@
 "use client";
 
+import { PlaybackControls } from "@/features/chord-playback/components/playback-controls";
+import { getIsMuted, setPlaying } from "@/features/chord-playback/stores/chord-playback-store";
 import {
   addChord,
   clearProgression,
@@ -13,6 +15,7 @@ import {
   useCurrentModeChords,
   useKeySnapshot,
 } from "@/features/key-selection/stores/key-store";
+import { playChord } from "@/lib/audio/chord-player";
 import { cn } from "@/lib/utils";
 import { useFlipAnimation } from "../../hooks/use-flip-animation";
 import { useNativeDnd } from "../../hooks/use-native-dnd";
@@ -50,6 +53,23 @@ export function ChordBoard() {
       chordInfo.romanNumeral,
       chordInfo.degree
     );
+    if (!getIsMuted()) {
+      playChord(chordInfo.chord.root.name, chordInfo.chord.quality);
+    }
+  }
+
+  async function handlePlayProgression() {
+    if (chords.length === 0 || getIsMuted()) return;
+    setPlaying(true);
+    try {
+      for (const chord of chords) {
+        if (getIsMuted()) break;
+        await playChord(chord.rootName, chord.quality, { duration: "2n" });
+        await new Promise((resolve) => setTimeout(resolve, 700));
+      }
+    } finally {
+      setPlaying(false);
+    }
   }
 
   return (
@@ -93,7 +113,10 @@ export function ChordBoard() {
       {/* Progression */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-lg">Progression</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-bold text-lg">Progression</h2>
+            <PlaybackControls onPlay={handlePlayProgression} disabled={chords.length === 0} />
+          </div>
           {chords.length > 0 && (
             <button
               type="button"
@@ -133,7 +156,11 @@ export function ChordBoard() {
                       isSelected={chord.id === selectedChordId}
                       onRemove={() => removeChord(chord.id)}
                       onClick={() => {
-                        selectChord(chord.id === selectedChordId ? null : chord.id);
+                        const isDeselecting = chord.id === selectedChordId;
+                        selectChord(isDeselecting ? null : chord.id);
+                        if (!isDeselecting && !getIsMuted()) {
+                          playChord(chord.rootName, chord.quality);
+                        }
                       }}
                       draggable={progressionHandlers.draggable}
                       onDragStart={(e) => {
