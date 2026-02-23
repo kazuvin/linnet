@@ -310,6 +310,49 @@ describe("key-store", () => {
       }
     });
 
+    // useCurrentModeChords が tritone-substitution モードで 5 コードを返す
+    it("useCurrentModeChords が tritone-substitution モードで 5 コードを返す", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      await act(async () => {
+        setSelectedMode("tritone-substitution");
+      });
+
+      expect(result.current).toHaveLength(5);
+      for (const chord of result.current) {
+        expect(chord.isAvailable).toBe(true);
+        expect(chord.chordFunction).toBe("dominant");
+      }
+    });
+
+    // useCurrentModeChords が tritone-substitution + seventh で dominant7 コードを返す
+    it("useCurrentModeChords が tritone-substitution + seventh で dominant7 コードを返す", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      await act(async () => {
+        setSelectedMode("tritone-substitution");
+        setChordType("seventh");
+      });
+
+      expect(result.current).toHaveLength(5);
+      for (const chord of result.current) {
+        expect(chord.chord.quality).toBe("dominant7");
+      }
+    });
+
+    // useCurrentModeChords が tritone-substitution でセカンダリードミナントのトライトーン上のルートを返す
+    it("useCurrentModeChords が tritone-substitution で正しいルートを返す（Cメジャー）", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      await act(async () => {
+        setSelectedMode("tritone-substitution");
+      });
+
+      const symbols = result.current.map((c) => c.chord.symbol);
+      // SubV/ii=Eb, SubV/iii=F, SubV/IV=Gb, SubV/V=Ab, SubV/vi=Bb
+      expect(symbols).toEqual(["Eb", "F", "Gb", "Ab", "Bb"]);
+    });
+
     // _resetKeyStoreForTesting で selectedMode も "diatonic" に戻る
     it('_resetKeyStoreForTesting で selectedMode も "diatonic" に戻る', async () => {
       const { result } = renderHook(() => useKeySnapshot());

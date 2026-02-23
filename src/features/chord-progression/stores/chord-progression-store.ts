@@ -18,7 +18,7 @@ export type ProgressionChord = {
   rootName: string;
   quality: ChordQuality;
   symbol: string;
-  source: "diatonic" | "secondary-dominant" | ScaleType;
+  source: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
   chordFunction: ChordFunction;
   romanNumeral: string;
   degree: number;
@@ -78,7 +78,7 @@ export function useSelectedProgressionChord(): ProgressionChord | null {
 export function addChord(
   rootName: string,
   quality: ChordQuality,
-  source: "diatonic" | "secondary-dominant" | ScaleType,
+  source: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType,
   chordFunction: ChordFunction,
   romanNumeral: string,
   degree: number
