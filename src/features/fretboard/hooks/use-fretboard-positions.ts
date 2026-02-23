@@ -4,7 +4,9 @@ import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-stor
 import { useKeySnapshot } from "@/features/key-selection/stores/key-store";
 import { findOverlayPositions, type OverlayPosition, type ScaleType } from "@/lib/music-theory";
 
-export function useFretboardPositions(): readonly OverlayPosition[] {
+export function useFretboardPositions(
+  overrideScaleType?: ScaleType | null
+): readonly OverlayPosition[] {
   const { rootName } = useKeySnapshot();
   const selectedChord = useSelectedProgressionChord();
   const { maxFret } = useFretboardSnapshot();
@@ -12,8 +14,10 @@ export function useFretboardPositions(): readonly OverlayPosition[] {
   return useMemo(() => {
     if (!selectedChord) return [];
 
-    const scaleType: ScaleType =
+    const defaultScaleType: ScaleType =
       selectedChord.source === "diatonic" ? "major" : selectedChord.source;
+
+    const scaleType = overrideScaleType ?? defaultScaleType;
 
     return findOverlayPositions(
       rootName,
@@ -22,5 +26,5 @@ export function useFretboardPositions(): readonly OverlayPosition[] {
       selectedChord.quality,
       maxFret
     );
-  }, [selectedChord, rootName, maxFret]);
+  }, [selectedChord, rootName, maxFret, overrideScaleType]);
 }
