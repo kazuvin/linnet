@@ -1,12 +1,8 @@
-import type { ChordQuality } from "./chord";
+import { CHORD_INTERVAL_PATTERNS, type ChordQuality } from "./chord";
 import { getDiatonicChords } from "./diatonic";
-import {
-  ALL_MODE_SOURCES,
-  getModalInterchangeChords,
-  MODE_DISPLAY_NAMES,
-} from "./modal-interchange";
+import { ALL_MODE_SOURCES, MODE_DISPLAY_NAMES } from "./modal-interchange";
 import { createNote } from "./note";
-import type { ScaleType } from "./scale";
+import { createScale, getScaleDegreeNote, type Scale, type ScaleType } from "./scale";
 
 export type AvailableScaleInfo = {
   readonly scaleType: ScaleType;
@@ -23,8 +19,38 @@ const SEVENTH_QUALITIES = new Set<ChordQuality>([
 ]);
 
 /**
+ * スケールの実際の音から3度堆積でコードの品質を判定する。
+ * extendToSeventh と異なり、スケールの文脈を正しく反映する。
+ * 例: Mixolydian I度 → dominant7（major7 ではない）
+ */
+export function computeChordQualityFromScale(
+  scale: Scale,
+  degree: number,
+  seventh: boolean
+): ChordQuality | null {
+  const rootIdx = degree - 1;
+  const stackSize = seventh ? 4 : 3;
+
+  const root = scale.notes[rootIdx];
+  const intervals: number[] = [0];
+  for (let i = 1; i < stackSize; i++) {
+    const note = scale.notes[(rootIdx + i * 2) % 7];
+    intervals.push((note.pitchClass - root.pitchClass + 12) % 12);
+  }
+
+  for (const [quality, pattern] of Object.entries(CHORD_INTERVAL_PATTERNS)) {
+    if (pattern.length === stackSize && pattern.every((p, i) => p === intervals[i])) {
+      return quality as ChordQuality;
+    }
+  }
+  return null;
+}
+
+/**
  * 指定したコードが同じキー・同じ度数で出現するモードスケールを全て返す。
- * 例: Cメジャーキー、I度、C major → [Ionian, Lydian, Mixolydian]
+ * スケールの実音から3度堆積でコード品質を判定するため、
+ * セブンスコードでも正確な結果を返す。
+ * 例: Fメジャーキー、I度、FM7 → [Ionian, Lydian]（Mixolydian は F7 なので除外）
  */
 export function findAvailableScalesForChord(
   keyRoot: string,
@@ -40,7 +66,7 @@ export function findAvailableScalesForChord(
   const targetPitchClass = createNote(chordRootName).pitchClass;
   const results: AvailableScaleInfo[] = [];
 
-  // Ionian（ダイアトニック）をチェック
+  // Ionian（ダイアトニック）をチェック — SEVENTH_QUALITIES で正確
   const diatonicChords = getDiatonicChords(keyRoot, seventh);
   const diatonicChord = diatonicChords.find((c) => c.degree === degree);
   if (
@@ -52,14 +78,16 @@ export function findAvailableScalesForChord(
   }
 
   // 各モーダルインターチェンジソースをチェック
+  // スケールの実音から3度堆積でコード品質を判定
   for (const source of ALL_MODE_SOURCES) {
-    const modeChords = getModalInterchangeChords(keyRoot, source, seventh);
-    const modeChord = modeChords.find((c) => c.degree === degree);
-    if (
-      modeChord &&
-      modeChord.chord.root.pitchClass === targetPitchClass &&
-      modeChord.chord.quality === chordQuality
-    ) {
+    const scale = createScale(keyRoot, source);
+    const scaleRoot = getScaleDegreeNote(scale, degree);
+
+    // ルート音が一致しなければスキップ
+    if (scaleRoot.pitchClass !== targetPitchClass) continue;
+
+    const actualQuality = computeChordQualityFromScale(scale, degree, seventh);
+    if (actualQuality === chordQuality) {
       results.push({
         scaleType: source,
         displayName: MODE_DISPLAY_NAMES[source],

@@ -1,4 +1,46 @@
-import { findAvailableScalesForChord } from "./available-scales";
+import { computeChordQualityFromScale, findAvailableScalesForChord } from "./available-scales";
+import { createScale } from "./scale";
+
+describe("computeChordQualityFromScale", () => {
+  it("Ionian I度のセブンスはmajor7", () => {
+    const scale = createScale("C", "major");
+    expect(computeChordQualityFromScale(scale, 1, true)).toBe("major7");
+  });
+
+  it("Ionian V度のセブンスはdominant7", () => {
+    const scale = createScale("C", "major");
+    expect(computeChordQualityFromScale(scale, 5, true)).toBe("dominant7");
+  });
+
+  it("Mixolydian I度のセブンスはdominant7（major7ではない）", () => {
+    const scale = createScale("C", "mixolydian");
+    expect(computeChordQualityFromScale(scale, 1, true)).toBe("dominant7");
+  });
+
+  it("Lydian I度のセブンスはmajor7", () => {
+    const scale = createScale("C", "lydian");
+    expect(computeChordQualityFromScale(scale, 1, true)).toBe("major7");
+  });
+
+  it("Lydian II度のセブンスはdominant7", () => {
+    // C Lydian: C D E F# G A B → II = D F# A C → [0,4,7,10] → dominant7
+    const scale = createScale("C", "lydian");
+    expect(computeChordQualityFromScale(scale, 2, true)).toBe("dominant7");
+  });
+
+  it("Harmonic Minor I度のセブンスは既存タイプに一致しない（minorMajor7）", () => {
+    // C Harmonic Minor: C D Eb F G Ab B → I = C Eb G B → [0,3,7,11]
+    const scale = createScale("C", "harmonic-minor");
+    expect(computeChordQualityFromScale(scale, 1, true)).toBeNull();
+  });
+
+  it("トライアドも正しく判定できる", () => {
+    const scale = createScale("C", "major");
+    expect(computeChordQualityFromScale(scale, 1, false)).toBe("major");
+    expect(computeChordQualityFromScale(scale, 2, false)).toBe("minor");
+    expect(computeChordQualityFromScale(scale, 7, false)).toBe("diminished");
+  });
+});
 
 describe("findAvailableScalesForChord", () => {
   describe("Cメジャーキーのトライアド", () => {
@@ -65,20 +107,58 @@ describe("findAvailableScalesForChord", () => {
   });
 
   describe("セブンスコード", () => {
-    it("I度のCM7はIonian, Lydian, Mixolydianで使える", () => {
+    it("I度のCM7はIonianとLydianのみで使える（Mixolydianはb7のためC7になる）", () => {
       const scales = findAvailableScalesForChord("C", 1, "C", "major7");
       const scaleTypes = scales.map((s) => s.scaleType);
       expect(scaleTypes).toContain("major");
       expect(scaleTypes).toContain("lydian");
-      expect(scaleTypes).toContain("mixolydian");
+      expect(scaleTypes).not.toContain("mixolydian");
+      expect(scales).toHaveLength(2);
     });
 
-    it("V度のG7（dominant7）はIonianのみ", () => {
-      // Ionianの V7 = G dominant7
-      // 他のモードの extendToSeventh では dominant7 は生成されない
+    it("V度のG7（dominant7）はIonian, Harmonic Minor, Melodic Minorで使える", () => {
+      // Ionian V7 = G B D F → dominant7
+      // Harmonic Minor V7 = G B D F → dominant7
+      // Melodic Minor V7 = G B D F → dominant7
       const scales = findAvailableScalesForChord("C", 5, "G", "dominant7");
       const scaleTypes = scales.map((s) => s.scaleType);
       expect(scaleTypes).toContain("major");
+      expect(scaleTypes).toContain("harmonic-minor");
+      expect(scaleTypes).toContain("melodic-minor");
+      expect(scales).toHaveLength(3);
+    });
+
+    it("II度のDm7はIonian, Melodic Minor, Dorian, Mixolydianで使える", () => {
+      const scales = findAvailableScalesForChord("C", 2, "D", "minor7");
+      const scaleTypes = scales.map((s) => s.scaleType);
+      expect(scaleTypes).toContain("major");
+      expect(scaleTypes).toContain("melodic-minor");
+      expect(scaleTypes).toContain("dorian");
+      expect(scaleTypes).toContain("mixolydian");
+      expect(scales).toHaveLength(4);
+    });
+  });
+
+  describe("ユーザー報告のケース", () => {
+    it("FメジャーキーのI度FM7でMixolydianは使えない", () => {
+      // F Mixolydian: F G A Bb C D Eb → I = F A C Eb → F7 (dominant7)
+      // FM7 (major7) とは一致しない
+      const scales = findAvailableScalesForChord("F", 1, "F", "major7");
+      const scaleTypes = scales.map((s) => s.scaleType);
+      expect(scaleTypes).toContain("major");
+      expect(scaleTypes).toContain("lydian");
+      expect(scaleTypes).not.toContain("mixolydian");
+      expect(scales).toHaveLength(2);
+    });
+
+    it("FメジャーキーのI度Fメジャー（トライアド）ではMixolydianは使える", () => {
+      // トライアドの場合: F Mixolydian I = F A C → major ✓
+      const scales = findAvailableScalesForChord("F", 1, "F", "major");
+      const scaleTypes = scales.map((s) => s.scaleType);
+      expect(scaleTypes).toContain("major");
+      expect(scaleTypes).toContain("lydian");
+      expect(scaleTypes).toContain("mixolydian");
+      expect(scales).toHaveLength(3);
     });
   });
 
