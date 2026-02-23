@@ -1,19 +1,24 @@
 import { Fragment, useMemo } from "react";
-import { type FretPosition, type PitchClass, STANDARD_TUNING } from "@/lib/music-theory";
+import { type NoteRole, type OverlayPosition, STANDARD_TUNING } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
 
 const SINGLE_DOT_FRETS = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
 const DOUBLE_DOT_FRETS = new Set([12, 24]);
 
-type FretboardGridProps = {
-  positions: readonly FretPosition[];
-  maxFret: number;
-  rootPitchClass: PitchClass | null;
+const NOTE_DOT_STYLES: Record<NoteRole, string> = {
+  "chord-root": "bg-chord-root text-chord-root-fg",
+  "chord-tone": "bg-chord-tone text-chord-tone-fg",
+  scale: "bg-scale-tone text-scale-tone-fg",
 };
 
-export function FretboardGrid({ positions, maxFret, rootPitchClass }: FretboardGridProps) {
+type FretboardGridProps = {
+  positions: readonly OverlayPosition[];
+  maxFret: number;
+};
+
+export function FretboardGrid({ positions, maxFret }: FretboardGridProps) {
   const positionMap = useMemo(() => {
-    const map = new Map<string, FretPosition>();
+    const map = new Map<string, OverlayPosition>();
     for (const pos of positions) {
       map.set(`${pos.string}-${pos.fret}`, pos);
     }
@@ -50,7 +55,6 @@ export function FretboardGrid({ positions, maxFret, rootPitchClass }: FretboardG
             </div>
             {frets.map((fret) => {
               const pos = positionMap.get(`${stringNum}-${fret}`);
-              const isRoot = pos != null && pos.note.pitchClass === rootPitchClass;
 
               return (
                 <div
@@ -75,7 +79,7 @@ export function FretboardGrid({ positions, maxFret, rootPitchClass }: FretboardG
                       className={cn(
                         "relative z-10 flex size-5 items-center justify-center rounded-full font-bold font-mono text-[10px]",
                         "transition-colors duration-[120ms] ease-out",
-                        isRoot ? "bg-primary text-white" : "bg-primary-subtle text-primary"
+                        NOTE_DOT_STYLES[pos.role]
                       )}
                     >
                       {pos.note.name}

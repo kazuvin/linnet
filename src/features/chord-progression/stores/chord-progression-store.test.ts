@@ -9,6 +9,7 @@ import {
   transposeAllChords,
   useChordProgressionSnapshot,
   useSelectedChord,
+  useSelectedProgressionChord,
 } from "./chord-progression-store";
 
 /**
@@ -315,6 +316,35 @@ describe("chord-progression-store", () => {
       });
 
       expect(result.current.chords).toEqual([]);
+    });
+  });
+
+  // 12.5 useSelectedProgressionChord
+  describe("useSelectedProgressionChord", () => {
+    it("選択中のProgressionChordを返す（sourceを含む）", async () => {
+      const { result } = renderHook(() => useSelectedProgressionChord());
+      const { result: snapResult } = renderHook(() => useChordProgressionSnapshotForTest());
+
+      await act(async () => {
+        addChord("Eb", "major7", "natural-minor", "tonic", "III", 3);
+      });
+
+      const chordId = snapResult.current.chords[0].id;
+
+      await act(async () => {
+        selectChord(chordId);
+      });
+
+      expect(result.current).not.toBeNull();
+      expect(result.current?.rootName).toBe("Eb");
+      expect(result.current?.quality).toBe("major7");
+      expect(result.current?.source).toBe("natural-minor");
+      expect(result.current?.degree).toBe(3);
+    });
+
+    it("未選択時にnullを返す", () => {
+      const { result } = renderHook(() => useSelectedProgressionChord());
+      expect(result.current).toBeNull();
     });
   });
 

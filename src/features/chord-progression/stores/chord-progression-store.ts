@@ -51,6 +51,29 @@ export function useSelectedChord(): Chord | null {
   }, [snap.selectedChordId, snap.chords]);
 }
 
+export function useSelectedProgressionChord(): ProgressionChord | null {
+  const snap = useSnapshot(state);
+  return useMemo(() => {
+    if (snap.selectedChordId === null) {
+      return null;
+    }
+    const found = snap.chords.find((c) => c.id === snap.selectedChordId);
+    if (!found) {
+      return null;
+    }
+    return {
+      id: found.id,
+      rootName: found.rootName,
+      quality: found.quality,
+      symbol: found.symbol,
+      source: found.source,
+      chordFunction: found.chordFunction,
+      romanNumeral: found.romanNumeral,
+      degree: found.degree,
+    };
+  }, [snap.selectedChordId, snap.chords]);
+}
+
 export function addChord(
   rootName: string,
   quality: ChordQuality,

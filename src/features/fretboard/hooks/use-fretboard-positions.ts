@@ -1,19 +1,26 @@
 import { useMemo } from "react";
-import { useSelectedChord } from "@/features/chord-progression/stores/chord-progression-store";
+import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
 import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-store";
 import { useKeySnapshot } from "@/features/key-selection/stores/key-store";
-import { type FretPosition, findChordPositions, findScalePositions } from "@/lib/music-theory";
+import { findOverlayPositions, type OverlayPosition, type ScaleType } from "@/lib/music-theory";
 
-export function useFretboardPositions(): readonly FretPosition[] {
+export function useFretboardPositions(): readonly OverlayPosition[] {
   const { rootName } = useKeySnapshot();
-  const selectedChord = useSelectedChord();
-  const { displayMode, scaleType, maxFret } = useFretboardSnapshot();
+  const selectedChord = useSelectedProgressionChord();
+  const { maxFret } = useFretboardSnapshot();
 
   return useMemo(() => {
-    if (displayMode === "chord-tones") {
-      if (!selectedChord) return [];
-      return findChordPositions(selectedChord.root.name, selectedChord.quality, maxFret);
-    }
-    return findScalePositions(rootName, scaleType, maxFret);
-  }, [displayMode, selectedChord, rootName, scaleType, maxFret]);
+    if (!selectedChord) return [];
+
+    const scaleType: ScaleType =
+      selectedChord.source === "diatonic" ? "major" : selectedChord.source;
+
+    return findOverlayPositions(
+      rootName,
+      scaleType,
+      selectedChord.rootName,
+      selectedChord.quality,
+      maxFret
+    );
+  }, [selectedChord, rootName, maxFret]);
 }
