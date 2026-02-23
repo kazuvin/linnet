@@ -15,9 +15,11 @@ export function useFretboardPositions(
     if (!selectedChord) return [];
 
     const defaultScaleType: ScaleType =
-      selectedChord.source === "diatonic" || selectedChord.source === "secondary-dominant"
-        ? "major"
-        : selectedChord.source;
+      selectedChord.source === "secondary-dominant"
+        ? "mixolydian"
+        : selectedChord.source === "diatonic"
+          ? "major"
+          : selectedChord.source;
 
     const scaleType = overrideScaleType ?? defaultScaleType;
 

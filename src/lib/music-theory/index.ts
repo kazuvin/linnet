@@ -1,5 +1,9 @@
 // Available Scales
-export { type AvailableScaleInfo, findAvailableScalesForChord } from "./available-scales";
+export {
+  type AvailableScaleInfo,
+  findAvailableScalesForChord,
+  SECONDARY_DOMINANT_SCALES,
+} from "./available-scales";
 // Note
 
 // Chord

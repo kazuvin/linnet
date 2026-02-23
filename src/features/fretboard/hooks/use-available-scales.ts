@@ -8,6 +8,7 @@ import {
   type AvailableScaleInfo,
   findAvailableScalesForChord,
   type ScaleType,
+  SECONDARY_DOMINANT_SCALES,
 } from "@/lib/music-theory";
 
 export function useAvailableScales(): {
@@ -20,6 +21,9 @@ export function useAvailableScales(): {
 
   const availableScales = useMemo(() => {
     if (!selectedChord) return [];
+    if (selectedChord.source === "secondary-dominant") {
+      return SECONDARY_DOMINANT_SCALES;
+    }
     return findAvailableScalesForChord(
       rootName,
       selectedChord.degree,
@@ -33,7 +37,10 @@ export function useAvailableScales(): {
     if (!selectedChord) return null;
     if (selectedScaleType !== null) return selectedScaleType;
     // デフォルト: コードのソースに対応するスケール
-    if (selectedChord.source === "diatonic" || selectedChord.source === "secondary-dominant") {
+    if (selectedChord.source === "secondary-dominant") {
+      return "mixolydian" as ScaleType;
+    }
+    if (selectedChord.source === "diatonic") {
       return "major" as ScaleType;
     }
     return selectedChord.source;

@@ -9,6 +9,15 @@ export type AvailableScaleInfo = {
   readonly displayName: string;
 };
 
+/** セカンダリードミナントコード上で使用できるスケール一覧 */
+export const SECONDARY_DOMINANT_SCALES: readonly AvailableScaleInfo[] = [
+  { scaleType: "mixolydian", displayName: "Mixolydian" },
+  { scaleType: "altered", displayName: "Altered" },
+  { scaleType: "lydian-dominant", displayName: "Lydian Dominant" },
+  { scaleType: "half-whole-diminished", displayName: "Half-Whole Dim" },
+  { scaleType: "phrygian-dominant", displayName: "Phrygian Dominant" },
+];
+
 const SEVENTH_QUALITIES = new Set<ChordQuality>([
   "major7",
   "minor7",

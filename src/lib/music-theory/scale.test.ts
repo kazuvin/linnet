@@ -50,9 +50,26 @@ describe("scale", () => {
       expect(SCALE_PATTERNS.locrian).toEqual([0, 1, 3, 5, 6, 8, 10]);
     });
 
-    it("全スケールパターンが7音からなる", () => {
+    it("オルタードスケールのパターンは [0,1,3,4,6,8,10]", () => {
+      expect(SCALE_PATTERNS.altered).toEqual([0, 1, 3, 4, 6, 8, 10]);
+    });
+
+    it("リディアン・ドミナントスケールのパターンは [0,2,4,6,7,9,10]", () => {
+      expect(SCALE_PATTERNS["lydian-dominant"]).toEqual([0, 2, 4, 6, 7, 9, 10]);
+    });
+
+    it("ハーフホールトーンスケールのパターンは [0,1,3,4,6,7,9,10]（8音）", () => {
+      expect(SCALE_PATTERNS["half-whole-diminished"]).toEqual([0, 1, 3, 4, 6, 7, 9, 10]);
+    });
+
+    it("フリジアン・ドミナントスケールのパターンは [0,1,4,5,7,8,10]", () => {
+      expect(SCALE_PATTERNS["phrygian-dominant"]).toEqual([0, 1, 4, 5, 7, 8, 10]);
+    });
+
+    it("全スケールパターンが7音または8音からなる", () => {
       for (const [, pattern] of Object.entries(SCALE_PATTERNS)) {
-        expect(pattern).toHaveLength(7);
+        expect(pattern.length).toBeGreaterThanOrEqual(7);
+        expect(pattern.length).toBeLessThanOrEqual(8);
       }
     });
 
@@ -236,6 +253,48 @@ describe("scale", () => {
       const scale = createScale("C", "melodic-minor");
       const noteNames = scale.notes.map((n) => n.name);
       expect(noteNames).toEqual(["C", "D", "Eb", "F", "G", "A", "B"]);
+    });
+  });
+
+  describe("createScale - セカンダリードミナント用スケール", () => {
+    it("Cオルタードスケールの構成音が正しいこと", () => {
+      const scale = createScale("C", "altered");
+      const noteNames = scale.notes.map((n) => n.name);
+      // b2, b3, b4(=E), b5, b6, b7
+      expect(noteNames).toEqual(["C", "Db", "Eb", "E", "Gb", "Ab", "Bb"]);
+    });
+
+    it("Cリディアン・ドミナントスケールの構成音が正しいこと", () => {
+      const scale = createScale("C", "lydian-dominant");
+      const noteNames = scale.notes.map((n) => n.name);
+      // 1, 2, 3, #4(=Gb), 5, 6, b7
+      expect(noteNames).toEqual(["C", "D", "E", "Gb", "G", "A", "Bb"]);
+    });
+
+    it("Cハーフホールトーンスケールは8音であること", () => {
+      const scale = createScale("C", "half-whole-diminished");
+      expect(scale.notes).toHaveLength(8);
+      const noteNames = scale.notes.map((n) => n.name);
+      expect(noteNames).toEqual(["C", "Db", "Eb", "E", "Gb", "G", "A", "Bb"]);
+    });
+
+    it("Cフリジアン・ドミナントスケールの構成音が正しいこと", () => {
+      const scale = createScale("C", "phrygian-dominant");
+      const noteNames = scale.notes.map((n) => n.name);
+      // b2, 3, 4, 5, b6, b7
+      expect(noteNames).toEqual(["C", "Db", "E", "F", "G", "Ab", "Bb"]);
+    });
+
+    it("Gオルタードスケールの構成音が正しいこと", () => {
+      const scale = createScale("G", "altered");
+      const noteNames = scale.notes.map((n) => n.name);
+      expect(noteNames).toEqual(["G", "Ab", "Bb", "B", "Db", "Eb", "F"]);
+    });
+
+    it("E7のセカンダリードミナント（V/vi in C）でEミクソリディアンが生成できること", () => {
+      const scale = createScale("E", "mixolydian");
+      const noteNames = scale.notes.map((n) => n.name);
+      expect(noteNames).toEqual(["E", "F#", "G#", "A", "B", "C#", "D"]);
     });
   });
 
