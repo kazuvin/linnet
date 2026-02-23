@@ -2,6 +2,8 @@
 export {
   type AvailableScaleInfo,
   findAvailableScalesForChord,
+  getRotatedMode,
+  SCALE_DISPLAY_NAMES,
   SECONDARY_DOMINANT_SCALES,
 } from "./available-scales";
 // Note

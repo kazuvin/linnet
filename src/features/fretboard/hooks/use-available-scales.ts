@@ -49,14 +49,12 @@ export function useAvailableScales(): {
     if (selectedChord.source === "tritone-substitution") {
       return "lydian-dominant" as ScaleType;
     }
-    if (selectedChord.source === "diatonic") {
-      return "major" as ScaleType;
-    }
-    return selectedChord.source;
-  }, [selectedChord, selectedScaleType]);
+    // ダイアトニック/モーダルインターチェンジ: availableScales の最初のエントリ
+    return availableScales.length > 0 ? availableScales[0].scaleType : null;
+  }, [selectedChord, selectedScaleType, availableScales]);
 
-  // スケールのルート: セカンダリードミナント/裏コードはコードルート、それ以外はキールート
-  const scaleRoot = selectedChord ? (isDominantSource ? selectedChord.rootName : rootName) : null;
+  // スケールのルート: 常にコードのルート音を使う
+  const scaleRoot = selectedChord?.rootName ?? null;
 
   return { availableScales, activeScaleType, scaleRoot };
 }

@@ -15,6 +15,17 @@ export const SCALE_TYPES = [
   "lydian-dominant",
   "half-whole-diminished",
   "phrygian-dominant",
+  // Harmonic Minor modes
+  "locrian-natural6",
+  "ionian-sharp5",
+  "dorian-sharp4",
+  "lydian-sharp2",
+  "ultralocrian",
+  // Melodic Minor modes
+  "dorian-b2",
+  "lydian-augmented",
+  "mixolydian-b6",
+  "locrian-natural2",
 ] as const;
 
 export type ScaleType = (typeof SCALE_TYPES)[number];
@@ -34,6 +45,17 @@ export const SCALE_PATTERNS: Record<ScaleType, readonly number[]> = {
   "lydian-dominant": [0, 2, 4, 6, 7, 9, 10],
   "half-whole-diminished": [0, 1, 3, 4, 6, 7, 9, 10],
   "phrygian-dominant": [0, 1, 4, 5, 7, 8, 10],
+  // Harmonic Minor modes
+  "locrian-natural6": [0, 1, 3, 5, 6, 9, 10],
+  "ionian-sharp5": [0, 2, 4, 5, 8, 9, 11],
+  "dorian-sharp4": [0, 2, 3, 6, 7, 9, 10],
+  "lydian-sharp2": [0, 3, 4, 6, 7, 9, 11],
+  ultralocrian: [0, 1, 3, 4, 6, 8, 9],
+  // Melodic Minor modes
+  "dorian-b2": [0, 1, 3, 5, 7, 9, 10],
+  "lydian-augmented": [0, 2, 4, 6, 8, 9, 11],
+  "mixolydian-b6": [0, 2, 4, 5, 7, 8, 10],
+  "locrian-natural2": [0, 2, 3, 5, 6, 8, 10],
 } as const;
 
 export type Scale = {
@@ -63,6 +85,15 @@ const FLAT_PREFER_SCALE_TYPES = new Set<ScaleType>([
   "lydian-dominant",
   "half-whole-diminished",
   "phrygian-dominant",
+  "locrian-natural6",
+  "ionian-sharp5",
+  "dorian-sharp4",
+  "lydian-sharp2",
+  "ultralocrian",
+  "dorian-b2",
+  "lydian-augmented",
+  "mixolydian-b6",
+  "locrian-natural2",
 ]);
 
 function shouldPreferFlatForScale(rootName: string, type: ScaleType): boolean {

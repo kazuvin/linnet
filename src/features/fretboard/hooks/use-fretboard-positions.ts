@@ -1,36 +1,40 @@
 import { useMemo } from "react";
 import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
 import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-store";
-import { useKeySnapshot } from "@/features/key-selection/stores/key-store";
-import { findOverlayPositions, type OverlayPosition, type ScaleType } from "@/lib/music-theory";
+import {
+  findOverlayPositions,
+  getRotatedMode,
+  type OverlayPosition,
+  type ScaleType,
+} from "@/lib/music-theory";
 
 export function useFretboardPositions(
   overrideScaleType?: ScaleType | null
 ): readonly OverlayPosition[] {
-  const { rootName } = useKeySnapshot();
   const selectedChord = useSelectedProgressionChord();
   const { maxFret } = useFretboardSnapshot();
 
   return useMemo(() => {
     if (!selectedChord) return [];
 
-    const isDominantSource =
-      selectedChord.source === "secondary-dominant" ||
-      selectedChord.source === "tritone-substitution";
-
-    const defaultScaleType: ScaleType =
-      selectedChord.source === "tritone-substitution"
-        ? "lydian-dominant"
-        : selectedChord.source === "secondary-dominant"
-          ? "mixolydian"
-          : selectedChord.source === "diatonic"
-            ? "major"
-            : selectedChord.source;
+    let defaultScaleType: ScaleType;
+    if (selectedChord.source === "tritone-substitution") {
+      defaultScaleType = "lydian-dominant";
+    } else if (selectedChord.source === "secondary-dominant") {
+      defaultScaleType = "mixolydian";
+    } else if (selectedChord.source === "diatonic") {
+      // ダイアトニックは major の回転モード
+      defaultScaleType = getRotatedMode("major", selectedChord.degree) ?? "major";
+    } else {
+      // モーダルインターチェンジ: 親スケールの度数に対応する回転モード
+      defaultScaleType =
+        getRotatedMode(selectedChord.source, selectedChord.degree) ?? selectedChord.source;
+    }
 
     const scaleType = overrideScaleType ?? defaultScaleType;
 
-    // セカンダリードミナント/裏コードはコードルート基準でスケールを生成する
-    const scaleRoot = isDominantSource ? selectedChord.rootName : rootName;
+    // 常にコードルート基準でスケールを生成する
+    const scaleRoot = selectedChord.rootName;
 
     return findOverlayPositions(
       scaleRoot,
@@ -39,5 +43,5 @@ export function useFretboardPositions(
       selectedChord.quality,
       maxFret
     );
-  }, [selectedChord, rootName, maxFret, overrideScaleType]);
+  }, [selectedChord, maxFret, overrideScaleType]);
 }
