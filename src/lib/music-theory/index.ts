@@ -1,5 +1,9 @@
 // Available Scales
-export { type AvailableScaleInfo, findAvailableScalesForChord } from "./available-scales";
+export {
+  type AvailableScaleInfo,
+  findAvailableScalesForChord,
+  SECONDARY_DOMINANT_SCALES,
+} from "./available-scales";
 // Note
 
 // Chord
@@ -81,3 +85,8 @@ export {
   type ScaleType,
   shouldPreferFlat,
 } from "./scale";
+// Secondary Dominant
+export {
+  getSecondaryDominantChords,
+  type SecondaryDominantChordInfo,
+} from "./secondary-dominant";

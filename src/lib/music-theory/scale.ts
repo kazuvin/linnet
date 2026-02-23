@@ -11,6 +11,10 @@ export const SCALE_TYPES = [
   "mixolydian",
   "aeolian",
   "locrian",
+  "altered",
+  "lydian-dominant",
+  "half-whole-diminished",
+  "phrygian-dominant",
 ] as const;
 
 export type ScaleType = (typeof SCALE_TYPES)[number];
@@ -26,6 +30,10 @@ export const SCALE_PATTERNS: Record<ScaleType, readonly number[]> = {
   mixolydian: [0, 2, 4, 5, 7, 9, 10],
   aeolian: [0, 2, 3, 5, 7, 8, 10],
   locrian: [0, 1, 3, 5, 6, 8, 10],
+  altered: [0, 1, 3, 4, 6, 8, 10],
+  "lydian-dominant": [0, 2, 4, 6, 7, 9, 10],
+  "half-whole-diminished": [0, 1, 3, 4, 6, 7, 9, 10],
+  "phrygian-dominant": [0, 1, 4, 5, 7, 8, 10],
 } as const;
 
 export type Scale = {
@@ -42,7 +50,8 @@ export function shouldPreferFlat(rootName: string): boolean {
 }
 
 // マイナー系スケール（短3度を含む）ではフラット表記を優先する
-const MINOR_SCALE_TYPES = new Set<ScaleType>([
+// フラット表記を優先するスケール（短3度やb系変化音を含む）
+const FLAT_PREFER_SCALE_TYPES = new Set<ScaleType>([
   "natural-minor",
   "harmonic-minor",
   "melodic-minor",
@@ -50,10 +59,14 @@ const MINOR_SCALE_TYPES = new Set<ScaleType>([
   "phrygian",
   "aeolian",
   "locrian",
+  "altered",
+  "lydian-dominant",
+  "half-whole-diminished",
+  "phrygian-dominant",
 ]);
 
 function shouldPreferFlatForScale(rootName: string, type: ScaleType): boolean {
-  return shouldPreferFlat(rootName) || MINOR_SCALE_TYPES.has(type);
+  return shouldPreferFlat(rootName) || FLAT_PREFER_SCALE_TYPES.has(type);
 }
 
 export function createScale(rootName: string, type: ScaleType): Scale {
@@ -79,8 +92,9 @@ export function isNoteInScale(note: Note, scale: Scale): boolean {
 }
 
 export function getScaleDegreeNote(scale: Scale, degree: number): Note {
-  if (degree < 1 || degree > 7) {
-    throw new Error(`Invalid scale degree: ${degree}. Must be between 1 and 7.`);
+  const maxDegree = scale.notes.length;
+  if (degree < 1 || degree > maxDegree) {
+    throw new Error(`Invalid scale degree: ${degree}. Must be between 1 and ${maxDegree}.`);
   }
   return scale.notes[degree - 1];
 }

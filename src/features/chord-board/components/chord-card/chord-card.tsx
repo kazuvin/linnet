@@ -8,7 +8,7 @@ export type ChordCardData = {
   romanNumeral: string;
   symbol: string;
   chordFunction: ChordFunction;
-  source: "diatonic" | ScaleType;
+  source: "diatonic" | "secondary-dominant" | ScaleType;
 };
 
 type ChordCardProps = Omit<ComponentProps<"div">, "children"> & {
@@ -46,8 +46,9 @@ const MODE_SHORT_NAMES: Record<string, string> = {
   mixolydian: "Mix",
 };
 
-function formatSourceLabel(source: "diatonic" | ScaleType): string | null {
+function formatSourceLabel(source: "diatonic" | "secondary-dominant" | ScaleType): string | null {
   if (source === "diatonic") return null;
+  if (source === "secondary-dominant") return "SecDom";
   return MODE_SHORT_NAMES[source] ?? MODE_DISPLAY_NAMES[source] ?? source;
 }
 

@@ -15,12 +15,20 @@ export function useFretboardPositions(
     if (!selectedChord) return [];
 
     const defaultScaleType: ScaleType =
-      selectedChord.source === "diatonic" ? "major" : selectedChord.source;
+      selectedChord.source === "secondary-dominant"
+        ? "mixolydian"
+        : selectedChord.source === "diatonic"
+          ? "major"
+          : selectedChord.source;
 
     const scaleType = overrideScaleType ?? defaultScaleType;
 
+    // セカンダリードミナントはコードルート基準でスケールを生成する
+    const scaleRoot =
+      selectedChord.source === "secondary-dominant" ? selectedChord.rootName : rootName;
+
     return findOverlayPositions(
-      rootName,
+      scaleRoot,
       scaleType,
       selectedChord.rootName,
       selectedChord.quality,

@@ -9,7 +9,7 @@ import type { ChordFunction, ChordQuality, ScaleType } from "@/lib/music-theory"
 export type PaletteDragData = {
   rootName: string;
   quality: ChordQuality;
-  source: "diatonic" | ScaleType;
+  source: "diatonic" | "secondary-dominant" | ScaleType;
   chordFunction: ChordFunction;
   romanNumeral: string;
   degree: number;

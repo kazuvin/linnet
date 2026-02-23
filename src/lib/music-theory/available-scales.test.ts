@@ -1,4 +1,8 @@
-import { computeChordQualityFromScale, findAvailableScalesForChord } from "./available-scales";
+import {
+  computeChordQualityFromScale,
+  findAvailableScalesForChord,
+  SECONDARY_DOMINANT_SCALES,
+} from "./available-scales";
 import { createScale } from "./scale";
 
 describe("computeChordQualityFromScale", () => {
@@ -211,6 +215,33 @@ describe("findAvailableScalesForChord", () => {
       expect(scaleTypes).toContain("major");
       expect(scaleTypes).toContain("lydian");
       expect(scaleTypes).toContain("mixolydian");
+    });
+  });
+
+  describe("SECONDARY_DOMINANT_SCALES", () => {
+    it("5つのスケールが定義されている", () => {
+      expect(SECONDARY_DOMINANT_SCALES).toHaveLength(5);
+    });
+
+    it("ミクソリディアンが最初（基本スケール）", () => {
+      expect(SECONDARY_DOMINANT_SCALES[0].scaleType).toBe("mixolydian");
+    });
+
+    it("全5スケールの種類が正しい", () => {
+      const scaleTypes = SECONDARY_DOMINANT_SCALES.map((s) => s.scaleType);
+      expect(scaleTypes).toEqual([
+        "mixolydian",
+        "altered",
+        "lydian-dominant",
+        "half-whole-diminished",
+        "phrygian-dominant",
+      ]);
+    });
+
+    it("全スケールにdisplayNameが設定されている", () => {
+      for (const scale of SECONDARY_DOMINANT_SCALES) {
+        expect(scale.displayName).toBeTruthy();
+      }
     });
   });
 

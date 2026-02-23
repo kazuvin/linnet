@@ -280,6 +280,36 @@ describe("key-store", () => {
       expect(result.current[0].chord.notes).toHaveLength(4);
     });
 
+    // useCurrentModeChords が secondary-dominant モードで 5 コードを返す
+    it("useCurrentModeChords が secondary-dominant モードで 5 コードを返す", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      await act(async () => {
+        setSelectedMode("secondary-dominant");
+      });
+
+      expect(result.current).toHaveLength(5);
+      for (const chord of result.current) {
+        expect(chord.isAvailable).toBe(true);
+        expect(chord.chordFunction).toBe("dominant");
+      }
+    });
+
+    // useCurrentModeChords が secondary-dominant + seventh で dominant7 コードを返す
+    it("useCurrentModeChords が secondary-dominant + seventh で dominant7 コードを返す", async () => {
+      const { result } = renderHook(() => useCurrentModeChords());
+
+      await act(async () => {
+        setSelectedMode("secondary-dominant");
+        setChordType("seventh");
+      });
+
+      expect(result.current).toHaveLength(5);
+      for (const chord of result.current) {
+        expect(chord.chord.quality).toBe("dominant7");
+      }
+    });
+
     // _resetKeyStoreForTesting で selectedMode も "diatonic" に戻る
     it('_resetKeyStoreForTesting で selectedMode も "diatonic" に戻る', async () => {
       const { result } = renderHook(() => useKeySnapshot());

@@ -10,7 +10,7 @@ import { ScaleChecker } from "../scale-checker";
 
 export function Fretboard() {
   const { maxFret } = useFretboardSnapshot();
-  const { availableScales, activeScaleType } = useAvailableScales();
+  const { availableScales, activeScaleType, scaleRoot } = useAvailableScales();
   const positions = useFretboardPositions(activeScaleType);
   const selectedChord = useSelectedProgressionChord();
 
@@ -25,6 +25,7 @@ export function Fretboard() {
           availableScales={availableScales}
           activeScaleType={activeScaleType}
           chordSymbol={selectedChord.symbol}
+          scaleRoot={scaleRoot}
         />
       )}
       <FretboardGrid positions={positions} maxFret={maxFret} />
