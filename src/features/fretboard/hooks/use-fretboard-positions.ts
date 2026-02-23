@@ -14,18 +14,23 @@ export function useFretboardPositions(
   return useMemo(() => {
     if (!selectedChord) return [];
 
+    const isDominantSource =
+      selectedChord.source === "secondary-dominant" ||
+      selectedChord.source === "tritone-substitution";
+
     const defaultScaleType: ScaleType =
-      selectedChord.source === "secondary-dominant"
-        ? "mixolydian"
-        : selectedChord.source === "diatonic"
-          ? "major"
-          : selectedChord.source;
+      selectedChord.source === "tritone-substitution"
+        ? "lydian-dominant"
+        : selectedChord.source === "secondary-dominant"
+          ? "mixolydian"
+          : selectedChord.source === "diatonic"
+            ? "major"
+            : selectedChord.source;
 
     const scaleType = overrideScaleType ?? defaultScaleType;
 
-    // セカンダリードミナントはコードルート基準でスケールを生成する
-    const scaleRoot =
-      selectedChord.source === "secondary-dominant" ? selectedChord.rootName : rootName;
+    // セカンダリードミナント/裏コードはコードルート基準でスケールを生成する
+    const scaleRoot = isDominantSource ? selectedChord.rootName : rootName;
 
     return findOverlayPositions(
       scaleRoot,

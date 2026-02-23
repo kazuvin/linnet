@@ -20,9 +20,13 @@ export function useAvailableScales(): {
   const selectedChord = useSelectedProgressionChord();
   const { selectedScaleType } = useFretboardSnapshot();
 
+  const isDominantSource =
+    selectedChord?.source === "secondary-dominant" ||
+    selectedChord?.source === "tritone-substitution";
+
   const availableScales = useMemo(() => {
     if (!selectedChord) return [];
-    if (selectedChord.source === "secondary-dominant") {
+    if (isDominantSource) {
       return SECONDARY_DOMINANT_SCALES;
     }
     return findAvailableScalesForChord(
@@ -31,7 +35,7 @@ export function useAvailableScales(): {
       selectedChord.rootName,
       selectedChord.quality
     );
-  }, [selectedChord, rootName]);
+  }, [selectedChord, rootName, isDominantSource]);
 
   // activeScaleType: ユーザーが明示的に選択したスケール、またはコードのソースのデフォルト
   const activeScaleType = useMemo(() => {
@@ -41,18 +45,18 @@ export function useAvailableScales(): {
     if (selectedChord.source === "secondary-dominant") {
       return "mixolydian" as ScaleType;
     }
+    // 裏コードはリディアンドミナントがデフォルト（#4 が元のセカンダリードミナントのルート）
+    if (selectedChord.source === "tritone-substitution") {
+      return "lydian-dominant" as ScaleType;
+    }
     if (selectedChord.source === "diatonic") {
       return "major" as ScaleType;
     }
     return selectedChord.source;
   }, [selectedChord, selectedScaleType]);
 
-  // スケールのルート: セカンダリードミナントはコードルート、それ以外はキールート
-  const scaleRoot = selectedChord
-    ? selectedChord.source === "secondary-dominant"
-      ? selectedChord.rootName
-      : rootName
-    : null;
+  // スケールのルート: セカンダリードミナント/裏コードはコードルート、それ以外はキールート
+  const scaleRoot = selectedChord ? (isDominantSource ? selectedChord.rootName : rootName) : null;
 
   return { availableScales, activeScaleType, scaleRoot };
 }

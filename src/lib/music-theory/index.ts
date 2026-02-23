@@ -90,3 +90,8 @@ export {
   getSecondaryDominantChords,
   type SecondaryDominantChordInfo,
 } from "./secondary-dominant";
+// Tritone Substitution
+export {
+  getTritoneSubstitutionChords,
+  type TritoneSubstitutionChordInfo,
+} from "./tritone-substitution";

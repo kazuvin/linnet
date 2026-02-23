@@ -10,6 +10,7 @@ import {
   getDiatonicChords,
   getModalInterchangeChords,
   getSecondaryDominantChords,
+  getTritoneSubstitutionChords,
   MODE_DISPLAY_NAMES,
   type ModalInterchangeChordInfo,
   noteNameToPitchClass,
@@ -19,7 +20,7 @@ import {
 type KeyState = {
   rootName: string;
   chordType: "triad" | "seventh";
-  selectedMode: "diatonic" | "secondary-dominant" | ScaleType;
+  selectedMode: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
 };
 
 const INITIAL_STATE: KeyState = {
@@ -92,6 +93,16 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
         isAvailable: true,
       }));
     }
+    // 裏コード（トライトーン代理）モード
+    if (snap.selectedMode === "tritone-substitution") {
+      return getTritoneSubstitutionChords(snap.rootName, seventh).map((ts) => ({
+        degree: ts.targetDegree,
+        romanNumeral: ts.romanNumeral,
+        chord: ts.chord,
+        chordFunction: "dominant" as const,
+        isAvailable: true,
+      }));
+    }
     // モーダルインターチェンジモード
     return getModalInterchangeChords(snap.rootName, snap.selectedMode, seventh).map((mi) => ({
       degree: mi.degree,
@@ -115,7 +126,9 @@ export function setChordType(chordType: "triad" | "seventh"): void {
   state.chordType = chordType;
 }
 
-export function setSelectedMode(mode: "diatonic" | "secondary-dominant" | ScaleType): void {
+export function setSelectedMode(
+  mode: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType
+): void {
   state.selectedMode = mode;
 }
 
