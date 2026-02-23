@@ -1,8 +1,11 @@
 import {
+  type AvailableScaleInfo,
   computeChordQualityFromScale,
   findAvailableScalesForChord,
+  getDefaultScaleForSource,
   getRotatedMode,
   SECONDARY_DOMINANT_SCALES,
+  sortScalesWithDefault,
 } from "./available-scales";
 import { createScale } from "./scale";
 
@@ -360,5 +363,95 @@ describe("findAvailableScalesForChord", () => {
       const scales = findAvailableScalesForChord("C", 0, "C", "major");
       expect(scales).toEqual([]);
     });
+  });
+});
+
+describe("getDefaultScaleForSource", () => {
+  describe("diatonic ソースの場合、major の回転モードを返す", () => {
+    it("I度は major (Ionian)", () => {
+      expect(getDefaultScaleForSource("diatonic", 1)).toBe("major");
+    });
+
+    it("II度は dorian", () => {
+      expect(getDefaultScaleForSource("diatonic", 2)).toBe("dorian");
+    });
+
+    it("III度は phrygian", () => {
+      expect(getDefaultScaleForSource("diatonic", 3)).toBe("phrygian");
+    });
+  });
+
+  describe("モーダルインターチェンジソースの場合、そのモードの回転モードを返す", () => {
+    it("dorian I度は dorian", () => {
+      expect(getDefaultScaleForSource("dorian", 1)).toBe("dorian");
+    });
+
+    it("dorian II度は phrygian", () => {
+      expect(getDefaultScaleForSource("dorian", 2)).toBe("phrygian");
+    });
+
+    it("natural-minor I度は aeolian", () => {
+      expect(getDefaultScaleForSource("natural-minor", 1)).toBe("aeolian");
+    });
+
+    it("lydian I度は lydian", () => {
+      expect(getDefaultScaleForSource("lydian", 1)).toBe("lydian");
+    });
+
+    it("mixolydian III度は locrian", () => {
+      expect(getDefaultScaleForSource("mixolydian", 3)).toBe("locrian");
+    });
+
+    it("harmonic-minor V度は phrygian-dominant", () => {
+      expect(getDefaultScaleForSource("harmonic-minor", 5)).toBe("phrygian-dominant");
+    });
+
+    it("melodic-minor IV度は lydian-dominant", () => {
+      expect(getDefaultScaleForSource("melodic-minor", 4)).toBe("lydian-dominant");
+    });
+  });
+
+  describe("secondary-dominant / tritone-substitution は null を返す", () => {
+    it("secondary-dominant は null", () => {
+      expect(getDefaultScaleForSource("secondary-dominant", 5)).toBeNull();
+    });
+
+    it("tritone-substitution は null", () => {
+      expect(getDefaultScaleForSource("tritone-substitution", 5)).toBeNull();
+    });
+  });
+});
+
+describe("sortScalesWithDefault", () => {
+  const scales: AvailableScaleInfo[] = [
+    { scaleType: "aeolian", displayName: "Aeolian" },
+    { scaleType: "dorian", displayName: "Dorian" },
+    { scaleType: "phrygian", displayName: "Phrygian" },
+  ];
+
+  it("デフォルトスケールを先頭に移動する", () => {
+    const sorted = sortScalesWithDefault(scales, "dorian");
+    expect(sorted[0].scaleType).toBe("dorian");
+    expect(sorted).toHaveLength(3);
+  });
+
+  it("残りの順序は元のまま維持される", () => {
+    const sorted = sortScalesWithDefault(scales, "dorian");
+    expect(sorted.map((s) => s.scaleType)).toEqual(["dorian", "aeolian", "phrygian"]);
+  });
+
+  it("デフォルトスケールが見つからない場合は元の順序のまま", () => {
+    const sorted = sortScalesWithDefault(scales, "lydian");
+    expect(sorted.map((s) => s.scaleType)).toEqual(["aeolian", "dorian", "phrygian"]);
+  });
+
+  it("デフォルトスケールが既に先頭の場合はそのまま", () => {
+    const sorted = sortScalesWithDefault(scales, "aeolian");
+    expect(sorted.map((s) => s.scaleType)).toEqual(["aeolian", "dorian", "phrygian"]);
+  });
+
+  it("元の配列は変更されない", () => {
+    sortScalesWithDefault(scales, "dorian");
+    expect(scales[0].scaleType).toBe("aeolian");
   });
 });

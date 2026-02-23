@@ -4,9 +4,11 @@
 export {
   type AvailableScaleInfo,
   findAvailableScalesForChord,
+  getDefaultScaleForSource,
   getRotatedMode,
   SCALE_DISPLAY_NAMES,
   SECONDARY_DOMINANT_SCALES,
+  sortScalesWithDefault,
 } from "./available-scales";
 export {
   ALL_CATEGORY_IDS,

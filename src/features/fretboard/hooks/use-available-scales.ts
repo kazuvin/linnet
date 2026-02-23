@@ -7,8 +7,10 @@ import { useKeySnapshot } from "@/features/key-selection/stores/key-store";
 import {
   type AvailableScaleInfo,
   findAvailableScalesForChord,
+  getDefaultScaleForSource,
   type ScaleType,
   SECONDARY_DOMINANT_SCALES,
+  sortScalesWithDefault,
 } from "@/lib/music-theory";
 
 export function useAvailableScales(): {
@@ -24,18 +26,29 @@ export function useAvailableScales(): {
     selectedChord?.source === "secondary-dominant" ||
     selectedChord?.source === "tritone-substitution";
 
+  // ソースモードから導出されるデフォルトスケール
+  const sourceDefaultScaleType = useMemo(() => {
+    if (!selectedChord || isDominantSource) return null;
+    return getDefaultScaleForSource(selectedChord.source, selectedChord.degree);
+  }, [selectedChord, isDominantSource]);
+
   const availableScales = useMemo(() => {
     if (!selectedChord) return [];
     if (isDominantSource) {
       return SECONDARY_DOMINANT_SCALES;
     }
-    return findAvailableScalesForChord(
+    const scales = findAvailableScalesForChord(
       rootName,
       selectedChord.degree,
       selectedChord.rootName,
       selectedChord.quality
     );
-  }, [selectedChord, rootName, isDominantSource]);
+    // ソースモードに対応するスケールを先頭に配置
+    if (sourceDefaultScaleType) {
+      return sortScalesWithDefault(scales, sourceDefaultScaleType);
+    }
+    return scales;
+  }, [selectedChord, rootName, isDominantSource, sourceDefaultScaleType]);
 
   // activeScaleType: ユーザーが明示的に選択したスケール、またはコードのソースのデフォルト
   const activeScaleType = useMemo(() => {
@@ -49,9 +62,11 @@ export function useAvailableScales(): {
     if (selectedChord.source === "tritone-substitution") {
       return "lydian-dominant" as ScaleType;
     }
-    // ダイアトニック/モーダルインターチェンジ: availableScales の最初のエントリ
-    return availableScales.length > 0 ? availableScales[0].scaleType : null;
-  }, [selectedChord, selectedScaleType, availableScales]);
+    // ソースモードのデフォルト、または availableScales の最初のエントリ
+    return (
+      sourceDefaultScaleType ?? (availableScales.length > 0 ? availableScales[0].scaleType : null)
+    );
+  }, [selectedChord, selectedScaleType, availableScales, sourceDefaultScaleType]);
 
   // スケールのルート: 常にコードのルート音を使う
   const scaleRoot = selectedChord?.rootName ?? null;
