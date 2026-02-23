@@ -1,6 +1,6 @@
 import { CHORD_INTERVAL_PATTERNS, type ChordQuality } from "./chord";
 import { getDiatonicChords } from "./diatonic";
-import { ALL_MODE_SOURCES, MODE_DISPLAY_NAMES } from "./modal-interchange";
+import { ALL_MODE_SOURCES } from "./modal-interchange";
 import { createNote } from "./note";
 import { createScale, getScaleDegreeNote, type Scale, type ScaleType } from "./scale";
 
@@ -17,6 +17,81 @@ export const SECONDARY_DOMINANT_SCALES: readonly AvailableScaleInfo[] = [
   { scaleType: "half-whole-diminished", displayName: "Half-Whole Dim" },
   { scaleType: "phrygian-dominant", displayName: "Phrygian Dominant" },
 ];
+
+/** 全ScaleTypeの表示名マッピング */
+export const SCALE_DISPLAY_NAMES: Partial<Record<ScaleType, string>> = {
+  major: "Ionian",
+  "natural-minor": "Natural Minor",
+  "harmonic-minor": "Harmonic Minor",
+  "melodic-minor": "Melodic Minor",
+  dorian: "Dorian",
+  phrygian: "Phrygian",
+  lydian: "Lydian",
+  mixolydian: "Mixolydian",
+  aeolian: "Aeolian",
+  locrian: "Locrian",
+  altered: "Altered",
+  "lydian-dominant": "Lydian Dominant",
+  "half-whole-diminished": "Half-Whole Dim",
+  "phrygian-dominant": "Phrygian Dominant",
+  // Harmonic Minor modes
+  "locrian-natural6": "Locrian \u266e6",
+  "ionian-sharp5": "Ionian #5",
+  "dorian-sharp4": "Dorian #4",
+  "lydian-sharp2": "Lydian #2",
+  ultralocrian: "Ultralocrian",
+  // Melodic Minor modes
+  "dorian-b2": "Dorian b2",
+  "lydian-augmented": "Lydian Augmented",
+  "mixolydian-b6": "Mixolydian b6",
+  "locrian-natural2": "Locrian \u266e2",
+};
+
+/**
+ * 親スケール（キールートベース）の各度数に対応するモード（コードルートベース）のマッピング。
+ * インデックス 0 = I度, 1 = II度, ..., 6 = VII度
+ */
+const MODE_ROTATION: Partial<Record<ScaleType, readonly ScaleType[]>> = {
+  // Major (Ionian) modes
+  major: ["major", "dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian"],
+  // Natural Minor (Aeolian) modes
+  "natural-minor": ["aeolian", "locrian", "major", "dorian", "phrygian", "lydian", "mixolydian"],
+  // Harmonic Minor modes
+  "harmonic-minor": [
+    "harmonic-minor",
+    "locrian-natural6",
+    "ionian-sharp5",
+    "dorian-sharp4",
+    "phrygian-dominant",
+    "lydian-sharp2",
+    "ultralocrian",
+  ],
+  // Melodic Minor modes
+  "melodic-minor": [
+    "melodic-minor",
+    "dorian-b2",
+    "lydian-augmented",
+    "lydian-dominant",
+    "mixolydian-b6",
+    "locrian-natural2",
+    "altered",
+  ],
+  // Church modes (rotations of major)
+  dorian: ["dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "major"],
+  phrygian: ["phrygian", "lydian", "mixolydian", "aeolian", "locrian", "major", "dorian"],
+  lydian: ["lydian", "mixolydian", "aeolian", "locrian", "major", "dorian", "phrygian"],
+  mixolydian: ["mixolydian", "aeolian", "locrian", "major", "dorian", "phrygian", "lydian"],
+};
+
+/**
+ * 親スケールの指定度数に対応するモード（コードルート基準）を返す。
+ * 例: ("major", 3) → "phrygian" (Ionian の III 度モード)
+ */
+export function getRotatedMode(parentScaleType: ScaleType, degree: number): ScaleType | null {
+  const modes = MODE_ROTATION[parentScaleType];
+  if (!modes || degree < 1 || degree > modes.length) return null;
+  return modes[degree - 1];
+}
 
 const SEVENTH_QUALITIES = new Set<ChordQuality>([
   "major7",
@@ -57,9 +132,8 @@ export function computeChordQualityFromScale(
 
 /**
  * 指定したコードが同じキー・同じ度数で出現するモードスケールを全て返す。
- * スケールの実音から3度堆積でコード品質を判定するため、
- * セブンスコードでも正確な結果を返す。
- * 例: Fメジャーキー、I度、FM7 → [Ionian, Lydian]（Mixolydian は F7 なので除外）
+ * 結果はコードルート基準の回転モードとして返す。
+ * 例: Cキー、III度、Em → [E Phrygian, E Aeolian]
  */
 export function findAvailableScalesForChord(
   keyRoot: string,
@@ -83,7 +157,13 @@ export function findAvailableScalesForChord(
     diatonicChord.chord.root.pitchClass === targetPitchClass &&
     diatonicChord.chord.quality === chordQuality
   ) {
-    results.push({ scaleType: "major", displayName: "Ionian" });
+    const rotated = getRotatedMode("major", degree);
+    if (rotated) {
+      results.push({
+        scaleType: rotated,
+        displayName: SCALE_DISPLAY_NAMES[rotated] ?? rotated,
+      });
+    }
   }
 
   // 各モーダルインターチェンジソースをチェック
@@ -97,10 +177,13 @@ export function findAvailableScalesForChord(
 
     const actualQuality = computeChordQualityFromScale(scale, degree, seventh);
     if (actualQuality === chordQuality) {
-      results.push({
-        scaleType: source,
-        displayName: MODE_DISPLAY_NAMES[source],
-      });
+      const rotated = getRotatedMode(source, degree);
+      if (rotated) {
+        results.push({
+          scaleType: rotated,
+          displayName: SCALE_DISPLAY_NAMES[rotated] ?? rotated,
+        });
+      }
     }
   }
 
