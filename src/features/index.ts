@@ -13,6 +13,7 @@ export {
   selectChord,
   useChordProgressionSnapshot,
   useSelectedChord,
+  useSelectedProgressionChord,
 } from "./chord-progression/stores/chord-progression-store";
 
 // fretboard hooks
@@ -21,11 +22,8 @@ export { useFretboardPositions } from "./fretboard/hooks/use-fretboard-positions
 // fretboard
 export {
   _resetFretboardStoreForTesting,
-  type FretboardDisplayMode,
   type FretboardState,
-  setDisplayMode,
   setMaxFret,
-  setScaleType,
   useFretboardSnapshot,
 } from "./fretboard/stores/fretboard-store";
 

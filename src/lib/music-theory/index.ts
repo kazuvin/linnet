@@ -28,9 +28,12 @@ export {
   type FretPosition,
   findChordPositions,
   findNotePositions,
+  findOverlayPositions,
   findScalePositions,
   getCommonVoicings,
   getNoteAtPosition,
+  type NoteRole,
+  type OverlayPosition,
   STANDARD_TUNING,
 } from "./fretboard";
 // Interval

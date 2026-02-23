@@ -1,6 +1,7 @@
 import {
   findChordPositions,
   findNotePositions,
+  findOverlayPositions,
   findScalePositions,
   getCommonVoicings,
   getNoteAtPosition,
@@ -323,6 +324,118 @@ describe("fretboard", () => {
     it("対応していないコードでは空配列を返す", () => {
       const voicings = getCommonVoicings("C", "diminished");
       expect(voicings).toEqual([]);
+    });
+  });
+
+  describe("findOverlayPositions", () => {
+    it("スケール音にはscaleロールが付与される", () => {
+      // C major スケール + C major コード
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      const scaleOnlyPositions = positions.filter((p) => p.role === "scale");
+      // C major スケール (C,D,E,F,G,A,B) からコード構成音 (C,E,G) を除いた D,F,A,B がscale
+      expect(scaleOnlyPositions.length).toBeGreaterThan(0);
+      const scaleOnlyPitchClasses = new Set(scaleOnlyPositions.map((p) => p.note.pitchClass));
+      expect(scaleOnlyPitchClasses.has(2)).toBe(true); // D
+      expect(scaleOnlyPitchClasses.has(5)).toBe(true); // F
+      expect(scaleOnlyPitchClasses.has(9)).toBe(true); // A
+      expect(scaleOnlyPitchClasses.has(11)).toBe(true); // B
+    });
+
+    it("コードのルートにはchord-rootロールが付与される", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      const rootPositions = positions.filter((p) => p.role === "chord-root");
+      expect(rootPositions.length).toBeGreaterThan(0);
+      // 全ルートポジションのピッチクラスがC(0)であること
+      for (const pos of rootPositions) {
+        expect(pos.note.pitchClass).toBe(0);
+      }
+    });
+
+    it("コード構成音（ルート以外）にはchord-toneロールが付与される", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      const chordTonePositions = positions.filter((p) => p.role === "chord-tone");
+      expect(chordTonePositions.length).toBeGreaterThan(0);
+      // E(4) と G(7) がchord-toneに含まれること
+      const pitchClasses = new Set(chordTonePositions.map((p) => p.note.pitchClass));
+      expect(pitchClasses.has(4)).toBe(true); // E
+      expect(pitchClasses.has(7)).toBe(true); // G
+    });
+
+    it("コード構成音がスケール音より優先される", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      // C,E,Gのポジションにscaleロールがないこと
+      const cegPositions = positions.filter((p) => [0, 4, 7].includes(p.note.pitchClass));
+      for (const pos of cegPositions) {
+        expect(pos.role).not.toBe("scale");
+      }
+    });
+
+    it("キーCでnatural-minor + Eb major7のオーバーレイが正しい", () => {
+      // ユーザーの例: キーC, ⅢM7 (natural minor) の E♭M7
+      // C natural minor scale: C(0), D(2), Eb(3), F(5), G(7), Ab(8), Bb(10)
+      // Eb major7 構成音: Eb(3), G(7), Bb(10), D(2)
+      const positions = findOverlayPositions("C", "natural-minor", "Eb", "major7", 12);
+
+      const rootPositions = positions.filter((p) => p.role === "chord-root");
+      const chordTonePositions = positions.filter((p) => p.role === "chord-tone");
+      const scalePositions = positions.filter((p) => p.role === "scale");
+
+      // ルートは Eb(3)
+      for (const pos of rootPositions) {
+        expect(pos.note.pitchClass).toBe(3);
+      }
+
+      // コード構成音はG(7), Bb(10), D(2)
+      const chordTonePCs = new Set(chordTonePositions.map((p) => p.note.pitchClass));
+      expect(chordTonePCs.has(7)).toBe(true); // G
+      expect(chordTonePCs.has(10)).toBe(true); // Bb
+      expect(chordTonePCs.has(2)).toBe(true); // D
+
+      // スケール音（コード構成音を除く）: C(0), F(5), Ab(8)
+      const scalePCs = new Set(scalePositions.map((p) => p.note.pitchClass));
+      expect(scalePCs.has(0)).toBe(true); // C
+      expect(scalePCs.has(5)).toBe(true); // F
+      expect(scalePCs.has(8)).toBe(true); // Ab
+    });
+
+    it("コード構成音がスケール外の音を含む場合もchord-tone/chord-rootになる", () => {
+      // C major スケールに対して Db major コード (Db, F, Ab)
+      // Db(1)とAb(8)はCメジャースケール外
+      const positions = findOverlayPositions("C", "major", "Db", "major", 12);
+
+      const rootPositions = positions.filter((p) => p.role === "chord-root");
+      expect(rootPositions.length).toBeGreaterThan(0);
+      for (const pos of rootPositions) {
+        expect(pos.note.pitchClass).toBe(1); // Db
+      }
+
+      // F(5)はスケール内だがコード構成音なのでchord-tone
+      const fPositions = positions.filter((p) => p.note.pitchClass === 5);
+      for (const pos of fPositions) {
+        expect(pos.role).toBe("chord-tone");
+      }
+
+      // Ab(8)はスケール外だがコード構成音なのでchord-tone
+      const abPositions = positions.filter((p) => p.note.pitchClass === 8);
+      for (const pos of abPositions) {
+        expect(pos.role).toBe("chord-tone");
+      }
+    });
+
+    it("maxFretが反映される", () => {
+      const positions5 = findOverlayPositions("C", "major", "C", "major", 5);
+      const positions12 = findOverlayPositions("C", "major", "C", "major", 12);
+      for (const pos of positions5) {
+        expect(pos.fret).toBeLessThanOrEqual(5);
+      }
+      expect(positions12.length).toBeGreaterThan(positions5.length);
+    });
+
+    it("各ポジションが一意である（同じstring-fretの重複がない）", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      const keys = positions.map((p) => `${p.string}-${p.fret}`);
+      const uniqueKeys = new Set(keys);
+      expect(keys.length).toBe(uniqueKeys.size);
     });
   });
 });

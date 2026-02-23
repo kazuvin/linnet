@@ -100,6 +100,57 @@ export function findChordPositions(
   return findPositionsByPitchClasses(pitchClasses, maxFret, tuning);
 }
 
+export type NoteRole = "scale" | "chord-tone" | "chord-root";
+
+export type OverlayPosition = FretPosition & {
+  readonly role: NoteRole;
+};
+
+/**
+ * スケールの音とコード構成音を重ねたポジションを返す
+ * コード構成音はスケール音より優先される
+ */
+export function findOverlayPositions(
+  keyRootName: string,
+  scaleType: ScaleType,
+  chordRootName: string,
+  chordQuality: ChordQuality,
+  maxFret = 12,
+  tuning: readonly string[] = STANDARD_TUNING
+): readonly OverlayPosition[] {
+  const chord = createChord(chordRootName, chordQuality);
+  const chordPitchClasses = new Set(chord.notes.map((n) => n.pitchClass));
+  const rootPitchClass = chord.root.pitchClass;
+
+  const scale = createScale(keyRootName, scaleType);
+  const scalePitchClasses = new Set(scale.notes.map((n) => n.pitchClass));
+
+  // スケール音とコード構成音の和集合
+  const allTargetPitchClasses = new Set([...scalePitchClasses, ...chordPitchClasses]);
+
+  const positions: OverlayPosition[] = [];
+
+  for (let string = 1; string <= 6; string++) {
+    for (let fret = 0; fret <= maxFret; fret++) {
+      const note = getNoteAtPosition(string, fret, tuning);
+      if (!allTargetPitchClasses.has(note.pitchClass)) continue;
+
+      let role: NoteRole;
+      if (note.pitchClass === rootPitchClass) {
+        role = "chord-root";
+      } else if (chordPitchClasses.has(note.pitchClass)) {
+        role = "chord-tone";
+      } else {
+        role = "scale";
+      }
+
+      positions.push({ string, fret, note, role });
+    }
+  }
+
+  return positions;
+}
+
 // ボイシングデータの型（内部用）
 type VoicingData = {
   readonly positions: readonly { readonly string: number; readonly fret: number }[];
