@@ -131,6 +131,35 @@ export function computeChordQualityFromScale(
 }
 
 /**
+ * コードのソース（出所モード）と度数から、デフォルトで表示すべきスケールを返す。
+ * "diatonic" → major の回転モード、ScaleType → そのモードの回転モード。
+ * "secondary-dominant" / "tritone-substitution" は別途ハンドリングするため null。
+ */
+export function getDefaultScaleForSource(
+  source: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType,
+  degree: number
+): ScaleType | null {
+  if (source === "secondary-dominant" || source === "tritone-substitution") {
+    return null;
+  }
+  const parentScaleType: ScaleType = source === "diatonic" ? "major" : source;
+  return getRotatedMode(parentScaleType, degree);
+}
+
+/**
+ * availableScales を defaultScaleType が先頭に来るよう並び替える。
+ * 元の配列は変更しない。デフォルトが見つからない場合は元の順序のまま。
+ */
+export function sortScalesWithDefault(
+  scales: readonly AvailableScaleInfo[],
+  defaultScaleType: ScaleType
+): readonly AvailableScaleInfo[] {
+  const idx = scales.findIndex((s) => s.scaleType === defaultScaleType);
+  if (idx <= 0) return [...scales];
+  return [scales[idx], ...scales.slice(0, idx), ...scales.slice(idx + 1)];
+}
+
+/**
  * 指定したコードが同じキー・同じ度数で出現するモードスケールを全て返す。
  * 結果はコードルート基準の回転モードとして返す。
  * 例: Cキー、III度、Em → [E Phrygian, E Aeolian]
