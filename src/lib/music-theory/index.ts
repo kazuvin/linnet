@@ -1,3 +1,5 @@
+// Category Codes
+
 // Available Scales
 export {
   type AvailableScaleInfo,
@@ -6,6 +8,13 @@ export {
   SCALE_DISPLAY_NAMES,
   SECONDARY_DOMINANT_SCALES,
 } from "./available-scales";
+export {
+  ALL_CATEGORY_IDS,
+  CATEGORY_DISPLAY_NAMES,
+  type CategoryChordInfo,
+  type CategoryId,
+  getCategoryChords,
+} from "./category-codes";
 // Note
 
 // Chord

@@ -37,11 +37,15 @@ export function ChordBoard() {
     containerRef,
   });
 
+  function getEffectiveSource(chordInfo: (typeof paletteChords)[number]) {
+    return (chordInfo.source ?? selectedMode) as Exclude<typeof selectedMode, `category:${string}`>;
+  }
+
   function handlePaletteClick(chordInfo: (typeof paletteChords)[number]) {
     addChord(
       chordInfo.chord.root.name,
       chordInfo.chord.quality,
-      selectedMode,
+      getEffectiveSource(chordInfo),
       chordInfo.chordFunction,
       chordInfo.romanNumeral,
       chordInfo.degree
@@ -60,26 +64,29 @@ export function ChordBoard() {
           </div>
         </div>
         <div className="-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2">
-          {paletteChords.map((chordInfo) => (
-            <ChordCard
-              key={`${chordInfo.degree}-${chordInfo.chord.symbol}`}
-              chord={{
-                romanNumeral: chordInfo.romanNumeral,
-                symbol: chordInfo.chord.symbol,
-                chordFunction: chordInfo.chordFunction,
-                source: selectedMode,
-              }}
-              onClick={() => handlePaletteClick(chordInfo)}
-              {...createPaletteDragHandlers({
-                rootName: chordInfo.chord.root.name,
-                quality: chordInfo.chord.quality,
-                source: selectedMode,
-                chordFunction: chordInfo.chordFunction,
-                romanNumeral: chordInfo.romanNumeral,
-                degree: chordInfo.degree,
-              })}
-            />
-          ))}
+          {paletteChords.map((chordInfo) => {
+            const source = getEffectiveSource(chordInfo);
+            return (
+              <ChordCard
+                key={`${chordInfo.degree}-${chordInfo.chord.symbol}-${source}`}
+                chord={{
+                  romanNumeral: chordInfo.romanNumeral,
+                  symbol: chordInfo.chord.symbol,
+                  chordFunction: chordInfo.chordFunction,
+                  source,
+                }}
+                onClick={() => handlePaletteClick(chordInfo)}
+                {...createPaletteDragHandlers({
+                  rootName: chordInfo.chord.root.name,
+                  quality: chordInfo.chord.quality,
+                  source,
+                  chordFunction: chordInfo.chordFunction,
+                  romanNumeral: chordInfo.romanNumeral,
+                  degree: chordInfo.degree,
+                })}
+              />
+            );
+          })}
         </div>
       </div>
 
