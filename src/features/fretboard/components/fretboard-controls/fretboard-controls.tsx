@@ -66,6 +66,18 @@ export function FretboardControls({ displayMode, scaleType, maxFret }: Fretboard
         >
           スケール
         </button>
+        <button
+          type="button"
+          className={cn(
+            "rounded-full px-3 py-1 text-sm transition-all duration-150",
+            displayMode === "voicing"
+              ? "bg-foreground text-background"
+              : "text-muted hover:text-foreground"
+          )}
+          onClick={() => setDisplayMode("voicing")}
+        >
+          ボイシング
+        </button>
       </div>
 
       {/* Scale type selector (only in scale mode) */}

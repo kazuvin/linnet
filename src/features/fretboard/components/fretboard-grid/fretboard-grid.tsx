@@ -5,13 +5,27 @@ import { cn } from "@/lib/utils";
 const SINGLE_DOT_FRETS = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
 const DOUBLE_DOT_FRETS = new Set([12, 24]);
 
+type BarreInfo = {
+  readonly fret: number;
+  readonly fromString: number;
+  readonly toString: number;
+};
+
 type FretboardGridProps = {
   positions: readonly FretPosition[];
   maxFret: number;
   rootPitchClass: PitchClass | null;
+  barreInfo?: BarreInfo;
+  mutedStrings?: ReadonlySet<number>;
 };
 
-export function FretboardGrid({ positions, maxFret, rootPitchClass }: FretboardGridProps) {
+export function FretboardGrid({
+  positions,
+  maxFret,
+  rootPitchClass,
+  barreInfo,
+  mutedStrings,
+}: FretboardGridProps) {
   const positionMap = useMemo(() => {
     const map = new Map<string, FretPosition>();
     for (const pos of positions) {
@@ -43,49 +57,79 @@ export function FretboardGrid({ positions, maxFret, rootPitchClass }: FretboardG
         ))}
 
         {/* String rows */}
-        {strings.map((stringNum) => (
-          <Fragment key={`s-${stringNum}`}>
-            <div className="flex h-9 items-center justify-center font-medium font-mono text-muted text-xs">
-              {STANDARD_TUNING[6 - stringNum]}
-            </div>
-            {frets.map((fret) => {
-              const pos = positionMap.get(`${stringNum}-${fret}`);
-              const isRoot = pos != null && pos.note.pitchClass === rootPitchClass;
+        {strings.map((stringNum) => {
+          const isMuted = mutedStrings?.has(stringNum) ?? false;
+          const isOpenString =
+            !isMuted && positions.some((p) => p.string === stringNum && p.fret === 0);
 
-              return (
-                <div
-                  key={`c-${stringNum}-${fret}`}
-                  className={cn(
-                    "relative flex h-9 items-center justify-center",
-                    fret === 0
-                      ? "border-r-[3px] border-r-foreground/50"
-                      : "border-r border-r-foreground/10"
-                  )}
-                >
-                  {/* String line */}
+          return (
+            <Fragment key={`s-${stringNum}`}>
+              <div className="flex h-9 items-center justify-center font-medium font-mono text-muted text-xs">
+                {isMuted ? (
+                  <span className="text-foreground/40">×</span>
+                ) : isOpenString ? (
+                  <span className="text-primary">○</span>
+                ) : (
+                  STANDARD_TUNING[6 - stringNum]
+                )}
+              </div>
+              {frets.map((fret) => {
+                const pos = positionMap.get(`${stringNum}-${fret}`);
+                const isRoot = pos != null && pos.note.pitchClass === rootPitchClass;
+                const isBarreFret =
+                  barreInfo != null &&
+                  fret === barreInfo.fret &&
+                  stringNum >= barreInfo.fromString &&
+                  stringNum <= barreInfo.toString;
+
+                return (
                   <div
+                    key={`c-${stringNum}-${fret}`}
                     className={cn(
-                      "absolute inset-x-0 top-1/2 -translate-y-1/2 bg-foreground/20",
-                      stringNum <= 2 ? "h-px" : stringNum <= 4 ? "h-[1.5px]" : "h-[2px]"
+                      "relative flex h-9 items-center justify-center",
+                      fret === 0
+                        ? "border-r-[3px] border-r-foreground/50"
+                        : "border-r border-r-foreground/10"
                     )}
-                  />
-                  {/* Note dot */}
-                  {pos && (
+                  >
+                    {/* String line */}
                     <div
                       className={cn(
-                        "relative z-10 flex size-5 items-center justify-center rounded-full font-bold font-mono text-[10px]",
-                        "transition-colors duration-[120ms] ease-out",
-                        isRoot ? "bg-primary text-white" : "bg-primary-subtle text-primary"
+                        "absolute inset-x-0 top-1/2 -translate-y-1/2 bg-foreground/20",
+                        stringNum <= 2 ? "h-px" : stringNum <= 4 ? "h-[1.5px]" : "h-[2px]"
                       )}
-                    >
-                      {pos.note.name}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </Fragment>
-        ))}
+                    />
+                    {/* Barre bar (vertical connector between barre strings) */}
+                    {isBarreFret && !pos && (
+                      <div className="absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 items-center justify-center">
+                        <div className="size-5 rounded-full bg-primary/30" />
+                      </div>
+                    )}
+                    {/* Barre connector line */}
+                    {barreInfo != null &&
+                      fret === barreInfo.fret &&
+                      stringNum > barreInfo.fromString &&
+                      stringNum <= barreInfo.toString && (
+                        <div className="pointer-events-none absolute inset-y-0 left-1/2 z-[5] w-2.5 -translate-x-1/2 bg-primary/20" />
+                      )}
+                    {/* Note dot */}
+                    {pos && (
+                      <div
+                        className={cn(
+                          "relative z-10 flex size-5 items-center justify-center rounded-full font-bold font-mono text-[10px]",
+                          "transition-colors duration-[120ms] ease-out",
+                          isRoot ? "bg-primary text-white" : "bg-primary-subtle text-primary"
+                        )}
+                      >
+                        {pos.note.name}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </Fragment>
+          );
+        })}
 
         {/* Position markers */}
         <div />

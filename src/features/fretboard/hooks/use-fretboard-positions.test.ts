@@ -127,7 +127,39 @@ describe("useFretboardPositions", () => {
     expect(gPitchClasses.has(5)).toBe(false); // F がない
   });
 
-  // 6. scaleType 変更後の結果が変わる
+  // 6. voicing モードでコード選択時、ボイシングのポジションのみ返す
+  it("voicing モードでコード選択時、ボイシングのポジションのみ返す", async () => {
+    addChord("C", "major", "diatonic", "tonic", "I", 1);
+    const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());
+
+    await act(async () => {});
+
+    const chordId = progressionResult.current.chords[0].id;
+
+    await act(async () => {
+      selectChord(chordId);
+      setDisplayMode("voicing");
+    });
+
+    const { result } = renderHook(() => useFretboardPositions());
+
+    // ボイシングのポジションが返る（chord-tones より少ない）
+    expect(result.current.length).toBeGreaterThan(0);
+    // Cメジャーのオープンコードは5弦3フレットから1弦0フレットまで（5ポジション）
+    expect(result.current.length).toBeLessThanOrEqual(6);
+  });
+
+  // 7. voicing モードでコード未選択時、空配列を返す
+  it("voicing モードでコード未選択時、空配列を返す", async () => {
+    await act(async () => {
+      setDisplayMode("voicing");
+    });
+
+    const { result } = renderHook(() => useFretboardPositions());
+    expect(result.current).toEqual([]);
+  });
+
+  // 8. scaleType 変更後の結果が変わる
   it("scaleType 変更後の結果が変わる", async () => {
     await act(async () => {
       setDisplayMode("scale");

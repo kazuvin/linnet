@@ -1,12 +1,13 @@
 import { proxy, useSnapshot } from "valtio";
 import type { ScaleType } from "@/lib/music-theory";
 
-export type FretboardDisplayMode = "chord-tones" | "scale";
+export type FretboardDisplayMode = "chord-tones" | "scale" | "voicing";
 
 export type FretboardState = {
   displayMode: FretboardDisplayMode;
   scaleType: ScaleType;
   maxFret: number;
+  selectedVoicingIndex: number;
 };
 
 const MIN_FRET = 1;
@@ -16,6 +17,7 @@ const INITIAL_STATE: FretboardState = {
   displayMode: "chord-tones",
   scaleType: "major",
   maxFret: 12,
+  selectedVoicingIndex: 0,
 };
 
 const state = proxy<FretboardState>({ ...INITIAL_STATE });
@@ -34,6 +36,10 @@ export function setScaleType(scaleType: ScaleType): void {
 
 export function setMaxFret(maxFret: number): void {
   state.maxFret = Math.max(MIN_FRET, Math.min(MAX_FRET, maxFret));
+}
+
+export function setSelectedVoicingIndex(index: number): void {
+  state.selectedVoicingIndex = Math.max(0, index);
 }
 
 export function _resetFretboardStoreForTesting(): void {

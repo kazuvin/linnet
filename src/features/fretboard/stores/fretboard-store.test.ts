@@ -4,6 +4,7 @@ import {
   setDisplayMode,
   setMaxFret,
   setScaleType,
+  setSelectedVoicingIndex,
   useFretboardSnapshot,
 } from "./fretboard-store";
 
@@ -125,5 +126,50 @@ describe("fretboard-store", () => {
     expect(result.current.displayMode).toBe("chord-tones");
     expect(result.current.scaleType).toBe("major");
     expect(result.current.maxFret).toBe(12);
+  });
+
+  // 9. setDisplayMode で voicing モードに変更できる
+  it("setDisplayMode で voicing モードに変更できる", async () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+
+    await act(async () => {
+      setDisplayMode("voicing");
+    });
+
+    expect(result.current.displayMode).toBe("voicing");
+  });
+
+  // 10. setSelectedVoicingIndex でボイシングインデックスが変更される
+  it("setSelectedVoicingIndex でボイシングインデックスが変更される", async () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+
+    await act(async () => {
+      setSelectedVoicingIndex(1);
+    });
+
+    expect(result.current.selectedVoicingIndex).toBe(1);
+  });
+
+  // 11. 初期状態の selectedVoicingIndex は 0
+  it("初期状態の selectedVoicingIndex は 0", () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+    expect(result.current.selectedVoicingIndex).toBe(0);
+  });
+
+  // 12. _resetFretboardStoreForTesting で selectedVoicingIndex も初期化される
+  it("_resetFretboardStoreForTesting で selectedVoicingIndex も初期化される", async () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+
+    await act(async () => {
+      setSelectedVoicingIndex(2);
+    });
+
+    expect(result.current.selectedVoicingIndex).toBe(2);
+
+    await act(async () => {
+      _resetFretboardStoreForTesting();
+    });
+
+    expect(result.current.selectedVoicingIndex).toBe(0);
   });
 });
