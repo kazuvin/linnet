@@ -23,8 +23,12 @@ export function useFretboardPositions(
 
     const scaleType = overrideScaleType ?? defaultScaleType;
 
+    // セカンダリードミナントはコードルート基準でスケールを生成する
+    const scaleRoot =
+      selectedChord.source === "secondary-dominant" ? selectedChord.rootName : rootName;
+
     return findOverlayPositions(
-      rootName,
+      scaleRoot,
       scaleType,
       selectedChord.rootName,
       selectedChord.quality,
