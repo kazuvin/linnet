@@ -3,9 +3,11 @@ import { proxy, useSnapshot } from "valtio";
 import { transposeAllChords } from "@/features/chord-progression/stores/chord-progression-store";
 import {
   ALL_MODE_SOURCES,
+  type CategoryId,
   type DiatonicChordInfo,
   filterNonDiatonicChords,
   getAllModalInterchangeChords,
+  getCategoryChords,
   getChordFunction,
   getDiatonicChords,
   getModalInterchangeChords,
@@ -17,10 +19,17 @@ import {
   type ScaleType,
 } from "@/lib/music-theory";
 
+export type SelectedMode =
+  | "diatonic"
+  | "secondary-dominant"
+  | "tritone-substitution"
+  | ScaleType
+  | `category:${CategoryId}`;
+
 type KeyState = {
   rootName: string;
   chordType: "triad" | "seventh";
-  selectedMode: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
+  selectedMode: SelectedMode;
 };
 
 const INITIAL_STATE: KeyState = {
@@ -29,7 +38,10 @@ const INITIAL_STATE: KeyState = {
   selectedMode: "diatonic",
 };
 
-export type PaletteChordInfo = DiatonicChordInfo & { isAvailable: boolean };
+export type PaletteChordInfo = DiatonicChordInfo & {
+  isAvailable: boolean;
+  source?: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
+};
 
 const state = proxy<KeyState>({ ...INITIAL_STATE });
 
@@ -73,6 +85,13 @@ export function useModalInterchangeChordsByMode(): readonly ModalInterchangeMode
   );
 }
 
+function parseCategoryMode(mode: string): CategoryId | null {
+  if (mode.startsWith("category:")) {
+    return mode.slice("category:".length) as CategoryId;
+  }
+  return null;
+}
+
 export function useCurrentModeChords(): readonly PaletteChordInfo[] {
   const snap = useSnapshot(state);
   const seventh = snap.chordType === "seventh";
@@ -103,8 +122,21 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
         isAvailable: true,
       }));
     }
+    // カテゴリコードモード
+    const categoryId = parseCategoryMode(snap.selectedMode);
+    if (categoryId) {
+      return getCategoryChords(snap.rootName, categoryId, seventh).map((cc) => ({
+        degree: cc.degree,
+        romanNumeral: cc.romanNumeral,
+        chord: cc.chord,
+        chordFunction: cc.chordFunction,
+        isAvailable: true,
+        source: cc.source,
+      }));
+    }
     // モーダルインターチェンジモード
-    return getModalInterchangeChords(snap.rootName, snap.selectedMode, seventh).map((mi) => ({
+    const scaleMode = snap.selectedMode as ScaleType;
+    return getModalInterchangeChords(snap.rootName, scaleMode, seventh).map((mi) => ({
       degree: mi.degree,
       romanNumeral: mi.romanNumeral,
       chord: mi.chord,
@@ -126,9 +158,7 @@ export function setChordType(chordType: "triad" | "seventh"): void {
   state.chordType = chordType;
 }
 
-export function setSelectedMode(
-  mode: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType
-): void {
+export function setSelectedMode(mode: SelectedMode): void {
   state.selectedMode = mode;
 }
 
