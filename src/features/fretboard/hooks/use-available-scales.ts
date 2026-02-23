@@ -14,6 +14,7 @@ import {
 export function useAvailableScales(): {
   availableScales: readonly AvailableScaleInfo[];
   activeScaleType: ScaleType | null;
+  scaleRoot: string | null;
 } {
   const { rootName } = useKeySnapshot();
   const selectedChord = useSelectedProgressionChord();
@@ -46,5 +47,12 @@ export function useAvailableScales(): {
     return selectedChord.source;
   }, [selectedChord, selectedScaleType]);
 
-  return { availableScales, activeScaleType };
+  // スケールのルート: セカンダリードミナントはコードルート、それ以外はキールート
+  const scaleRoot = selectedChord
+    ? selectedChord.source === "secondary-dominant"
+      ? selectedChord.rootName
+      : rootName
+    : null;
+
+  return { availableScales, activeScaleType, scaleRoot };
 }

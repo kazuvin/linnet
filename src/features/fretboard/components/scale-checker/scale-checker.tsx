@@ -8,9 +8,15 @@ type ScaleCheckerProps = {
   availableScales: readonly AvailableScaleInfo[];
   activeScaleType: ScaleType | null;
   chordSymbol: string;
+  scaleRoot: string | null;
 };
 
-export function ScaleChecker({ availableScales, activeScaleType, chordSymbol }: ScaleCheckerProps) {
+export function ScaleChecker({
+  availableScales,
+  activeScaleType,
+  chordSymbol,
+  scaleRoot,
+}: ScaleCheckerProps) {
   if (availableScales.length === 0) return null;
 
   return (
@@ -33,7 +39,7 @@ export function ScaleChecker({ availableScales, activeScaleType, chordSymbol }: 
               )}
               onClick={() => setSelectedScaleType(isActive ? null : scale.scaleType)}
             >
-              {scale.displayName}
+              {scaleRoot} {scale.displayName}
             </button>
           );
         })}
