@@ -11,12 +11,13 @@ import { setSelectedMode, useKeySnapshot } from "@/features/key-selection/stores
 import { ALL_MODE_SOURCES, MODE_DISPLAY_NAMES, type ScaleType } from "@/lib/music-theory";
 
 type ModeOption = {
-  value: "diatonic" | ScaleType;
+  value: "diatonic" | "secondary-dominant" | ScaleType;
   label: string;
 };
 
 const MODE_OPTIONS: readonly ModeOption[] = [
   { value: "diatonic", label: "Ionian" },
+  { value: "secondary-dominant", label: "Sec.Dom" },
   ...ALL_MODE_SOURCES.map((source) => ({
     value: source as ScaleType,
     label: MODE_DISPLAY_NAMES[source],
@@ -29,7 +30,9 @@ export function ModeSelector() {
   return (
     <Select
       value={selectedMode}
-      onValueChange={(value) => setSelectedMode(value as "diatonic" | ScaleType)}
+      onValueChange={(value) =>
+        setSelectedMode(value as "diatonic" | "secondary-dominant" | ScaleType)
+      }
     >
       <SelectTrigger>
         <SelectValue placeholder="選択">

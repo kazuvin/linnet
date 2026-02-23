@@ -33,7 +33,10 @@ export function useAvailableScales(): {
     if (!selectedChord) return null;
     if (selectedScaleType !== null) return selectedScaleType;
     // デフォルト: コードのソースに対応するスケール
-    return selectedChord.source === "diatonic" ? ("major" as ScaleType) : selectedChord.source;
+    if (selectedChord.source === "diatonic" || selectedChord.source === "secondary-dominant") {
+      return "major" as ScaleType;
+    }
+    return selectedChord.source;
   }, [selectedChord, selectedScaleType]);
 
   return { availableScales, activeScaleType };

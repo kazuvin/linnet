@@ -81,3 +81,8 @@ export {
   type ScaleType,
   shouldPreferFlat,
 } from "./scale";
+// Secondary Dominant
+export {
+  getSecondaryDominantChords,
+  type SecondaryDominantChordInfo,
+} from "./secondary-dominant";
