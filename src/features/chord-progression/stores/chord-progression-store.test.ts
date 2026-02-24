@@ -39,7 +39,7 @@ describe("chord-progression-store", () => {
   it("addChord でコードが追加される", async () => {
     const { result } = renderHook(() => useChordProgressionSnapshotForTest());
 
-    let returnedId: string;
+    let returnedId = "";
     await act(async () => {
       returnedId = addChord("C", "major", "diatonic", "tonic", "I", 1);
     });
@@ -47,7 +47,7 @@ describe("chord-progression-store", () => {
     expect(result.current.chords).toHaveLength(1);
     const chord = result.current.chords[0];
     expect(chord.id).toBeTruthy();
-    expect(returnedId!).toBe(chord.id);
+    expect(returnedId).toBe(chord.id);
     expect(chord.rootName).toBe("C");
     expect(chord.quality).toBe("major");
     expect(chord.symbol).toBe("C");

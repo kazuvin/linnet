@@ -1,0 +1,140 @@
+import { act, renderHook } from "@testing-library/react";
+import {
+  _resetChordProgressionForTesting,
+  addChord,
+  useChordProgressionSnapshot,
+} from "@/features/chord-progression/stores/chord-progression-store";
+import {
+  _resetFretboardStoreForTesting,
+  setSelectedScaleType,
+  useFretboardSnapshot,
+} from "@/features/fretboard/stores/fretboard-store";
+import {
+  _resetKeyStoreForTesting,
+  useKeySnapshot,
+} from "@/features/key-selection/stores/key-store";
+import { changeKey, selectProgressionChord } from "./store-coordination";
+
+/**
+ * Valtio の useSnapshot はレンダリング中にアクセスされたプロパティのみを追跡する。
+ * chords と selectedChordId の両方にアクセスし、どちらの変更でも再レンダリングがトリガーされるようにする。
+ */
+function useChordProgressionSnapshotForTest() {
+  const snap = useChordProgressionSnapshot();
+  return { chords: snap.chords, selectedChordId: snap.selectedChordId };
+}
+
+describe("store-coordination", () => {
+  beforeEach(() => {
+    _resetKeyStoreForTesting();
+    _resetChordProgressionForTesting();
+    _resetFretboardStoreForTesting();
+  });
+
+  describe("changeKey", () => {
+    it("rootName を変更する", async () => {
+      const { result } = renderHook(() => useKeySnapshot());
+
+      await act(async () => {
+        changeKey("G");
+      });
+
+      expect(result.current.rootName).toBe("G");
+    });
+
+    it("プログレッション内の全コードをトランスポーズする", async () => {
+      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+      await act(async () => {
+        addChord("C", "major", "diatonic", "tonic", "I", 1);
+        addChord("A", "minor", "diatonic", "tonic", "vi", 6);
+      });
+
+      await act(async () => {
+        changeKey("G");
+      });
+
+      expect(result.current.chords[0].rootName).toBe("G");
+      expect(result.current.chords[0].symbol).toBe("G");
+      expect(result.current.chords[1].rootName).toBe("E");
+      expect(result.current.chords[1].symbol).toBe("Em");
+    });
+
+    it("同じキーへの変更ではトランスポーズしない", async () => {
+      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+      await act(async () => {
+        addChord("C", "major", "diatonic", "tonic", "I", 1);
+      });
+
+      await act(async () => {
+        changeKey("C");
+      });
+
+      expect(result.current.chords[0].rootName).toBe("C");
+    });
+  });
+
+  describe("selectProgressionChord", () => {
+    it("コードを選択する", async () => {
+      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+      await act(async () => {
+        addChord("C", "major", "diatonic", "tonic", "I", 1);
+      });
+
+      const chordId = result.current.chords[0].id;
+
+      await act(async () => {
+        selectProgressionChord(chordId);
+      });
+
+      expect(result.current.selectedChordId).toBe(chordId);
+    });
+
+    it("選択時にフレットボードのスケール選択をリセットする", async () => {
+      const { result: fretboardResult } = renderHook(() => useFretboardSnapshot());
+
+      await act(async () => {
+        setSelectedScaleType("dorian");
+      });
+
+      expect(fretboardResult.current.selectedScaleType).toBe("dorian");
+
+      await act(async () => {
+        addChord("C", "major", "diatonic", "tonic", "I", 1);
+      });
+
+      const { result: progressionResult } = renderHook(() => useChordProgressionSnapshotForTest());
+      const chordId = progressionResult.current.chords[0].id;
+
+      await act(async () => {
+        selectProgressionChord(chordId);
+      });
+
+      expect(fretboardResult.current.selectedScaleType).toBeNull();
+    });
+
+    it("null で選択解除する", async () => {
+      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+      await act(async () => {
+        addChord("C", "major", "diatonic", "tonic", "I", 1);
+      });
+
+      const chordId = result.current.chords[0].id;
+
+      await act(async () => {
+        selectProgressionChord(chordId);
+      });
+
+      expect(result.current.selectedChordId).toBe(chordId);
+
+      await act(async () => {
+        selectProgressionChord(null);
+      });
+
+      expect(result.current.selectedChordId).toBeNull();
+    });
+  });
+});

@@ -9,7 +9,8 @@ import {
   _resetFretboardStoreForTesting,
   setMaxFret,
 } from "@/features/fretboard/stores/fretboard-store";
-import { _resetKeyStoreForTesting, setRootName } from "@/features/key-selection/stores/key-store";
+import { _resetKeyStoreForTesting } from "@/features/key-selection/stores/key-store";
+import { changeKey } from "@/features/store-coordination";
 import { useFretboardPositions } from "./use-fretboard-positions";
 
 describe("useFretboardPositions", () => {
@@ -150,7 +151,7 @@ describe("useFretboardPositions", () => {
 
     // keyをGに変更するとコードもG majorにトランスポーズされる
     await act(async () => {
-      setRootName("G");
+      changeKey("G");
     });
 
     const { result: resultG } = renderHook(() => useFretboardPositions());

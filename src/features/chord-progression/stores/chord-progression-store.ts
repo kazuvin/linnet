@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { proxy, useSnapshot } from "valtio";
-import { resetSelectedScaleType } from "@/features/fretboard/stores/fretboard-store";
 import {
   type Chord,
   type ChordFunction,
@@ -29,10 +28,12 @@ export type ChordProgressionState = {
   selectedChordId: string | null;
 };
 
-const state = proxy<ChordProgressionState>({
+const INITIAL_STATE: ChordProgressionState = {
   chords: [],
   selectedChordId: null,
-});
+};
+
+const state = proxy<ChordProgressionState>({ ...INITIAL_STATE });
 
 export function useChordProgressionSnapshot() {
   return useSnapshot(state);
@@ -114,7 +115,6 @@ export function reorderChords(fromIndex: number, toIndex: number): void {
 
 export function selectChord(id: string | null): void {
   state.selectedChordId = id;
-  resetSelectedScaleType();
 }
 
 export function transposeAllChords(semitones: number, newRootName: string): void {
@@ -134,5 +134,5 @@ export function clearProgression(): void {
 }
 
 export function _resetChordProgressionForTesting(): void {
-  clearProgression();
+  Object.assign(state, { ...INITIAL_STATE, chords: [] });
 }

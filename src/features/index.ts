@@ -33,6 +33,7 @@ export { ChordTypeSelector, KeySelector, RootNoteSelector } from "./key-selectio
 // key-selection stores
 export {
   _resetKeyStoreForTesting,
+  getRootName,
   type PaletteChordInfo,
   setChordType,
   setRootName,
@@ -42,3 +43,6 @@ export {
   useKeySnapshot,
   useModalInterchangeChords,
 } from "./key-selection/stores/key-store";
+
+// store-coordination (cross-store composite actions)
+export { changeKey, selectProgressionChord } from "./store-coordination";
