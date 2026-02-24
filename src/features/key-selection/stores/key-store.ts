@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { proxy, useSnapshot } from "valtio";
-import { transposeAllChords } from "@/features/chord-progression/stores/chord-progression-store";
 import {
   ALL_MODE_SOURCES,
   type CategoryId,
@@ -15,7 +14,6 @@ import {
   getTritoneSubstitutionChords,
   MODE_DISPLAY_NAMES,
   type ModalInterchangeChordInfo,
-  noteNameToPitchClass,
   type ScaleType,
 } from "@/lib/music-theory";
 
@@ -146,12 +144,12 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
   }, [snap.rootName, snap.selectedMode, seventh]);
 }
 
+export function getRootName(): string {
+  return state.rootName;
+}
+
 export function setRootName(rootName: string): void {
-  const oldPitchClass = noteNameToPitchClass(state.rootName);
-  const newPitchClass = noteNameToPitchClass(rootName);
-  const semitones = (newPitchClass - oldPitchClass + 12) % 12;
   state.rootName = rootName;
-  transposeAllChords(semitones, rootName);
 }
 
 export function setChordType(chordType: "triad" | "seventh"): void {
@@ -163,7 +161,5 @@ export function setSelectedMode(mode: SelectedMode): void {
 }
 
 export function _resetKeyStoreForTesting(): void {
-  state.rootName = INITIAL_STATE.rootName;
-  state.chordType = INITIAL_STATE.chordType;
-  state.selectedMode = INITIAL_STATE.selectedMode;
+  Object.assign(state, INITIAL_STATE);
 }
