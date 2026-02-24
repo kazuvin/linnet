@@ -437,5 +437,56 @@ describe("fretboard", () => {
       const uniqueKeys = new Set(keys);
       expect(keys.length).toBe(uniqueKeys.size);
     });
+
+    it("全ポジションにisCharacteristicプロパティが存在する", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      for (const pos of positions) {
+        expect(typeof pos.isCharacteristic).toBe("boolean");
+      }
+    });
+
+    it("Cメジャーの特性音F(5)のポジションはisCharacteristic=true", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      // Cメジャーの特性音はP4 = F(pitchClass 5)
+      const fPositions = positions.filter((p) => p.note.pitchClass === 5);
+      expect(fPositions.length).toBeGreaterThan(0);
+      for (const pos of fPositions) {
+        expect(pos.isCharacteristic).toBe(true);
+      }
+    });
+
+    it("Cメジャーの非特性音D(2)はisCharacteristic=false", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      const dPositions = positions.filter((p) => p.note.pitchClass === 2);
+      expect(dPositions.length).toBeGreaterThan(0);
+      for (const pos of dPositions) {
+        expect(pos.isCharacteristic).toBe(false);
+      }
+    });
+
+    it("Dドリアンの特性音B(11)のポジションはisCharacteristic=true", () => {
+      // Dドリアンの特性音: M6 = D(2)+9=11 → B
+      const positions = findOverlayPositions("D", "dorian", "D", "minor", 12);
+      const bPositions = positions.filter((p) => p.note.pitchClass === 11);
+      expect(bPositions.length).toBeGreaterThan(0);
+      for (const pos of bPositions) {
+        expect(pos.isCharacteristic).toBe(true);
+      }
+    });
+
+    it("特性音がコードトーンの場合でもisCharacteristic=trueになる", () => {
+      // Fリディアンの特性音: #4 = F(5)+6=11 → B
+      // F major7 の構成音: F(5), A(9), C(0), E(4)
+      // Bはchord-toneではないがscale
+      // 別の例: Gミクソリディアンの特性音はb7=F(5)
+      // G7の構成音: G(7), B(11), D(2), F(5) — F はchord-tone
+      const positions = findOverlayPositions("G", "mixolydian", "G", "dominant7", 12);
+      const fPositions = positions.filter((p) => p.note.pitchClass === 5);
+      expect(fPositions.length).toBeGreaterThan(0);
+      for (const pos of fPositions) {
+        expect(pos.role).toBe("chord-tone"); // F は G7 のコードトーン
+        expect(pos.isCharacteristic).toBe(true); // かつ特性音
+      }
+    });
   });
 });

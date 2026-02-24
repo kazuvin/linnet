@@ -79,7 +79,8 @@ export function FretboardGrid({ positions, maxFret }: FretboardGridProps) {
                       className={cn(
                         "relative z-10 flex size-5 items-center justify-center rounded-full font-bold font-mono text-[10px]",
                         "transition-colors duration-[120ms] ease-out",
-                        NOTE_DOT_STYLES[pos.role]
+                        NOTE_DOT_STYLES[pos.role],
+                        pos.isCharacteristic && "ring-[1.5px] ring-foreground/40"
                       )}
                     >
                       {pos.note.name}

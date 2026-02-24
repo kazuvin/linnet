@@ -1,3 +1,8 @@
+// Characteristic Notes
+export {
+  CHARACTERISTIC_INTERVALS,
+  getCharacteristicPitchClasses,
+} from "./characteristic-notes";
 // Category Codes
 
 // Available Scales
