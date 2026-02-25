@@ -1,3 +1,5 @@
+// Avoid Notes
+export { getAvoidPitchClasses } from "./avoid-notes";
 // Characteristic Notes
 export {
   CHARACTERISTIC_INTERVALS,

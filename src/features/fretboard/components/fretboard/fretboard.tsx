@@ -6,10 +6,11 @@ import { useFretboardPositions } from "@/features/fretboard/hooks/use-fretboard-
 import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-store";
 import { FretboardControls } from "../fretboard-controls";
 import { FretboardGrid } from "../fretboard-grid";
+import { FretboardLegend } from "../fretboard-legend";
 import { ScaleChecker } from "../scale-checker";
 
 export function Fretboard() {
-  const { maxFret } = useFretboardSnapshot();
+  const { maxFret, showCharacteristicNotes, showAvoidNotes } = useFretboardSnapshot();
   const { availableScales, activeScaleType, scaleRoot } = useAvailableScales();
   const positions = useFretboardPositions(activeScaleType);
   const selectedChord = useSelectedProgressionChord();
@@ -28,7 +29,13 @@ export function Fretboard() {
           scaleRoot={scaleRoot}
         />
       )}
-      <FretboardGrid positions={positions} maxFret={maxFret} />
+      <FretboardGrid
+        positions={positions}
+        maxFret={maxFret}
+        showCharacteristicNotes={showCharacteristicNotes}
+        showAvoidNotes={showAvoidNotes}
+      />
+      <FretboardLegend />
       {positions.length === 0 && (
         <p className="text-center text-muted text-sm">
           コードを選択すると構成音とスケールが表示されます

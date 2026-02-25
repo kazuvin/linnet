@@ -474,6 +474,39 @@ describe("fretboard", () => {
       }
     });
 
+    it("全ポジションにisAvoidプロパティが存在する", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major", 12);
+      for (const pos of positions) {
+        expect(typeof pos.isAvoid).toBe("boolean");
+      }
+    });
+
+    it("Cイオニアン+Cmaj7でF(5)はisAvoid=true", () => {
+      // F(5) は E(4) の半音上 → アヴォイド
+      const positions = findOverlayPositions("C", "major", "C", "major7", 12);
+      const fPositions = positions.filter((p) => p.note.pitchClass === 5);
+      expect(fPositions.length).toBeGreaterThan(0);
+      for (const pos of fPositions) {
+        expect(pos.isAvoid).toBe(true);
+      }
+    });
+
+    it("Fリディアン+Fmaj7にはisAvoid=trueのポジションがない", () => {
+      const positions = findOverlayPositions("F", "lydian", "F", "major7", 12);
+      const avoidPositions = positions.filter((p) => p.isAvoid);
+      expect(avoidPositions.length).toBe(0);
+    });
+
+    it("コードトーンはisAvoid=falseである", () => {
+      const positions = findOverlayPositions("C", "major", "C", "major7", 12);
+      const chordPositions = positions.filter(
+        (p) => p.role === "chord-root" || p.role === "chord-tone"
+      );
+      for (const pos of chordPositions) {
+        expect(pos.isAvoid).toBe(false);
+      }
+    });
+
     it("特性音がコードトーンの場合でもisCharacteristic=trueになる", () => {
       // Fリディアンの特性音: #4 = F(5)+6=11 → B
       // F major7 の構成音: F(5), A(9), C(0), E(4)

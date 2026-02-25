@@ -2,6 +2,8 @@ import { act, renderHook } from "@testing-library/react";
 import {
   _resetFretboardStoreForTesting,
   setMaxFret,
+  setShowAvoidNotes,
+  setShowCharacteristicNotes,
   useFretboardSnapshot,
 } from "./fretboard-store";
 
@@ -14,6 +16,16 @@ describe("fretboard-store", () => {
   it("初期状態は maxFret: 12", () => {
     const { result } = renderHook(() => useFretboardSnapshot());
     expect(result.current.maxFret).toBe(12);
+  });
+
+  it("初期状態は showCharacteristicNotes: true", () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+    expect(result.current.showCharacteristicNotes).toBe(true);
+  });
+
+  it("初期状態は showAvoidNotes: false", () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+    expect(result.current.showAvoidNotes).toBe(false);
   });
 
   // 2. setMaxFret で maxFret が変更される
@@ -76,6 +88,38 @@ describe("fretboard-store", () => {
     });
 
     expect(result.current.maxFret).toBe(24);
+  });
+
+  it("setShowCharacteristicNotes で値が変更される", async () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+
+    await act(async () => {
+      setShowCharacteristicNotes(false);
+    });
+
+    expect(result.current.showCharacteristicNotes).toBe(false);
+
+    await act(async () => {
+      setShowCharacteristicNotes(true);
+    });
+
+    expect(result.current.showCharacteristicNotes).toBe(true);
+  });
+
+  it("setShowAvoidNotes で値が変更される", async () => {
+    const { result } = renderHook(() => useFretboardSnapshot());
+
+    await act(async () => {
+      setShowAvoidNotes(true);
+    });
+
+    expect(result.current.showAvoidNotes).toBe(true);
+
+    await act(async () => {
+      setShowAvoidNotes(false);
+    });
+
+    expect(result.current.showAvoidNotes).toBe(false);
   });
 
   // 6. _resetFretboardStoreForTesting で初期状態に戻る
