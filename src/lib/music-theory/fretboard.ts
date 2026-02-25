@@ -1,3 +1,4 @@
+import { getCharacteristicPitchClasses } from "./characteristic-notes";
 import { type Chord, type ChordQuality, createChord } from "./chord";
 import { createNote, type Note, type PitchClass, transposeNote } from "./note";
 import { createScale, type ScaleType } from "./scale";
@@ -104,6 +105,7 @@ export type NoteRole = "scale" | "chord-tone" | "chord-root";
 
 export type OverlayPosition = FretPosition & {
   readonly role: NoteRole;
+  readonly isCharacteristic: boolean;
 };
 
 /**
@@ -125,6 +127,8 @@ export function findOverlayPositions(
   const scale = createScale(keyRootName, scaleType);
   const scalePitchClasses = new Set(scale.notes.map((n) => n.pitchClass));
 
+  const characteristicPitchClasses = getCharacteristicPitchClasses(keyRootName, scaleType);
+
   // スケール音とコード構成音の和集合
   const allTargetPitchClasses = new Set([...scalePitchClasses, ...chordPitchClasses]);
 
@@ -144,7 +148,9 @@ export function findOverlayPositions(
         role = "scale";
       }
 
-      positions.push({ string, fret, note, role });
+      const isCharacteristic = characteristicPitchClasses.has(note.pitchClass);
+
+      positions.push({ string, fret, note, role, isCharacteristic });
     }
   }
 
