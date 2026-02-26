@@ -1,10 +1,6 @@
-import {
-  addChord,
-  selectChord,
-  transposeAllChords,
-} from "@/features/chord-progression/stores/chord-progression-store";
-import { resetSelectedScaleType } from "@/features/fretboard/stores/fretboard-store";
-import { getRootName, setRootName } from "@/features/key-selection/stores/key-store";
+import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
+import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
+import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import type { ChordFunction, ChordQuality, ScaleType } from "@/lib/music-theory";
 import { noteNameToPitchClass } from "@/lib/music-theory";
 
@@ -13,11 +9,11 @@ import { noteNameToPitchClass } from "@/lib/music-theory";
  * key-store と chord-progression-store を横断する複合アクション。
  */
 export function changeKey(rootName: string): void {
-  const oldPitchClass = noteNameToPitchClass(getRootName());
+  const oldPitchClass = noteNameToPitchClass(useKeyStore.getState().rootName);
   const newPitchClass = noteNameToPitchClass(rootName);
   const semitones = (newPitchClass - oldPitchClass + 12) % 12;
-  setRootName(rootName);
-  transposeAllChords(semitones, rootName);
+  useKeyStore.getState().setRootName(rootName);
+  useChordProgressionStore.getState().transposeAllChords(semitones, rootName);
 }
 
 /**
@@ -25,8 +21,8 @@ export function changeKey(rootName: string): void {
  * chord-progression-store と fretboard-store を横断する複合アクション。
  */
 export function selectProgressionChord(id: string | null): void {
-  selectChord(id);
-  resetSelectedScaleType();
+  useChordProgressionStore.getState().selectChord(id);
+  useFretboardStore.getState().resetSelectedScaleType();
 }
 
 /**
@@ -41,8 +37,9 @@ export function addAndSelectChord(
   romanNumeral: string,
   degree: number
 ): string {
-  const id = addChord(rootName, quality, source, chordFunction, romanNumeral, degree);
-  selectChord(id);
-  resetSelectedScaleType();
+  const store = useChordProgressionStore.getState();
+  const id = store.addChord(rootName, quality, source, chordFunction, romanNumeral, degree);
+  useChordProgressionStore.getState().selectChord(id);
+  useFretboardStore.getState().resetSelectedScaleType();
   return id;
 }

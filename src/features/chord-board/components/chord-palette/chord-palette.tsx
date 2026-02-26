@@ -1,10 +1,7 @@
-import { getIsMuted } from "@/features/chord-playback/stores/chord-playback-store";
+import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
-import {
-  setChordType,
-  useCurrentModeChords,
-  useKeySnapshot,
-} from "@/features/key-selection/stores/key-store";
+import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
+import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { addAndSelectChord } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import type { useNativeDnd } from "../../hooks/use-native-dnd";
@@ -17,7 +14,7 @@ type ChordPaletteProps = {
 
 export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
   const paletteChords = useCurrentModeChords();
-  const { selectedMode, chordType } = useKeySnapshot();
+  const { selectedMode, chordType, setChordType } = useKeyStore();
 
   function getEffectiveSource(chordInfo: (typeof paletteChords)[number]) {
     return (chordInfo.source ?? selectedMode) as Exclude<typeof selectedMode, `category:${string}`>;
@@ -32,7 +29,7 @@ export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
       chordInfo.romanNumeral,
       chordInfo.degree
     );
-    if (!getIsMuted()) {
+    if (!useChordPlaybackStore.getState().isMuted) {
       playChord(chordInfo.chord.root.name, chordInfo.chord.quality);
     }
   }

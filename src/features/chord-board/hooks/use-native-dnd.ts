@@ -1,9 +1,5 @@
 import { type RefObject, useCallback, useRef } from "react";
-import {
-  addChord,
-  removeChord,
-  reorderChords,
-} from "@/features/chord-progression/stores/chord-progression-store";
+import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import type { ChordFunction, ChordQuality, ScaleType } from "@/lib/music-theory";
 
 export type PaletteDragData = {
@@ -61,20 +57,22 @@ export function useNativeDnd({ onBeforeReorder, chordsCount, containerRef }: Use
 
       onBeforeReorder?.();
       const { data } = source;
-      const id = addChord(
-        data.rootName,
-        data.quality,
-        data.source,
-        data.chordFunction,
-        data.romanNumeral,
-        data.degree
-      );
+      const id = useChordProgressionStore
+        .getState()
+        .addChord(
+          data.rootName,
+          data.quality,
+          data.source,
+          data.chordFunction,
+          data.romanNumeral,
+          data.degree
+        );
       source.addedChordId = id;
       const addedAt = chordsCountRef.current;
       dragIndexRef.current = addedAt;
 
       if (targetIndex != null && addedAt !== targetIndex) {
-        reorderChords(addedAt, targetIndex);
+        useChordProgressionStore.getState().reorderChords(addedAt, targetIndex);
         dragIndexRef.current = targetIndex;
       }
 
@@ -95,7 +93,7 @@ export function useNativeDnd({ onBeforeReorder, chordsCount, containerRef }: Use
         const source = dragSourceRef.current;
         if (source?.type === "palette" && source.addedChordId) {
           onBeforeReorder?.();
-          removeChord(source.addedChordId);
+          useChordProgressionStore.getState().removeChord(source.addedChordId);
         }
         dragSourceRef.current = null;
         dragIndexRef.current = null;
@@ -138,7 +136,7 @@ export function useNativeDnd({ onBeforeReorder, chordsCount, containerRef }: Use
           if (now - lastReorderTimeRef.current < REORDER_THROTTLE_MS) return;
           lastReorderTimeRef.current = now;
           onBeforeReorder?.();
-          reorderChords(dragIndexRef.current, index);
+          useChordProgressionStore.getState().reorderChords(dragIndexRef.current, index);
           dragIndexRef.current = index;
         }
       },

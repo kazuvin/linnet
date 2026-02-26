@@ -1,8 +1,14 @@
-import { proxy, useSnapshot } from "valtio";
+import { create } from "zustand";
 
-export type ChordPlaybackState = {
+type ChordPlaybackState = {
   isMuted: boolean;
   isPlaying: boolean;
+};
+
+type ChordPlaybackActions = {
+  toggleMute: () => void;
+  setMuted: (muted: boolean) => void;
+  setPlaying: (playing: boolean) => void;
 };
 
 const INITIAL_STATE: ChordPlaybackState = {
@@ -10,28 +16,13 @@ const INITIAL_STATE: ChordPlaybackState = {
   isPlaying: false,
 };
 
-const state = proxy<ChordPlaybackState>({ ...INITIAL_STATE });
-
-export function useChordPlaybackSnapshot() {
-  return useSnapshot(state);
-}
-
-export function toggleMute(): void {
-  state.isMuted = !state.isMuted;
-}
-
-export function setMuted(muted: boolean): void {
-  state.isMuted = muted;
-}
-
-export function setPlaying(playing: boolean): void {
-  state.isPlaying = playing;
-}
-
-export function getIsMuted(): boolean {
-  return state.isMuted;
-}
+export const useChordPlaybackStore = create<ChordPlaybackState & ChordPlaybackActions>()((set) => ({
+  ...INITIAL_STATE,
+  toggleMute: () => set((state) => ({ isMuted: !state.isMuted })),
+  setMuted: (muted) => set({ isMuted: muted }),
+  setPlaying: (playing) => set({ isPlaying: playing }),
+}));
 
 export function _resetChordPlaybackForTesting(): void {
-  Object.assign(state, INITIAL_STATE);
+  useChordPlaybackStore.setState({ ...INITIAL_STATE });
 }

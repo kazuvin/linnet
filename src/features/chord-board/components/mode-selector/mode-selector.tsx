@@ -7,11 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  type SelectedMode,
-  setSelectedMode,
-  useKeySnapshot,
-} from "@/features/key-selection/stores/key-store";
+import { type SelectedMode, useKeyStore } from "@/features/key-selection/stores/key-store";
 import {
   ALL_CATEGORY_IDS,
   ALL_MODE_SOURCES,
@@ -40,7 +36,7 @@ const MODE_OPTIONS: readonly ModeOption[] = [
 ];
 
 export function ModeSelector() {
-  const { selectedMode } = useKeySnapshot();
+  const { selectedMode, setSelectedMode } = useKeyStore();
 
   return (
     <Select value={selectedMode} onValueChange={(value) => setSelectedMode(value as SelectedMode)}>

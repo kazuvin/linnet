@@ -1,13 +1,13 @@
 "use client";
 
-import { useChordProgressionSnapshot } from "@/features/chord-progression/stores/chord-progression-store";
+import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { useFlipAnimation } from "../../hooks/use-flip-animation";
 import { useNativeDnd } from "../../hooks/use-native-dnd";
 import { ChordPalette } from "../chord-palette";
 import { ProgressionLane } from "../progression-lane";
 
 export function ChordBoard() {
-  const { chords } = useChordProgressionSnapshot();
+  const chords = useChordProgressionStore((s) => s.chords);
 
   const chordKeys = chords.map((c) => c.id);
   const { containerRef, capturePositions } = useFlipAnimation(chordKeys);

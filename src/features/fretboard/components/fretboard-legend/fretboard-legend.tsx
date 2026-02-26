@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  setShowAvoidNotes,
-  setShowCharacteristicNotes,
-  useFretboardSnapshot,
-} from "@/features/fretboard/stores/fretboard-store";
+import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { cn } from "@/lib/utils";
 
 type LegendItem = {
@@ -31,7 +27,8 @@ const AVOID_ITEM: LegendItem = {
 };
 
 export function FretboardLegend() {
-  const { showCharacteristicNotes, showAvoidNotes } = useFretboardSnapshot();
+  const { showCharacteristicNotes, showAvoidNotes, setShowCharacteristicNotes, setShowAvoidNotes } =
+    useFretboardStore();
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground text-xs">

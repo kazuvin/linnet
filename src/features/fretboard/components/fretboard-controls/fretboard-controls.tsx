@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { setMaxFret } from "@/features/fretboard/stores/fretboard-store";
+import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 
 type FretboardControlsProps = {
   maxFret: number;
@@ -16,6 +16,8 @@ type FretboardControlsProps = {
 const MAX_FRET_OPTIONS = [12, 15, 19, 22, 24] as const;
 
 export function FretboardControls({ maxFret }: FretboardControlsProps) {
+  const setMaxFret = useFretboardStore((s) => s.setMaxFret);
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Max fret selector */}

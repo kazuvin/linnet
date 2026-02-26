@@ -1,15 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import {
-  _resetKeyStoreForTesting,
-  setChordType,
-  setRootName,
-  setSelectedMode,
   useCurrentModeChords,
   useDiatonicChords,
-  useKeySnapshot,
   useModalInterchangeChords,
   useModalInterchangeChordsByMode,
-} from "./key-store";
+} from "./key-selectors";
+import { _resetKeyStoreForTesting, useKeyStore } from "./key-store";
 
 describe("key-store", () => {
   beforeEach(() => {
@@ -18,17 +14,17 @@ describe("key-store", () => {
 
   // 1. 初期状態の検証
   it("初期状態は rootName: C, chordType: triad", () => {
-    const { result } = renderHook(() => useKeySnapshot());
+    const { result } = renderHook(() => useKeyStore());
     expect(result.current.rootName).toBe("C");
     expect(result.current.chordType).toBe("triad");
   });
 
   // 2. setRootName で rootName が変更される
   it("setRootName で rootName が変更される", async () => {
-    const { result } = renderHook(() => useKeySnapshot());
+    const { result } = renderHook(() => useKeyStore());
 
     await act(async () => {
-      setRootName("G");
+      useKeyStore.getState().setRootName("G");
     });
 
     expect(result.current.rootName).toBe("G");
@@ -37,10 +33,10 @@ describe("key-store", () => {
 
   // 3. setChordType で chordType が変更される
   it("setChordType で chordType が変更される", async () => {
-    const { result } = renderHook(() => useKeySnapshot());
+    const { result } = renderHook(() => useKeyStore());
 
     await act(async () => {
-      setChordType("seventh");
+      useKeyStore.getState().setChordType("seventh");
     });
 
     expect(result.current.chordType).toBe("seventh");
@@ -66,7 +62,7 @@ describe("key-store", () => {
     const { result } = renderHook(() => useDiatonicChords());
 
     await act(async () => {
-      setChordType("seventh");
+      useKeyStore.getState().setChordType("seventh");
     });
 
     const romanNumerals = result.current.map((c) => c.romanNumeral);
@@ -77,11 +73,8 @@ describe("key-store", () => {
   it("useModalInterchangeChords がダイアトニック以外のコードのみ返す", () => {
     const { result } = renderHook(() => useModalInterchangeChords());
 
-    // 全てのコードがダイアトニックでないことを確認
-    // (isAvailable = true のもののみ filterNonDiatonicChords で残る)
     expect(result.current.length).toBeGreaterThan(0);
 
-    // C メジャーのダイアトニックトライアドのルート+クオリティの組み合わせ
     const diatonicSet = new Set([
       "C-major",
       "D-minor",
@@ -102,14 +95,12 @@ describe("key-store", () => {
   it("rootName 変更後に useDiatonicChords の結果も変わる", async () => {
     const { result } = renderHook(() => useDiatonicChords());
 
-    // 初期状態: C メジャー
     expect(result.current[0].chord.root.name).toBe("C");
 
     await act(async () => {
-      setRootName("G");
+      useKeyStore.getState().setRootName("G");
     });
 
-    // G メジャーに変わる
     expect(result.current[0].chord.root.name).toBe("G");
     const rootNames = result.current.map((c) => c.chord.root.name);
     expect(rootNames).toEqual(["G", "A", "B", "C", "D", "E", "F#"]);
@@ -143,10 +134,9 @@ describe("key-store", () => {
       const { result } = renderHook(() => useModalInterchangeChordsByMode());
 
       await act(async () => {
-        setChordType("seventh");
+        useKeyStore.getState().setChordType("seventh");
       });
 
-      // 全モードのコードが4音（セブンス）
       for (const mode of result.current) {
         for (const chord of mode.chords) {
           expect(chord.chord.notes).toHaveLength(4);
@@ -159,10 +149,9 @@ describe("key-store", () => {
       const initialFirst = result.current[0].chords[0].chord.root.name;
 
       await act(async () => {
-        setRootName("G");
+        useKeyStore.getState().setRootName("G");
       });
 
-      // G キーでは異なるルート音になる
       const updatedFirst = result.current[0].chords[0].chord.root.name;
       expect(updatedFirst).not.toBe(initialFirst);
     });
@@ -170,11 +159,11 @@ describe("key-store", () => {
 
   // 9. _resetKeyStoreForTesting で初期状態に戻る
   it("_resetKeyStoreForTesting で初期状態に戻る", async () => {
-    const { result } = renderHook(() => useKeySnapshot());
+    const { result } = renderHook(() => useKeyStore());
 
     await act(async () => {
-      setRootName("D");
-      setChordType("seventh");
+      useKeyStore.getState().setRootName("D");
+      useKeyStore.getState().setChordType("seventh");
     });
 
     expect(result.current.rootName).toBe("D");
@@ -190,24 +179,21 @@ describe("key-store", () => {
 
   // 10. selectedMode と useCurrentModeChords
   describe("selectedMode と useCurrentModeChords", () => {
-    // 初期状態は selectedMode: "diatonic"
     it('初期状態は selectedMode: "diatonic"', () => {
-      const { result } = renderHook(() => useKeySnapshot());
+      const { result } = renderHook(() => useKeyStore());
       expect(result.current.selectedMode).toBe("diatonic");
     });
 
-    // setSelectedMode で selectedMode が変更される
     it("setSelectedMode で selectedMode が変更される", async () => {
-      const { result } = renderHook(() => useKeySnapshot());
+      const { result } = renderHook(() => useKeyStore());
 
       await act(async () => {
-        setSelectedMode("dorian");
+        useKeyStore.getState().setSelectedMode("dorian");
       });
 
       expect(result.current.selectedMode).toBe("dorian");
     });
 
-    // useCurrentModeChords が diatonic モードで 7 コード（全て isAvailable: true）を返す
     it("useCurrentModeChords が diatonic モードで 7 コードを返す（全て isAvailable: true）", () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
@@ -217,12 +203,10 @@ describe("key-store", () => {
       }
     });
 
-    // useCurrentModeChords が diatonic モードのコードに chordFunction がある
     it("useCurrentModeChords が diatonic モードのコードに chordFunction がある", () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       const functions = result.current.map((c) => c.chordFunction);
-      // C メジャーのダイアトニックコードの機能
       expect(functions).toEqual([
         "tonic",
         "subdominant",
@@ -234,27 +218,24 @@ describe("key-store", () => {
       ]);
     });
 
-    // useCurrentModeChords が modal interchange モードで 7 コードを返す（全て isAvailable: true）
     it("useCurrentModeChords が modal interchange モードで 7 コードを返す（全て isAvailable: true）", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       await act(async () => {
-        setSelectedMode("lydian");
+        useKeyStore.getState().setSelectedMode("lydian");
       });
 
       expect(result.current).toHaveLength(7);
-      // 全てのコードが isAvailable: true
       for (const chord of result.current) {
         expect(chord.isAvailable).toBe(true);
       }
     });
 
-    // useCurrentModeChords が modal interchange モードのコードにも chordFunction がある
     it("useCurrentModeChords が modal interchange モードのコードにも chordFunction がある", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       await act(async () => {
-        setSelectedMode("dorian");
+        useKeyStore.getState().setSelectedMode("dorian");
       });
 
       for (const chord of result.current) {
@@ -262,30 +243,26 @@ describe("key-store", () => {
       }
     });
 
-    // rootName/chordType 変更に追従する
     it("rootName/chordType 変更に追従する", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
-      // 初期状態: C メジャー triad
       expect(result.current[0].chord.root.name).toBe("C");
       expect(result.current[0].chord.notes).toHaveLength(3);
 
       await act(async () => {
-        setRootName("G");
-        setChordType("seventh");
+        useKeyStore.getState().setRootName("G");
+        useKeyStore.getState().setChordType("seventh");
       });
 
-      // G メジャー seventh に変わる
       expect(result.current[0].chord.root.name).toBe("G");
       expect(result.current[0].chord.notes).toHaveLength(4);
     });
 
-    // useCurrentModeChords が secondary-dominant モードで 5 コードを返す
     it("useCurrentModeChords が secondary-dominant モードで 5 コードを返す", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       await act(async () => {
-        setSelectedMode("secondary-dominant");
+        useKeyStore.getState().setSelectedMode("secondary-dominant");
       });
 
       expect(result.current).toHaveLength(5);
@@ -295,13 +272,12 @@ describe("key-store", () => {
       }
     });
 
-    // useCurrentModeChords が secondary-dominant + seventh で dominant7 コードを返す
     it("useCurrentModeChords が secondary-dominant + seventh で dominant7 コードを返す", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       await act(async () => {
-        setSelectedMode("secondary-dominant");
-        setChordType("seventh");
+        useKeyStore.getState().setSelectedMode("secondary-dominant");
+        useKeyStore.getState().setChordType("seventh");
       });
 
       expect(result.current).toHaveLength(5);
@@ -310,12 +286,11 @@ describe("key-store", () => {
       }
     });
 
-    // useCurrentModeChords が tritone-substitution モードで 5 コードを返す
     it("useCurrentModeChords が tritone-substitution モードで 5 コードを返す", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       await act(async () => {
-        setSelectedMode("tritone-substitution");
+        useKeyStore.getState().setSelectedMode("tritone-substitution");
       });
 
       expect(result.current).toHaveLength(5);
@@ -325,13 +300,12 @@ describe("key-store", () => {
       }
     });
 
-    // useCurrentModeChords が tritone-substitution + seventh で dominant7 コードを返す
     it("useCurrentModeChords が tritone-substitution + seventh で dominant7 コードを返す", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       await act(async () => {
-        setSelectedMode("tritone-substitution");
-        setChordType("seventh");
+        useKeyStore.getState().setSelectedMode("tritone-substitution");
+        useKeyStore.getState().setChordType("seventh");
       });
 
       expect(result.current).toHaveLength(5);
@@ -340,25 +314,22 @@ describe("key-store", () => {
       }
     });
 
-    // useCurrentModeChords が tritone-substitution でセカンダリードミナントのトライトーン上のルートを返す
     it("useCurrentModeChords が tritone-substitution で正しいルートを返す（Cメジャー）", async () => {
       const { result } = renderHook(() => useCurrentModeChords());
 
       await act(async () => {
-        setSelectedMode("tritone-substitution");
+        useKeyStore.getState().setSelectedMode("tritone-substitution");
       });
 
       const symbols = result.current.map((c) => c.chord.symbol);
-      // SubV/ii=Eb, SubV/iii=F, SubV/IV=Gb, SubV/V=Ab, SubV/vi=Bb
       expect(symbols).toEqual(["Eb", "F", "Gb", "Ab", "Bb"]);
     });
 
-    // _resetKeyStoreForTesting で selectedMode も "diatonic" に戻る
     it('_resetKeyStoreForTesting で selectedMode も "diatonic" に戻る', async () => {
-      const { result } = renderHook(() => useKeySnapshot());
+      const { result } = renderHook(() => useKeyStore());
 
       await act(async () => {
-        setSelectedMode("phrygian");
+        useKeyStore.getState().setSelectedMode("phrygian");
       });
 
       expect(result.current.selectedMode).toBe("phrygian");

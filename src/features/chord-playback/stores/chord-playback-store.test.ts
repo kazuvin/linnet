@@ -1,11 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import {
-  _resetChordPlaybackForTesting,
-  setMuted,
-  setPlaying,
-  toggleMute,
-  useChordPlaybackSnapshot,
-} from "./chord-playback-store";
+import { _resetChordPlaybackForTesting, useChordPlaybackStore } from "./chord-playback-store";
 
 describe("chord-playback-store", () => {
   beforeEach(() => {
@@ -13,59 +7,59 @@ describe("chord-playback-store", () => {
   });
 
   it("初期状態は isMuted: false, isPlaying: false", () => {
-    const { result } = renderHook(() => useChordPlaybackSnapshot());
+    const { result } = renderHook(() => useChordPlaybackStore());
     expect(result.current.isMuted).toBe(false);
     expect(result.current.isPlaying).toBe(false);
   });
 
   it("toggleMute でミュート状態をトグルできる", async () => {
-    const { result } = renderHook(() => useChordPlaybackSnapshot());
+    const { result } = renderHook(() => useChordPlaybackStore());
 
     await act(async () => {
-      toggleMute();
+      useChordPlaybackStore.getState().toggleMute();
     });
     expect(result.current.isMuted).toBe(true);
 
     await act(async () => {
-      toggleMute();
+      useChordPlaybackStore.getState().toggleMute();
     });
     expect(result.current.isMuted).toBe(false);
   });
 
   it("setMuted でミュート状態を直接設定できる", async () => {
-    const { result } = renderHook(() => useChordPlaybackSnapshot());
+    const { result } = renderHook(() => useChordPlaybackStore());
 
     await act(async () => {
-      setMuted(true);
+      useChordPlaybackStore.getState().setMuted(true);
     });
     expect(result.current.isMuted).toBe(true);
 
     await act(async () => {
-      setMuted(false);
+      useChordPlaybackStore.getState().setMuted(false);
     });
     expect(result.current.isMuted).toBe(false);
   });
 
   it("setPlaying で再生状態を設定できる", async () => {
-    const { result } = renderHook(() => useChordPlaybackSnapshot());
+    const { result } = renderHook(() => useChordPlaybackStore());
 
     await act(async () => {
-      setPlaying(true);
+      useChordPlaybackStore.getState().setPlaying(true);
     });
     expect(result.current.isPlaying).toBe(true);
 
     await act(async () => {
-      setPlaying(false);
+      useChordPlaybackStore.getState().setPlaying(false);
     });
     expect(result.current.isPlaying).toBe(false);
   });
 
   it("_resetChordPlaybackForTesting で初期状態に戻る", async () => {
-    const { result } = renderHook(() => useChordPlaybackSnapshot());
+    const { result } = renderHook(() => useChordPlaybackStore());
 
     await act(async () => {
-      setMuted(true);
-      setPlaying(true);
+      useChordPlaybackStore.getState().setMuted(true);
+      useChordPlaybackStore.getState().setPlaying(true);
     });
 
     expect(result.current.isMuted).toBe(true);

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
-import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-store";
+import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-selectors";
+import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import {
   findOverlayPositions,
   getRotatedMode,
@@ -12,7 +12,7 @@ export function useFretboardPositions(
   overrideScaleType?: ScaleType | null
 ): readonly OverlayPosition[] {
   const selectedChord = useSelectedProgressionChord();
-  const { maxFret } = useFretboardSnapshot();
+  const maxFret = useFretboardStore((s) => s.maxFret);
 
   return useMemo(() => {
     if (!selectedChord) return [];
