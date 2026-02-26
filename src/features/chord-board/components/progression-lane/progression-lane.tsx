@@ -50,7 +50,7 @@ export function ProgressionLane({
         {chords.length > 0 && (
           <button
             type="button"
-            className="text-muted text-sm transition-colors hover:text-foreground"
+            className="rounded-full px-3 py-1.5 text-muted text-sm transition-colors hover:bg-foreground/5 hover:text-foreground"
             onClick={clearProgression}
           >
             Clear

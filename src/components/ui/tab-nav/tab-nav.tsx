@@ -102,8 +102,8 @@ const itemUnselectedStyles = {
 
 /** Size styles for items */
 const itemSizeStyles = {
-  sm: "px-3 py-1 text-xs",
-  md: "px-4 py-1.5 text-sm",
+  sm: "px-3.5 py-2 text-xs md:px-3 md:py-1",
+  md: "px-4 py-2.5 text-sm md:py-1.5",
   lg: "px-5 py-2 text-base",
 } as const;
 

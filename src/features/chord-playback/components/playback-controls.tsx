@@ -17,7 +17,7 @@ export function PlaybackControls({ onPlay, disabled }: PlaybackControlsProps) {
       <button
         type="button"
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+          "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
           disabled
             ? "cursor-not-allowed text-muted"
             : "text-muted hover:bg-foreground/10 hover:text-foreground"
@@ -27,12 +27,12 @@ export function PlaybackControls({ onPlay, disabled }: PlaybackControlsProps) {
         aria-label="コード進行を再生"
         title="コード進行を再生"
       >
-        <PlayIcon className="h-3.5 w-3.5" />
+        <PlayIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
       </button>
       <button
         type="button"
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+          "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
           "text-muted hover:bg-foreground/10 hover:text-foreground"
         )}
         onClick={toggleMute}
@@ -40,9 +40,9 @@ export function PlaybackControls({ onPlay, disabled }: PlaybackControlsProps) {
         title={isMuted ? "ミュート解除" : "ミュート"}
       >
         {isMuted ? (
-          <VolumeOffIcon className="h-3.5 w-3.5" />
+          <VolumeOffIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
         ) : (
-          <VolumeIcon className="h-3.5 w-3.5" />
+          <VolumeIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
         )}
       </button>
     </div>
