@@ -13,7 +13,7 @@ import {
   _resetKeyStoreForTesting,
   useKeySnapshot,
 } from "@/features/key-selection/stores/key-store";
-import { changeKey, selectProgressionChord } from "./store-coordination";
+import { addAndSelectChord, changeKey, selectProgressionChord } from "./store-coordination";
 
 /**
  * Valtio の useSnapshot はレンダリング中にアクセスされたプロパティのみを追跡する。
@@ -135,6 +135,35 @@ describe("store-coordination", () => {
       });
 
       expect(result.current.selectedChordId).toBeNull();
+    });
+  });
+
+  describe("addAndSelectChord", () => {
+    it("コードを追加し、そのコードを選択状態にする", async () => {
+      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+
+      await act(async () => {
+        addAndSelectChord("C", "major", "diatonic", "tonic", "I", 1);
+      });
+
+      expect(result.current.chords).toHaveLength(1);
+      expect(result.current.selectedChordId).toBe(result.current.chords[0].id);
+    });
+
+    it("追加時にフレットボードのスケール選択をリセットする", async () => {
+      const { result: fretboardResult } = renderHook(() => useFretboardSnapshot());
+
+      await act(async () => {
+        setSelectedScaleType("dorian");
+      });
+
+      expect(fretboardResult.current.selectedScaleType).toBe("dorian");
+
+      await act(async () => {
+        addAndSelectChord("C", "major", "diatonic", "tonic", "I", 1);
+      });
+
+      expect(fretboardResult.current.selectedScaleType).toBeNull();
     });
   });
 });
