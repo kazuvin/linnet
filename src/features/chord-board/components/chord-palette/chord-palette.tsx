@@ -2,7 +2,7 @@ import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-pl
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
-import { addAndSelectChord } from "@/features/store-coordination";
+import { addAndSelectChord, addChordToGrid } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import type { useNativeDnd } from "../../hooks/use-native-dnd";
 import { ChordCard } from "../chord-card";
@@ -21,10 +21,20 @@ export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
   }
 
   function handleClick(chordInfo: (typeof paletteChords)[number]) {
+    const source = getEffectiveSource(chordInfo);
+    // グリッドとプログレッションの両方に追加
+    addChordToGrid(
+      chordInfo.chord.root.name,
+      chordInfo.chord.quality,
+      source,
+      chordInfo.chordFunction,
+      chordInfo.romanNumeral,
+      chordInfo.degree
+    );
     addAndSelectChord(
       chordInfo.chord.root.name,
       chordInfo.chord.quality,
-      getEffectiveSource(chordInfo),
+      source,
       chordInfo.chordFunction,
       chordInfo.romanNumeral,
       chordInfo.degree

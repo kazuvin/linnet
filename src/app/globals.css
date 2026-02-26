@@ -328,6 +328,11 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Grid 16 columns for chord grid */
+@utility grid-cols-16 {
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+}
+
 /* Override default container max-width */
 @utility container {
   width: 100%;

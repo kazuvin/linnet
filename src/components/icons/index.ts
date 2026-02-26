@@ -6,6 +6,7 @@ export { GitHubIcon } from "./github-icon";
 export { LoadingSpinnerIcon } from "./loading-spinner-icon";
 export { PlayIcon } from "./play-icon";
 export { SearchIcon } from "./search-icon";
+export { StopIcon } from "./stop-icon";
 export type { IconProps } from "./types";
 export { VolumeIcon } from "./volume-icon";
 export { VolumeOffIcon } from "./volume-off-icon";

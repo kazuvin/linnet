@@ -1,5 +1,12 @@
 // chord-board
 export { ChordBoard, ChordCard, type ChordCardData, ModeSelector } from "./chord-board";
+// chord-grid
+export { ChordGrid } from "./chord-grid";
+export {
+  _resetChordGridForTesting,
+  type GridChord,
+  useChordGridStore,
+} from "./chord-grid/stores/chord-grid-store";
 // chord-progression selectors
 export {
   useSelectedChord,
@@ -40,4 +47,4 @@ export {
 } from "./key-selection/stores/key-store";
 
 // store-coordination (cross-store composite actions)
-export { changeKey, selectProgressionChord } from "./store-coordination";
+export { addChordToGrid, changeKey, selectProgressionChord } from "./store-coordination";
