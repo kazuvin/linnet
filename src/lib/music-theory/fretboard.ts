@@ -1,3 +1,4 @@
+import { getAvoidPitchClasses } from "./avoid-notes";
 import { getCharacteristicPitchClasses } from "./characteristic-notes";
 import { type Chord, type ChordQuality, createChord } from "./chord";
 import { createNote, type Note, type PitchClass, transposeNote } from "./note";
@@ -106,6 +107,7 @@ export type NoteRole = "scale" | "chord-tone" | "chord-root";
 export type OverlayPosition = FretPosition & {
   readonly role: NoteRole;
   readonly isCharacteristic: boolean;
+  readonly isAvoid: boolean;
 };
 
 /**
@@ -128,6 +130,12 @@ export function findOverlayPositions(
   const scalePitchClasses = new Set(scale.notes.map((n) => n.pitchClass));
 
   const characteristicPitchClasses = getCharacteristicPitchClasses(keyRootName, scaleType);
+  const avoidPitchClasses = getAvoidPitchClasses(
+    keyRootName,
+    scaleType,
+    chordRootName,
+    chordQuality
+  );
 
   // スケール音とコード構成音の和集合
   const allTargetPitchClasses = new Set([...scalePitchClasses, ...chordPitchClasses]);
@@ -149,8 +157,9 @@ export function findOverlayPositions(
       }
 
       const isCharacteristic = characteristicPitchClasses.has(note.pitchClass);
+      const isAvoid = role === "scale" && avoidPitchClasses.has(note.pitchClass);
 
-      positions.push({ string, fret, note, role, isCharacteristic });
+      positions.push({ string, fret, note, role, isCharacteristic, isAvoid });
     }
   }
 

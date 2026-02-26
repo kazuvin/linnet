@@ -14,9 +14,16 @@ const NOTE_DOT_STYLES: Record<NoteRole, string> = {
 type FretboardGridProps = {
   positions: readonly OverlayPosition[];
   maxFret: number;
+  showCharacteristicNotes: boolean;
+  showAvoidNotes: boolean;
 };
 
-export function FretboardGrid({ positions, maxFret }: FretboardGridProps) {
+export function FretboardGrid({
+  positions,
+  maxFret,
+  showCharacteristicNotes,
+  showAvoidNotes,
+}: FretboardGridProps) {
   const positionMap = useMemo(() => {
     const map = new Map<string, OverlayPosition>();
     for (const pos of positions) {
@@ -79,8 +86,12 @@ export function FretboardGrid({ positions, maxFret }: FretboardGridProps) {
                       className={cn(
                         "relative z-10 flex size-5 items-center justify-center rounded-full font-bold font-mono text-[10px]",
                         "transition-colors duration-[120ms] ease-out",
-                        NOTE_DOT_STYLES[pos.role],
-                        pos.isCharacteristic && "ring-[1.5px] ring-foreground/40"
+                        showAvoidNotes && pos.isAvoid
+                          ? "bg-avoid-note text-avoid-note-fg"
+                          : NOTE_DOT_STYLES[pos.role],
+                        showCharacteristicNotes &&
+                          pos.isCharacteristic &&
+                          "ring-[1.5px] ring-foreground/40"
                       )}
                     >
                       {pos.note.name}
