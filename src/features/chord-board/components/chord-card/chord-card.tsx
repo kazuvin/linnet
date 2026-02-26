@@ -101,7 +101,7 @@ export function ChordCard({
         <button
           type="button"
           className={cn(
-            "absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full opacity-0 transition-opacity group-hover:opacity-100",
+            "absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full transition-opacity md:h-5 md:w-5 md:opacity-0 md:group-hover:opacity-100",
             isSelected ? "bg-background text-foreground" : "bg-foreground text-background"
           )}
           onClick={(e) => {
@@ -109,7 +109,7 @@ export function ChordCard({
             onRemove();
           }}
         >
-          <XIcon className="h-3 w-3" />
+          <XIcon className="h-3.5 w-3.5 md:h-3 md:w-3" />
         </button>
       )}
     </div>

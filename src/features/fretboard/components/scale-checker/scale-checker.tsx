@@ -52,7 +52,7 @@ export function ScaleChecker({
               <button
                 type="button"
                 className={cn(
-                  "rounded-full px-3 py-1 font-mono text-xs transition-colors",
+                  "rounded-full px-3.5 py-2 font-mono text-xs transition-colors md:px-3 md:py-1",
                   isActive
                     ? "bg-foreground text-background"
                     : "bg-surface text-muted hover:bg-border hover:text-foreground"
@@ -65,7 +65,7 @@ export function ScaleChecker({
                 <button
                   type="button"
                   className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded-full transition-colors",
+                    "flex h-9 w-9 items-center justify-center rounded-full transition-colors md:h-6 md:w-6",
                     isPlaying
                       ? "bg-foreground text-background"
                       : "text-muted hover:bg-foreground/10 hover:text-foreground"
@@ -74,7 +74,7 @@ export function ScaleChecker({
                   aria-label={isPlaying ? "スケール再生を停止" : "スケールを再生"}
                   title={isPlaying ? "スケール再生を停止" : "スケールを再生"}
                 >
-                  <PlayIcon className="h-3 w-3" />
+                  <PlayIcon className="h-4 w-4 md:h-3 md:w-3" />
                 </button>
               )}
             </div>

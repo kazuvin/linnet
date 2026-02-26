@@ -172,7 +172,7 @@ describe("TabNav", () => {
       );
 
       const item = screen.getByTestId("item");
-      expect(item).toHaveClass("px-3", "py-1", "text-xs");
+      expect(item).toHaveClass("px-3.5", "py-2", "text-xs");
     });
 
     it("renders with md size", () => {

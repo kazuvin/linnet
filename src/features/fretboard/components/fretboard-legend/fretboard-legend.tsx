@@ -53,7 +53,7 @@ export function FretboardLegend() {
       <button
         type="button"
         className={cn(
-          "flex items-center gap-1.5 rounded-full px-2 py-0.5 transition-colors",
+          "flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors md:px-2 md:py-0.5",
           showCharacteristicNotes ? "bg-foreground/5" : "bg-foreground/5 opacity-50"
         )}
         onClick={() => setShowCharacteristicNotes(!showCharacteristicNotes)}
@@ -80,7 +80,7 @@ export function FretboardLegend() {
       <button
         type="button"
         className={cn(
-          "flex items-center gap-1.5 rounded-full px-2 py-0.5 transition-colors",
+          "flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors md:px-2 md:py-0.5",
           showAvoidNotes ? "bg-foreground/5" : "bg-foreground/5 opacity-50"
         )}
         onClick={() => setShowAvoidNotes(!showAvoidNotes)}

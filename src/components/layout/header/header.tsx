@@ -126,7 +126,10 @@ export function HeaderGitHubLink({ url, className, ...props }: HeaderGitHubLinkP
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className={cn("text-foreground/60 transition-colors hover:text-foreground", className)}
+      className={cn(
+        "flex h-10 w-10 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground md:h-auto md:w-auto",
+        className
+      )}
       aria-label="GitHub repository"
       {...props}
     >

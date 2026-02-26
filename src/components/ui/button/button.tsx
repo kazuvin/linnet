@@ -74,8 +74,8 @@ const errorStyles = "bg-red-600 text-white hover:bg-red-600 focus:ring-red-600 b
 
 /** Styles for each button size */
 const sizeStyles = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-sm font-semibold",
+  sm: "px-4 py-2.5 text-sm md:px-3 md:py-1.5",
+  md: "px-5 py-2.5 text-sm font-semibold md:px-4 md:py-2",
   lg: "px-6 py-3 text-lg",
 } as const;
 
