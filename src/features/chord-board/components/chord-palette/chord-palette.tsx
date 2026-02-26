@@ -1,11 +1,11 @@
 import { getIsMuted } from "@/features/chord-playback/stores/chord-playback-store";
-import { addChord } from "@/features/chord-progression/stores/chord-progression-store";
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import {
   setChordType,
   useCurrentModeChords,
   useKeySnapshot,
 } from "@/features/key-selection/stores/key-store";
+import { addAndSelectChord } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import type { useNativeDnd } from "../../hooks/use-native-dnd";
 import { ChordCard } from "../chord-card";
@@ -24,7 +24,7 @@ export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
   }
 
   function handleClick(chordInfo: (typeof paletteChords)[number]) {
-    addChord(
+    addAndSelectChord(
       chordInfo.chord.root.name,
       chordInfo.chord.quality,
       getEffectiveSource(chordInfo),
