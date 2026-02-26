@@ -1,8 +1,14 @@
 import { create } from "zustand";
 
-export type ChordPlaybackState = {
+type ChordPlaybackState = {
   isMuted: boolean;
   isPlaying: boolean;
+};
+
+type ChordPlaybackActions = {
+  toggleMute: () => void;
+  setMuted: (muted: boolean) => void;
+  setPlaying: (playing: boolean) => void;
 };
 
 const INITIAL_STATE: ChordPlaybackState = {
@@ -10,29 +16,12 @@ const INITIAL_STATE: ChordPlaybackState = {
   isPlaying: false,
 };
 
-const useChordPlaybackStore = create<ChordPlaybackState>()(() => ({
+export const useChordPlaybackStore = create<ChordPlaybackState & ChordPlaybackActions>()((set) => ({
   ...INITIAL_STATE,
+  toggleMute: () => set((state) => ({ isMuted: !state.isMuted })),
+  setMuted: (muted) => set({ isMuted: muted }),
+  setPlaying: (playing) => set({ isPlaying: playing }),
 }));
-
-export function useChordPlaybackSnapshot() {
-  return useChordPlaybackStore();
-}
-
-export function toggleMute(): void {
-  useChordPlaybackStore.setState((state) => ({ isMuted: !state.isMuted }));
-}
-
-export function setMuted(muted: boolean): void {
-  useChordPlaybackStore.setState({ isMuted: muted });
-}
-
-export function setPlaying(playing: boolean): void {
-  useChordPlaybackStore.setState({ isPlaying: playing });
-}
-
-export function getIsMuted(): boolean {
-  return useChordPlaybackStore.getState().isMuted;
-}
 
 export function _resetChordPlaybackForTesting(): void {
   useChordPlaybackStore.setState({ ...INITIAL_STATE });

@@ -1,18 +1,13 @@
 import { act, renderHook } from "@testing-library/react";
 import {
   _resetChordProgressionForTesting,
-  addChord,
-  useChordProgressionSnapshot,
+  useChordProgressionStore,
 } from "@/features/chord-progression/stores/chord-progression-store";
 import {
   _resetFretboardStoreForTesting,
-  setSelectedScaleType,
-  useFretboardSnapshot,
+  useFretboardStore,
 } from "@/features/fretboard/stores/fretboard-store";
-import {
-  _resetKeyStoreForTesting,
-  useKeySnapshot,
-} from "@/features/key-selection/stores/key-store";
+import { _resetKeyStoreForTesting, useKeyStore } from "@/features/key-selection/stores/key-store";
 import { addAndSelectChord, changeKey, selectProgressionChord } from "./store-coordination";
 
 describe("store-coordination", () => {
@@ -24,7 +19,7 @@ describe("store-coordination", () => {
 
   describe("changeKey", () => {
     it("rootName を変更する", async () => {
-      const { result } = renderHook(() => useKeySnapshot());
+      const { result } = renderHook(() => useKeyStore());
 
       await act(async () => {
         changeKey("G");
@@ -34,11 +29,12 @@ describe("store-coordination", () => {
     });
 
     it("プログレッション内の全コードをトランスポーズする", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshot());
+      const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
-        addChord("C", "major", "diatonic", "tonic", "I", 1);
-        addChord("A", "minor", "diatonic", "tonic", "vi", 6);
+        const s = useChordProgressionStore.getState();
+        s.addChord("C", "major", "diatonic", "tonic", "I", 1);
+        s.addChord("A", "minor", "diatonic", "tonic", "vi", 6);
       });
 
       await act(async () => {
@@ -52,10 +48,10 @@ describe("store-coordination", () => {
     });
 
     it("同じキーへの変更ではトランスポーズしない", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshot());
+      const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
-        addChord("C", "major", "diatonic", "tonic", "I", 1);
+        useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
       });
 
       await act(async () => {
@@ -68,10 +64,10 @@ describe("store-coordination", () => {
 
   describe("selectProgressionChord", () => {
     it("コードを選択する", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshot());
+      const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
-        addChord("C", "major", "diatonic", "tonic", "I", 1);
+        useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
       });
 
       const chordId = result.current.chords[0].id;
@@ -84,19 +80,19 @@ describe("store-coordination", () => {
     });
 
     it("選択時にフレットボードのスケール選択をリセットする", async () => {
-      const { result: fretboardResult } = renderHook(() => useFretboardSnapshot());
+      const { result: fretboardResult } = renderHook(() => useFretboardStore());
 
       await act(async () => {
-        setSelectedScaleType("dorian");
+        useFretboardStore.getState().setSelectedScaleType("dorian");
       });
 
       expect(fretboardResult.current.selectedScaleType).toBe("dorian");
 
       await act(async () => {
-        addChord("C", "major", "diatonic", "tonic", "I", 1);
+        useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
       });
 
-      const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());
+      const { result: progressionResult } = renderHook(() => useChordProgressionStore());
       const chordId = progressionResult.current.chords[0].id;
 
       await act(async () => {
@@ -107,10 +103,10 @@ describe("store-coordination", () => {
     });
 
     it("null で選択解除する", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshot());
+      const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
-        addChord("C", "major", "diatonic", "tonic", "I", 1);
+        useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
       });
 
       const chordId = result.current.chords[0].id;
@@ -131,7 +127,7 @@ describe("store-coordination", () => {
 
   describe("addAndSelectChord", () => {
     it("コードを追加し、そのコードを選択状態にする", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshot());
+      const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
         addAndSelectChord("C", "major", "diatonic", "tonic", "I", 1);
@@ -142,10 +138,10 @@ describe("store-coordination", () => {
     });
 
     it("追加時にフレットボードのスケール選択をリセットする", async () => {
-      const { result: fretboardResult } = renderHook(() => useFretboardSnapshot());
+      const { result: fretboardResult } = renderHook(() => useFretboardStore());
 
       await act(async () => {
-        setSelectedScaleType("dorian");
+        useFretboardStore.getState().setSelectedScaleType("dorian");
       });
 
       expect(fretboardResult.current.selectedScaleType).toBe("dorian");

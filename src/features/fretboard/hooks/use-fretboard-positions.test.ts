@@ -1,13 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import {
   _resetChordProgressionForTesting,
-  addChord,
-  selectChord,
-  useChordProgressionSnapshot,
+  useChordProgressionStore,
 } from "@/features/chord-progression/stores/chord-progression-store";
 import {
   _resetFretboardStoreForTesting,
-  setMaxFret,
+  useFretboardStore,
 } from "@/features/fretboard/stores/fretboard-store";
 import { _resetKeyStoreForTesting } from "@/features/key-selection/stores/key-store";
 import { changeKey } from "@/features/store-coordination";
@@ -28,16 +26,16 @@ describe("useFretboardPositions", () => {
 
   // 2. diatonicコード選択時、メジャースケール + コード構成音のオーバーレイを返す
   it("diatonicコード選択時、メジャースケール + コード構成音のオーバーレイを返す", async () => {
-    addChord("C", "major", "diatonic", "tonic", "I", 1);
+    useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
 
-    const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());
+    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
 
     await act(async () => {});
 
     const chordId = progressionResult.current.chords[0].id;
 
     await act(async () => {
-      selectChord(chordId);
+      useChordProgressionStore.getState().selectChord(chordId);
     });
 
     const { result } = renderHook(() => useFretboardPositions());
@@ -77,16 +75,18 @@ describe("useFretboardPositions", () => {
   // 3. modal interchange コード選択時、対応するモードスケールのオーバーレイを返す
   it("natural-minor sourceのコード選択時、ナチュラルマイナースケールのオーバーレイを返す", async () => {
     // E♭M7 from natural minor
-    addChord("Eb", "major7", "natural-minor", "tonic", "III", 3);
+    useChordProgressionStore
+      .getState()
+      .addChord("Eb", "major7", "natural-minor", "tonic", "III", 3);
 
-    const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());
+    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
 
     await act(async () => {});
 
     const chordId = progressionResult.current.chords[0].id;
 
     await act(async () => {
-      selectChord(chordId);
+      useChordProgressionStore.getState().selectChord(chordId);
     });
 
     const { result } = renderHook(() => useFretboardPositions());
@@ -111,23 +111,23 @@ describe("useFretboardPositions", () => {
 
   // 4. maxFret の変更がポジション数に影響する
   it("maxFret の変更がポジション数に影響する", async () => {
-    addChord("C", "major", "diatonic", "tonic", "I", 1);
-    const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());
+    useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
+    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
     await act(async () => {});
     const chordId = progressionResult.current.chords[0].id;
     await act(async () => {
-      selectChord(chordId);
+      useChordProgressionStore.getState().selectChord(chordId);
     });
 
     await act(async () => {
-      setMaxFret(3);
+      useFretboardStore.getState().setMaxFret(3);
     });
 
     const { result: result3 } = renderHook(() => useFretboardPositions());
     const countAt3 = result3.current.length;
 
     await act(async () => {
-      setMaxFret(12);
+      useFretboardStore.getState().setMaxFret(12);
     });
 
     const { result: result12 } = renderHook(() => useFretboardPositions());
@@ -138,12 +138,12 @@ describe("useFretboardPositions", () => {
 
   // 5. rootName 変更後の結果が変わる
   it("rootName 変更後の結果が変わる", async () => {
-    addChord("C", "major", "diatonic", "tonic", "I", 1);
-    const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());
+    useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
+    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
     await act(async () => {});
     const chordId = progressionResult.current.chords[0].id;
     await act(async () => {
-      selectChord(chordId);
+      useChordProgressionStore.getState().selectChord(chordId);
     });
 
     const { result: resultC } = renderHook(() => useFretboardPositions());

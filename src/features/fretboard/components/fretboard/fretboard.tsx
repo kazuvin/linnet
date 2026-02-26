@@ -5,7 +5,7 @@ import { TabNav, TabNavItem } from "@/components/ui/tab-nav";
 import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
 import { useAvailableScales } from "@/features/fretboard/hooks/use-available-scales";
 import { useFretboardPositions } from "@/features/fretboard/hooks/use-fretboard-positions";
-import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-store";
+import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { PianoKeyboard } from "@/features/keyboard/components";
 import { FretboardControls } from "../fretboard-controls";
 import { FretboardGrid } from "../fretboard-grid";
@@ -16,7 +16,7 @@ type InstrumentTab = "fretboard" | "keyboard";
 
 export function Fretboard() {
   const [activeTab, setActiveTab] = useState<InstrumentTab>("fretboard");
-  const { maxFret, showCharacteristicNotes, showAvoidNotes } = useFretboardSnapshot();
+  const { maxFret, showCharacteristicNotes, showAvoidNotes } = useFretboardStore();
   const { availableScales, activeScaleType, scaleRoot } = useAvailableScales();
   const positions = useFretboardPositions(activeScaleType);
   const selectedChord = useSelectedProgressionChord();

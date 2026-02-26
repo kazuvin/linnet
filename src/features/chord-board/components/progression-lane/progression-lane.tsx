@@ -1,11 +1,7 @@
 import type { RefObject } from "react";
 import { PlaybackControls } from "@/features/chord-playback/components/playback-controls";
-import { getIsMuted, setPlaying } from "@/features/chord-playback/stores/chord-playback-store";
-import {
-  clearProgression,
-  removeChord,
-  useChordProgressionSnapshot,
-} from "@/features/chord-progression/stores/chord-progression-store";
+import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
+import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { selectProgressionChord } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import { cn } from "@/lib/utils";
@@ -25,18 +21,18 @@ export function ProgressionLane({
   createDragHandlers,
   createDropZoneHandlers,
 }: ProgressionLaneProps) {
-  const { chords, selectedChordId } = useChordProgressionSnapshot();
+  const { chords, selectedChordId, clearProgression, removeChord } = useChordProgressionStore();
 
   async function handlePlayProgression() {
-    if (chords.length === 0 || getIsMuted()) return;
-    setPlaying(true);
+    if (chords.length === 0 || useChordPlaybackStore.getState().isMuted) return;
+    useChordPlaybackStore.getState().setPlaying(true);
     try {
       for (const chord of chords) {
-        if (getIsMuted()) break;
+        if (useChordPlaybackStore.getState().isMuted) break;
         await playChord(chord.rootName, chord.quality);
       }
     } finally {
-      setPlaying(false);
+      useChordPlaybackStore.getState().setPlaying(false);
     }
   }
 
@@ -88,7 +84,7 @@ export function ProgressionLane({
                     onClick={() => {
                       const isDeselecting = chord.id === selectedChordId;
                       selectProgressionChord(isDeselecting ? null : chord.id);
-                      if (!isDeselecting && !getIsMuted()) {
+                      if (!isDeselecting && !useChordPlaybackStore.getState().isMuted) {
                         playChord(chord.rootName, chord.quality);
                       }
                     }}

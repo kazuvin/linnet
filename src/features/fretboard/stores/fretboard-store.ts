@@ -8,6 +8,14 @@ export type FretboardState = {
   showAvoidNotes: boolean;
 };
 
+type FretboardActions = {
+  setMaxFret: (maxFret: number) => void;
+  setSelectedScaleType: (scaleType: ScaleType | null) => void;
+  resetSelectedScaleType: () => void;
+  setShowCharacteristicNotes: (show: boolean) => void;
+  setShowAvoidNotes: (show: boolean) => void;
+};
+
 const MIN_FRET = 1;
 const MAX_FRET = 24;
 
@@ -18,31 +26,14 @@ const INITIAL_STATE: FretboardState = {
   showAvoidNotes: false,
 };
 
-const useFretboardStore = create<FretboardState>()(() => ({ ...INITIAL_STATE }));
-
-export function useFretboardSnapshot() {
-  return useFretboardStore();
-}
-
-export function setMaxFret(maxFret: number): void {
-  useFretboardStore.setState({ maxFret: Math.max(MIN_FRET, Math.min(MAX_FRET, maxFret)) });
-}
-
-export function setSelectedScaleType(scaleType: ScaleType | null): void {
-  useFretboardStore.setState({ selectedScaleType: scaleType });
-}
-
-export function resetSelectedScaleType(): void {
-  useFretboardStore.setState({ selectedScaleType: null });
-}
-
-export function setShowCharacteristicNotes(show: boolean): void {
-  useFretboardStore.setState({ showCharacteristicNotes: show });
-}
-
-export function setShowAvoidNotes(show: boolean): void {
-  useFretboardStore.setState({ showAvoidNotes: show });
-}
+export const useFretboardStore = create<FretboardState & FretboardActions>()((set) => ({
+  ...INITIAL_STATE,
+  setMaxFret: (maxFret) => set({ maxFret: Math.max(MIN_FRET, Math.min(MAX_FRET, maxFret)) }),
+  setSelectedScaleType: (scaleType) => set({ selectedScaleType: scaleType }),
+  resetSelectedScaleType: () => set({ selectedScaleType: null }),
+  setShowCharacteristicNotes: (show) => set({ showCharacteristicNotes: show }),
+  setShowAvoidNotes: (show) => set({ showAvoidNotes: show }),
+}));
 
 export function _resetFretboardStoreForTesting(): void {
   useFretboardStore.setState({ ...INITIAL_STATE });

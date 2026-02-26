@@ -4,14 +4,9 @@ export { ChordBoard, ChordCard, type ChordCardData, ModeSelector } from "./chord
 // chord-progression stores
 export {
   _resetChordProgressionForTesting,
-  addChord,
   type ChordProgressionState,
-  clearProgression,
   type ProgressionChord,
-  removeChord,
-  reorderChords,
-  selectChord,
-  useChordProgressionSnapshot,
+  useChordProgressionStore,
   useSelectedChord,
   useSelectedProgressionChord,
 } from "./chord-progression/stores/chord-progression-store";
@@ -23,8 +18,7 @@ export { useFretboardPositions } from "./fretboard/hooks/use-fretboard-positions
 export {
   _resetFretboardStoreForTesting,
   type FretboardState,
-  setMaxFret,
-  useFretboardSnapshot,
+  useFretboardStore,
 } from "./fretboard/stores/fretboard-store";
 
 // key-selection components
@@ -33,14 +27,10 @@ export { ChordTypeSelector, KeySelector, RootNoteSelector } from "./key-selectio
 // key-selection stores
 export {
   _resetKeyStoreForTesting,
-  getRootName,
   type PaletteChordInfo,
-  setChordType,
-  setRootName,
-  setSelectedMode,
   useCurrentModeChords,
   useDiatonicChords,
-  useKeySnapshot,
+  useKeyStore,
   useModalInterchangeChords,
 } from "./key-selection/stores/key-store";
 

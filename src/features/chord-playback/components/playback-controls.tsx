@@ -2,7 +2,7 @@
 
 import { PlayIcon, VolumeIcon, VolumeOffIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { toggleMute, useChordPlaybackSnapshot } from "../stores/chord-playback-store";
+import { useChordPlaybackStore } from "../stores/chord-playback-store";
 
 type PlaybackControlsProps = {
   onPlay: () => void;
@@ -10,7 +10,7 @@ type PlaybackControlsProps = {
 };
 
 export function PlaybackControls({ onPlay, disabled }: PlaybackControlsProps) {
-  const { isMuted, isPlaying } = useChordPlaybackSnapshot();
+  const { isMuted, isPlaying, toggleMute } = useChordPlaybackStore();
 
   return (
     <div className="flex items-center gap-1">

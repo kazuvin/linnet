@@ -30,6 +30,12 @@ type KeyState = {
   selectedMode: SelectedMode;
 };
 
+type KeyActions = {
+  setRootName: (rootName: string) => void;
+  setChordType: (chordType: "triad" | "seventh") => void;
+  setSelectedMode: (mode: SelectedMode) => void;
+};
+
 const INITIAL_STATE: KeyState = {
   rootName: "C",
   chordType: "triad",
@@ -41,11 +47,12 @@ export type PaletteChordInfo = DiatonicChordInfo & {
   source?: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
 };
 
-const useKeyStore = create<KeyState>()(() => ({ ...INITIAL_STATE }));
-
-export function useKeySnapshot() {
-  return useKeyStore();
-}
+export const useKeyStore = create<KeyState & KeyActions>()((set) => ({
+  ...INITIAL_STATE,
+  setRootName: (rootName) => set({ rootName }),
+  setChordType: (chordType) => set({ chordType }),
+  setSelectedMode: (mode) => set({ selectedMode: mode }),
+}));
 
 export function useDiatonicChords(): readonly DiatonicChordInfo[] {
   const rootName = useKeyStore((s) => s.rootName);
@@ -90,7 +97,9 @@ function parseCategoryMode(mode: string): CategoryId | null {
 }
 
 export function useCurrentModeChords(): readonly PaletteChordInfo[] {
-  const { rootName, selectedMode, chordType } = useKeyStore();
+  const rootName = useKeyStore((s) => s.rootName);
+  const selectedMode = useKeyStore((s) => s.selectedMode);
+  const chordType = useKeyStore((s) => s.chordType);
   const seventh = chordType === "seventh";
   return useMemo(() => {
     if (selectedMode === "diatonic") {
@@ -137,22 +146,6 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
       isAvailable: true,
     }));
   }, [rootName, selectedMode, seventh]);
-}
-
-export function getRootName(): string {
-  return useKeyStore.getState().rootName;
-}
-
-export function setRootName(rootName: string): void {
-  useKeyStore.setState({ rootName });
-}
-
-export function setChordType(chordType: "triad" | "seventh"): void {
-  useKeyStore.setState({ chordType });
-}
-
-export function setSelectedMode(mode: SelectedMode): void {
-  useKeyStore.setState({ selectedMode: mode });
 }
 
 export function _resetKeyStoreForTesting(): void {

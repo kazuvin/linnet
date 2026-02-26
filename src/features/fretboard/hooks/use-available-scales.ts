@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
-import { useFretboardSnapshot } from "@/features/fretboard/stores/fretboard-store";
-import { useKeySnapshot } from "@/features/key-selection/stores/key-store";
+import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
+import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import {
   type AvailableScaleInfo,
   findAvailableScalesForChord,
@@ -18,9 +18,9 @@ export function useAvailableScales(): {
   activeScaleType: ScaleType | null;
   scaleRoot: string | null;
 } {
-  const { rootName } = useKeySnapshot();
+  const rootName = useKeyStore((s) => s.rootName);
   const selectedChord = useSelectedProgressionChord();
-  const { selectedScaleType } = useFretboardSnapshot();
+  const selectedScaleType = useFretboardStore((s) => s.selectedScaleType);
 
   const isDominantSource =
     selectedChord?.source === "secondary-dominant" ||

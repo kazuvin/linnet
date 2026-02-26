@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PlayIcon } from "@/components/icons";
-import { setSelectedScaleType } from "@/features/fretboard/stores/fretboard-store";
+import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { playScale, stopScale } from "@/lib/audio/scale-player";
 import type { AvailableScaleInfo, ScaleType } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ export function ScaleChecker({
   chordSymbol,
   scaleRoot,
 }: ScaleCheckerProps) {
+  const setSelectedScaleType = useFretboardStore((s) => s.setSelectedScaleType);
   const [playingScaleType, setPlayingScaleType] = useState<ScaleType | null>(null);
 
   if (availableScales.length === 0) return null;
