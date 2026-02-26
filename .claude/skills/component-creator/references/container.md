@@ -1,13 +1,13 @@
-# Container Components (Features + Valtio)
+# Container Components (Features + Zustand)
 
-Store design: see **valtio-patterns** skill.
+Store design: see **zustand-patterns** skill.
 
 ## Directory Structure
 
 ```
 src/features/{feature}/
 ├── components/     # Feature UI
-├── stores/         # Valtio stores
+├── stores/         # Zustand stores
 ├── hooks/          # Custom hooks (optional)
 ├── types/          # Types
 └── index.ts        # Public API
@@ -48,5 +48,5 @@ export type { User, LoginCredentials } from "./types";
 1. Colocation: components, stores, hooks, types in feature folder
 2. Container/Presentation split
 3. Export only what others need
-4. `"use client"` required for Valtio hooks (useSnapshot)
-5. Store encapsulation: follow **valtio-patterns**
+4. `"use client"` required for Zustand hooks
+5. Store encapsulation: follow **zustand-patterns**

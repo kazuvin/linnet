@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { proxy, useSnapshot } from "valtio";
+import { create } from "zustand";
 import {
   ALL_MODE_SOURCES,
   type CategoryId,
@@ -41,26 +41,24 @@ export type PaletteChordInfo = DiatonicChordInfo & {
   source?: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
 };
 
-const state = proxy<KeyState>({ ...INITIAL_STATE });
+const useKeyStore = create<KeyState>()(() => ({ ...INITIAL_STATE }));
 
 export function useKeySnapshot() {
-  return useSnapshot(state);
+  return useKeyStore();
 }
 
 export function useDiatonicChords(): readonly DiatonicChordInfo[] {
-  const snap = useSnapshot(state);
-  return useMemo(
-    () => getDiatonicChords(snap.rootName, snap.chordType === "seventh"),
-    [snap.rootName, snap.chordType]
-  );
+  const rootName = useKeyStore((s) => s.rootName);
+  const chordType = useKeyStore((s) => s.chordType);
+  return useMemo(() => getDiatonicChords(rootName, chordType === "seventh"), [rootName, chordType]);
 }
 
 export function useModalInterchangeChords(): readonly ModalInterchangeChordInfo[] {
-  const snap = useSnapshot(state);
+  const rootName = useKeyStore((s) => s.rootName);
   return useMemo(() => {
-    const all = getAllModalInterchangeChords(snap.rootName);
-    return filterNonDiatonicChords(snap.rootName, all);
-  }, [snap.rootName]);
+    const all = getAllModalInterchangeChords(rootName);
+    return filterNonDiatonicChords(rootName, all);
+  }, [rootName]);
 }
 
 export type ModalInterchangeModeGroup = {
@@ -70,16 +68,17 @@ export type ModalInterchangeModeGroup = {
 };
 
 export function useModalInterchangeChordsByMode(): readonly ModalInterchangeModeGroup[] {
-  const snap = useSnapshot(state);
-  const seventh = snap.chordType === "seventh";
+  const rootName = useKeyStore((s) => s.rootName);
+  const chordType = useKeyStore((s) => s.chordType);
+  const seventh = chordType === "seventh";
   return useMemo(
     () =>
       ALL_MODE_SOURCES.map((source) => ({
         source,
         displayName: MODE_DISPLAY_NAMES[source],
-        chords: getModalInterchangeChords(snap.rootName, source, seventh),
+        chords: getModalInterchangeChords(rootName, source, seventh),
       })),
-    [snap.rootName, seventh]
+    [rootName, seventh]
   );
 }
 
@@ -91,18 +90,17 @@ function parseCategoryMode(mode: string): CategoryId | null {
 }
 
 export function useCurrentModeChords(): readonly PaletteChordInfo[] {
-  const snap = useSnapshot(state);
-  const seventh = snap.chordType === "seventh";
+  const { rootName, selectedMode, chordType } = useKeyStore();
+  const seventh = chordType === "seventh";
   return useMemo(() => {
-    if (snap.selectedMode === "diatonic") {
-      return getDiatonicChords(snap.rootName, seventh).map((chord) => ({
+    if (selectedMode === "diatonic") {
+      return getDiatonicChords(rootName, seventh).map((chord) => ({
         ...chord,
         isAvailable: true,
       }));
     }
-    // セカンダリードミナントモード
-    if (snap.selectedMode === "secondary-dominant") {
-      return getSecondaryDominantChords(snap.rootName, seventh).map((sd) => ({
+    if (selectedMode === "secondary-dominant") {
+      return getSecondaryDominantChords(rootName, seventh).map((sd) => ({
         degree: sd.targetDegree,
         romanNumeral: sd.romanNumeral,
         chord: sd.chord,
@@ -110,9 +108,8 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
         isAvailable: true,
       }));
     }
-    // 裏コード（トライトーン代理）モード
-    if (snap.selectedMode === "tritone-substitution") {
-      return getTritoneSubstitutionChords(snap.rootName, seventh).map((ts) => ({
+    if (selectedMode === "tritone-substitution") {
+      return getTritoneSubstitutionChords(rootName, seventh).map((ts) => ({
         degree: ts.targetDegree,
         romanNumeral: ts.romanNumeral,
         chord: ts.chord,
@@ -120,10 +117,9 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
         isAvailable: true,
       }));
     }
-    // カテゴリコードモード
-    const categoryId = parseCategoryMode(snap.selectedMode);
+    const categoryId = parseCategoryMode(selectedMode);
     if (categoryId) {
-      return getCategoryChords(snap.rootName, categoryId, seventh).map((cc) => ({
+      return getCategoryChords(rootName, categoryId, seventh).map((cc) => ({
         degree: cc.degree,
         romanNumeral: cc.romanNumeral,
         chord: cc.chord,
@@ -132,34 +128,33 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
         source: cc.source,
       }));
     }
-    // モーダルインターチェンジモード
-    const scaleMode = snap.selectedMode as ScaleType;
-    return getModalInterchangeChords(snap.rootName, scaleMode, seventh).map((mi) => ({
+    const scaleMode = selectedMode as ScaleType;
+    return getModalInterchangeChords(rootName, scaleMode, seventh).map((mi) => ({
       degree: mi.degree,
       romanNumeral: mi.romanNumeral,
       chord: mi.chord,
       chordFunction: getChordFunction(mi.degree),
       isAvailable: true,
     }));
-  }, [snap.rootName, snap.selectedMode, seventh]);
+  }, [rootName, selectedMode, seventh]);
 }
 
 export function getRootName(): string {
-  return state.rootName;
+  return useKeyStore.getState().rootName;
 }
 
 export function setRootName(rootName: string): void {
-  state.rootName = rootName;
+  useKeyStore.setState({ rootName });
 }
 
 export function setChordType(chordType: "triad" | "seventh"): void {
-  state.chordType = chordType;
+  useKeyStore.setState({ chordType });
 }
 
 export function setSelectedMode(mode: SelectedMode): void {
-  state.selectedMode = mode;
+  useKeyStore.setState({ selectedMode: mode });
 }
 
 export function _resetKeyStoreForTesting(): void {
-  Object.assign(state, INITIAL_STATE);
+  useKeyStore.setState({ ...INITIAL_STATE });
 }

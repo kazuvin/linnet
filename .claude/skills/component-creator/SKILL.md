@@ -1,12 +1,12 @@
 ---
 name: component-creator
-description: Create React components following project conventions. Use when asked to create, add, or build components, UI elements, or features. Handles both presentation components (src/components/) and container/feature components (src/features/ with Valtio). For container components, also use valtio-patterns skill for store design. For styling, also use project-design skill for design tokens.
+description: Create React components following project conventions. Use when asked to create, add, or build components, UI elements, or features. Handles both presentation components (src/components/) and container/feature components (src/features/ with Zustand). For container components, also use zustand-patterns skill for store design. For styling, also use project-design skill for design tokens.
 ---
 
 # Component Creator
 
 Related skills:
-- **valtio-patterns**: Store design for containers
+- **zustand-patterns**: Store design for containers
 - **project-design**: Styling (tokens, patterns)
 
 ## Decision Guide
@@ -18,7 +18,7 @@ Related skills:
 | Login form with auth logic | Container    | `src/features/auth/`   |
 | Dashboard with data fetch  | Container    | `src/features/dashboard/` |
 
-**Rule**: Valtio stores or API calls → Container. Pure UI → Presentation.
+**Rule**: Zustand stores or API calls → Container. Pure UI → Presentation.
 
 ## Existing UI Components
 
@@ -71,5 +71,5 @@ export function LoginForm() {
 - [ ] Correct directory
 - [ ] kebab-case files, PascalCase components
 - [ ] `index.ts` exports
-- [ ] `"use client"` for hooks
+- [ ] `"use client"` for hooks/stores
 - [ ] Design tokens from **project-design**

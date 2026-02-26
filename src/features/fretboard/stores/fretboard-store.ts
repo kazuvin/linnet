@@ -1,4 +1,4 @@
-import { proxy, useSnapshot } from "valtio";
+import { create } from "zustand";
 import type { ScaleType } from "@/lib/music-theory";
 
 export type FretboardState = {
@@ -18,32 +18,32 @@ const INITIAL_STATE: FretboardState = {
   showAvoidNotes: false,
 };
 
-const state = proxy<FretboardState>({ ...INITIAL_STATE });
+const useFretboardStore = create<FretboardState>()(() => ({ ...INITIAL_STATE }));
 
 export function useFretboardSnapshot() {
-  return useSnapshot(state);
+  return useFretboardStore();
 }
 
 export function setMaxFret(maxFret: number): void {
-  state.maxFret = Math.max(MIN_FRET, Math.min(MAX_FRET, maxFret));
+  useFretboardStore.setState({ maxFret: Math.max(MIN_FRET, Math.min(MAX_FRET, maxFret)) });
 }
 
 export function setSelectedScaleType(scaleType: ScaleType | null): void {
-  state.selectedScaleType = scaleType;
+  useFretboardStore.setState({ selectedScaleType: scaleType });
 }
 
 export function resetSelectedScaleType(): void {
-  state.selectedScaleType = null;
+  useFretboardStore.setState({ selectedScaleType: null });
 }
 
 export function setShowCharacteristicNotes(show: boolean): void {
-  state.showCharacteristicNotes = show;
+  useFretboardStore.setState({ showCharacteristicNotes: show });
 }
 
 export function setShowAvoidNotes(show: boolean): void {
-  state.showAvoidNotes = show;
+  useFretboardStore.setState({ showAvoidNotes: show });
 }
 
 export function _resetFretboardStoreForTesting(): void {
-  Object.assign(state, INITIAL_STATE);
+  useFretboardStore.setState({ ...INITIAL_STATE });
 }

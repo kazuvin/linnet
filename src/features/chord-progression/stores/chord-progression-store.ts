@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { proxy, useSnapshot } from "valtio";
+import { create } from "zustand";
 import {
   type Chord,
   type ChordFunction,
@@ -33,33 +33,37 @@ const INITIAL_STATE: ChordProgressionState = {
   selectedChordId: null,
 };
 
-const state = proxy<ChordProgressionState>({ ...INITIAL_STATE });
+const useChordProgressionStore = create<ChordProgressionState>()(() => ({
+  ...INITIAL_STATE,
+}));
 
 export function useChordProgressionSnapshot() {
-  return useSnapshot(state);
+  return useChordProgressionStore();
 }
 
 export function useSelectedChord(): Chord | null {
-  const snap = useSnapshot(state);
+  const selectedChordId = useChordProgressionStore((s) => s.selectedChordId);
+  const chords = useChordProgressionStore((s) => s.chords);
   return useMemo(() => {
-    if (snap.selectedChordId === null) {
+    if (selectedChordId === null) {
       return null;
     }
-    const found = snap.chords.find((c) => c.id === snap.selectedChordId);
+    const found = chords.find((c) => c.id === selectedChordId);
     if (!found) {
       return null;
     }
     return createChord(found.rootName, found.quality);
-  }, [snap.selectedChordId, snap.chords]);
+  }, [selectedChordId, chords]);
 }
 
 export function useSelectedProgressionChord(): ProgressionChord | null {
-  const snap = useSnapshot(state);
+  const selectedChordId = useChordProgressionStore((s) => s.selectedChordId);
+  const chords = useChordProgressionStore((s) => s.chords);
   return useMemo(() => {
-    if (snap.selectedChordId === null) {
+    if (selectedChordId === null) {
       return null;
     }
-    const found = snap.chords.find((c) => c.id === snap.selectedChordId);
+    const found = chords.find((c) => c.id === selectedChordId);
     if (!found) {
       return null;
     }
@@ -73,7 +77,7 @@ export function useSelectedProgressionChord(): ProgressionChord | null {
       romanNumeral: found.romanNumeral,
       degree: found.degree,
     };
-  }, [snap.selectedChordId, snap.chords]);
+  }, [selectedChordId, chords]);
 }
 
 export function addChord(
@@ -85,54 +89,64 @@ export function addChord(
   degree: number
 ): string {
   const id = crypto.randomUUID();
-  state.chords.push({
-    id,
-    rootName,
-    quality,
-    symbol: formatChordSymbol(rootName, quality),
-    source,
-    chordFunction,
-    romanNumeral,
-    degree,
-  });
+  useChordProgressionStore.setState((state) => ({
+    chords: [
+      ...state.chords,
+      {
+        id,
+        rootName,
+        quality,
+        symbol: formatChordSymbol(rootName, quality),
+        source,
+        chordFunction,
+        romanNumeral,
+        degree,
+      },
+    ],
+  }));
   return id;
 }
 
 export function removeChord(id: string): void {
-  const index = state.chords.findIndex((c) => c.id === id);
-  if (index !== -1) {
-    state.chords.splice(index, 1);
-  }
-  if (state.selectedChordId === id) {
-    state.selectedChordId = null;
-  }
+  useChordProgressionStore.setState((state) => ({
+    chords: state.chords.filter((c) => c.id !== id),
+    selectedChordId: state.selectedChordId === id ? null : state.selectedChordId,
+  }));
 }
 
 export function reorderChords(fromIndex: number, toIndex: number): void {
-  const [moved] = state.chords.splice(fromIndex, 1);
-  state.chords.splice(toIndex, 0, moved);
+  useChordProgressionStore.setState((state) => {
+    const newChords = [...state.chords];
+    const [moved] = newChords.splice(fromIndex, 1);
+    newChords.splice(toIndex, 0, moved);
+    return { chords: newChords };
+  });
 }
 
 export function selectChord(id: string | null): void {
-  state.selectedChordId = id;
+  useChordProgressionStore.setState({ selectedChordId: id });
 }
 
 export function transposeAllChords(semitones: number, newRootName: string): void {
   if (semitones === 0) return;
   const preferFlat = shouldPreferFlat(newRootName);
-  for (const chord of state.chords) {
-    const note = createNote(chord.rootName);
-    const transposed = transposeNote(note, semitones, preferFlat);
-    chord.rootName = transposed.name;
-    chord.symbol = formatChordSymbol(transposed.name, chord.quality);
-  }
+  useChordProgressionStore.setState((state) => ({
+    chords: state.chords.map((chord) => {
+      const note = createNote(chord.rootName);
+      const transposed = transposeNote(note, semitones, preferFlat);
+      return {
+        ...chord,
+        rootName: transposed.name,
+        symbol: formatChordSymbol(transposed.name, chord.quality),
+      };
+    }),
+  }));
 }
 
 export function clearProgression(): void {
-  state.chords.splice(0, state.chords.length);
-  state.selectedChordId = null;
+  useChordProgressionStore.setState({ chords: [], selectedChordId: null });
 }
 
 export function _resetChordProgressionForTesting(): void {
-  Object.assign(state, { ...INITIAL_STATE, chords: [] });
+  useChordProgressionStore.setState({ chords: [], selectedChordId: null });
 }

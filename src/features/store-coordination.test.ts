@@ -15,15 +15,6 @@ import {
 } from "@/features/key-selection/stores/key-store";
 import { addAndSelectChord, changeKey, selectProgressionChord } from "./store-coordination";
 
-/**
- * Valtio の useSnapshot はレンダリング中にアクセスされたプロパティのみを追跡する。
- * chords と selectedChordId の両方にアクセスし、どちらの変更でも再レンダリングがトリガーされるようにする。
- */
-function useChordProgressionSnapshotForTest() {
-  const snap = useChordProgressionSnapshot();
-  return { chords: snap.chords, selectedChordId: snap.selectedChordId };
-}
-
 describe("store-coordination", () => {
   beforeEach(() => {
     _resetKeyStoreForTesting();
@@ -43,7 +34,7 @@ describe("store-coordination", () => {
     });
 
     it("プログレッション内の全コードをトランスポーズする", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+      const { result } = renderHook(() => useChordProgressionSnapshot());
 
       await act(async () => {
         addChord("C", "major", "diatonic", "tonic", "I", 1);
@@ -61,7 +52,7 @@ describe("store-coordination", () => {
     });
 
     it("同じキーへの変更ではトランスポーズしない", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+      const { result } = renderHook(() => useChordProgressionSnapshot());
 
       await act(async () => {
         addChord("C", "major", "diatonic", "tonic", "I", 1);
@@ -77,7 +68,7 @@ describe("store-coordination", () => {
 
   describe("selectProgressionChord", () => {
     it("コードを選択する", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+      const { result } = renderHook(() => useChordProgressionSnapshot());
 
       await act(async () => {
         addChord("C", "major", "diatonic", "tonic", "I", 1);
@@ -105,7 +96,7 @@ describe("store-coordination", () => {
         addChord("C", "major", "diatonic", "tonic", "I", 1);
       });
 
-      const { result: progressionResult } = renderHook(() => useChordProgressionSnapshotForTest());
+      const { result: progressionResult } = renderHook(() => useChordProgressionSnapshot());
       const chordId = progressionResult.current.chords[0].id;
 
       await act(async () => {
@@ -116,7 +107,7 @@ describe("store-coordination", () => {
     });
 
     it("null で選択解除する", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+      const { result } = renderHook(() => useChordProgressionSnapshot());
 
       await act(async () => {
         addChord("C", "major", "diatonic", "tonic", "I", 1);
@@ -140,7 +131,7 @@ describe("store-coordination", () => {
 
   describe("addAndSelectChord", () => {
     it("コードを追加し、そのコードを選択状態にする", async () => {
-      const { result } = renderHook(() => useChordProgressionSnapshotForTest());
+      const { result } = renderHook(() => useChordProgressionSnapshot());
 
       await act(async () => {
         addAndSelectChord("C", "major", "diatonic", "tonic", "I", 1);
