@@ -1,6 +1,7 @@
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
-import { useCurrentModeChords, useKeyStore } from "@/features/key-selection/stores/key-store";
+import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
+import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { addAndSelectChord } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import type { useNativeDnd } from "../../hooks/use-native-dnd";

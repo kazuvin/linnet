@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TabNav, TabNavItem } from "@/components/ui/tab-nav";
-import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
+import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-selectors";
 import { useAvailableScales } from "@/features/fretboard/hooks/use-available-scales";
 import { useFretboardPositions } from "@/features/fretboard/hooks/use-fretboard-positions";
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";

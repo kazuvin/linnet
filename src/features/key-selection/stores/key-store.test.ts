@@ -1,12 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import {
-  _resetKeyStoreForTesting,
   useCurrentModeChords,
   useDiatonicChords,
-  useKeyStore,
   useModalInterchangeChords,
   useModalInterchangeChordsByMode,
-} from "./key-store";
+} from "./key-selectors";
+import { _resetKeyStoreForTesting, useKeyStore } from "./key-store";
 
 describe("key-store", () => {
   beforeEach(() => {

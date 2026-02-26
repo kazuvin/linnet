@@ -47,9 +47,15 @@ const current = useCountStore.getState().count;
 useCountStore.getState().increment();
 ```
 
-## Derived State (useMemo + selector)
+## Derived State (xxx-selectors.ts に分離)
+
+派生状態は store ファイルとは別の selectors ファイルに定義する:
 
 ```tsx
+// user-selectors.ts
+import { useMemo } from "react";
+import { useUserStore } from "./user-store";
+
 export function useFullName() {
   const firstName = useUserStore((s) => s.firstName);
   const lastName = useUserStore((s) => s.lastName);

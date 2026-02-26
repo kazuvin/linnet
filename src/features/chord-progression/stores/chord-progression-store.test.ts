@@ -1,9 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
+import { useSelectedChord, useSelectedProgressionChord } from "./chord-progression-selectors";
 import {
   _resetChordProgressionForTesting,
   useChordProgressionStore,
-  useSelectedChord,
-  useSelectedProgressionChord,
 } from "./chord-progression-store";
 
 describe("chord-progression-store", () => {

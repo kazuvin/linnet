@@ -1,14 +1,16 @@
 // chord-board
 export { ChordBoard, ChordCard, type ChordCardData, ModeSelector } from "./chord-board";
-
+// chord-progression selectors
+export {
+  useSelectedChord,
+  useSelectedProgressionChord,
+} from "./chord-progression/stores/chord-progression-selectors";
 // chord-progression stores
 export {
   _resetChordProgressionForTesting,
   type ChordProgressionState,
   type ProgressionChord,
   useChordProgressionStore,
-  useSelectedChord,
-  useSelectedProgressionChord,
 } from "./chord-progression/stores/chord-progression-store";
 
 // fretboard hooks
@@ -23,15 +25,18 @@ export {
 
 // key-selection components
 export { ChordTypeSelector, KeySelector, RootNoteSelector } from "./key-selection/components";
-
-// key-selection stores
+// key-selection selectors
 export {
-  _resetKeyStoreForTesting,
   type PaletteChordInfo,
   useCurrentModeChords,
   useDiatonicChords,
-  useKeyStore,
   useModalInterchangeChords,
+} from "./key-selection/stores/key-selectors";
+// key-selection stores
+export {
+  _resetKeyStoreForTesting,
+  type SelectedMode,
+  useKeyStore,
 } from "./key-selection/stores/key-store";
 
 // store-coordination (cross-store composite actions)

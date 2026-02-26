@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-store";
+import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-selectors";
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import {
   findOverlayPositions,

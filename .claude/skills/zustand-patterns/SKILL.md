@@ -5,7 +5,7 @@ description: Zustand state management patterns following official conventions. U
 
 # Zustand Patterns
 
-**Core Rule**: actions は store 内に定義し、store hook を直接 export する。
+**Core Rule**: actions は store 内に定義し、store hook を直接 export する。派生状態は selectors ファイルに分離する。
 
 ```tsx
 // ✅ GOOD - Official pattern
@@ -27,7 +27,7 @@ const login = useUserStore((s) => s.login);
 | 状態を読み取りたい     | useStore(selector)     | [basics](references/basics.md) |
 | 状態を更新したい       | store 内 action (set)  | [basics](references/basics.md) |
 | 非同期データ取得       | store 内 async action  | [async](references/async.md) |
-| 派生状態               | useMemo + selector     | [basics](references/basics.md) |
+| 派生状態               | selectors ファイル     | [basics](references/basics.md) |
 | コンポーネント外で読取 | useStore.getState()    | [basics](references/basics.md) |
 
 ## Naming
@@ -37,11 +37,20 @@ const login = useUserStore((s) => s.login);
 | Store hook        | `useXxxStore`          | `useUserStore`           |
 | Derived hook      | `useXxx`               | `useDiatonicChords`      |
 | Store file        | `xxx-store.ts`         | `auth-store.ts`          |
+| Selectors file    | `xxx-selectors.ts`     | `key-selectors.ts`       |
 
 ## File Structure
 
+```
+src/features/xxx/stores/
+  xxx-store.ts         # state + actions のみ
+  xxx-selectors.ts     # 派生状態 (useMemo + selector)
+  xxx-store.test.ts    # store + selectors のテスト
+```
+
+### Store file (xxx-store.ts)
+
 ```tsx
-// src/features/xxx/stores/xxx-store.ts
 import { create } from "zustand";
 
 type UserState = { user: User | null };
@@ -59,15 +68,26 @@ export const useUserStore = create<UserState & UserActions>()((set) => ({
   logout: () => set({ user: null }),
 }));
 
-// Derived hooks (optional, for complex computations)
+// Testing helper
+export function _resetUserStoreForTesting() {
+  useUserStore.setState({ user: null });
+}
+```
+
+### Selectors file (xxx-selectors.ts)
+
+```tsx
+import { useMemo } from "react";
+import { useUserStore } from "./user-store";
+
 export function useUserDisplayName() {
   const user = useUserStore((s) => s.user);
   return useMemo(() => user?.name ?? "Guest", [user]);
 }
 
-// Testing helper
-export function _resetUserStoreForTesting() {
-  useUserStore.setState({ user: null });
+export function useIsLoggedIn() {
+  const user = useUserStore((s) => s.user);
+  return user !== null;
 }
 ```
 
