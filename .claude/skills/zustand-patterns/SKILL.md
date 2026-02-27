@@ -5,19 +5,15 @@ description: Zustand state management patterns following official conventions. U
 
 # Zustand Patterns
 
-**Core Rule**: actions は store 内に定義し、store hook を直接 export する。派生状態は selectors ファイルに分離する。
+**Core Rule**: actions は store 内に定義し、store hook を直接 export する。派生状態は selectors ファイルに分離する。コンポーネントでは**必ず個別セレクタ**で必要な値のみ購読する。
 
 ```tsx
-// ✅ GOOD - Official pattern
-export const useUserStore = create<UserState & UserActions>()((set) => ({
-  user: null,
-  login: async (creds) => { ... },
-  logout: () => set({ user: null }),
-}));
-
-// Components use selectors
+// ✅ GOOD - 個別セレクタで必要な値のみ購読
 const user = useUserStore((s) => s.user);
 const login = useUserStore((s) => s.login);
+
+// ❌ BAD - 分割代入は store 全体を購読し不要な再レンダリングが発生
+const { user, login } = useUserStore();
 ```
 
 ## Pattern Guide
