@@ -21,6 +21,7 @@ type ChordGridState = {
   isPlaying: boolean;
   currentRow: number;
   currentCol: number;
+  selectedCell: { row: number; col: number } | null;
 };
 
 type ChordGridActions = {
@@ -35,6 +36,8 @@ type ChordGridActions = {
   stop: () => void;
   getChordAtPosition: (row: number, col: number) => GridChord | null;
   addChordToNextBeat: (chord: GridChord) => void;
+  selectCell: (row: number, col: number) => void;
+  clearSelection: () => void;
 };
 
 const createEmptyRow = (): (GridChord | null)[] => Array.from({ length: COLUMNS }, () => null);
@@ -45,6 +48,7 @@ const INITIAL_STATE: ChordGridState = {
   isPlaying: false,
   currentRow: -1,
   currentCol: -1,
+  selectedCell: null,
 };
 
 export const useChordGridStore = create<ChordGridState & ChordGridActions>()((set, get) => ({
@@ -63,17 +67,24 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   },
 
   clearCell: (row, col) => {
-    const { rows } = get();
+    const { rows, selectedCell } = get();
     if (row < 0 || row >= rows.length || col < 0 || col >= COLUMNS) return;
+    const clearSelected = selectedCell?.row === row && selectedCell?.col === col;
     set((state) => {
       const newRows = state.rows.map((r) => [...r]);
       newRows[row][col] = null;
-      return { rows: newRows };
+      return { rows: newRows, ...(clearSelected ? { selectedCell: null } : {}) };
     });
   },
 
   clearGrid: () =>
-    set({ rows: [createEmptyRow()], isPlaying: false, currentRow: -1, currentCol: -1 }),
+    set({
+      rows: [createEmptyRow()],
+      isPlaying: false,
+      currentRow: -1,
+      currentCol: -1,
+      selectedCell: null,
+    }),
 
   addRow: () =>
     set((state) => ({
@@ -84,7 +95,8 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
     set((state) => {
       if (state.rows.length <= 1) return state;
       const newRows = state.rows.filter((_, i) => i !== rowIndex);
-      return { rows: newRows };
+      const clearSelected = state.selectedCell?.row === rowIndex;
+      return { rows: newRows, ...(clearSelected ? { selectedCell: null } : {}) };
     }),
 
   setPlaying: (playing) => set({ isPlaying: playing }),
@@ -124,8 +136,21 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
       }
     }
   },
+
+  selectCell: (row, col) => {
+    const { rows, selectedCell } = get();
+    if (row < 0 || row >= rows.length || col < 0 || col >= COLUMNS) return;
+    if (rows[row][col] === null) return;
+    if (selectedCell?.row === row && selectedCell?.col === col) {
+      set({ selectedCell: null });
+    } else {
+      set({ selectedCell: { row, col } });
+    }
+  },
+
+  clearSelection: () => set({ selectedCell: null }),
 }));
 
 export function _resetChordGridForTesting(): void {
-  useChordGridStore.setState({ ...INITIAL_STATE, rows: [createEmptyRow()] });
+  useChordGridStore.setState({ ...INITIAL_STATE, rows: [createEmptyRow()], selectedCell: null });
 }

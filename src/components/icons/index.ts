@@ -9,6 +9,7 @@ export { PlayIcon } from "./play-icon";
 export { PlusIcon } from "./plus-icon";
 export { SearchIcon } from "./search-icon";
 export { StopIcon } from "./stop-icon";
+export { TrashIcon } from "./trash-icon";
 export type { IconProps } from "./types";
 export { VolumeIcon } from "./volume-icon";
 export { VolumeOffIcon } from "./volume-off-icon";

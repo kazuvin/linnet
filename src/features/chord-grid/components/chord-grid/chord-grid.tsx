@@ -6,12 +6,14 @@ import {
   PlayIcon,
   PlusIcon,
   StopIcon,
+  TrashIcon,
   VolumeIcon,
   VolumeOffIcon,
   XIcon,
 } from "@/components/icons";
 import { NumberStepper } from "@/components/ui/number-stepper";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
+import { deleteSelectedGridCell, selectGridCell } from "@/features/store-coordination";
 import { cn } from "@/lib/utils";
 import type { PaletteDragData } from "../../../chord-board/components/chord-palette/chord-palette";
 import { useGridPlayback } from "../../hooks/use-grid-playback";
@@ -80,13 +82,15 @@ function parseDragData(e: React.DragEvent): GridChord | null {
 }
 
 export function ChordGrid() {
-  const { rows, bpm, isPlaying, currentRow, currentCol } = useChordGridStore();
-  const { setBpm, setCell, clearCell, clearGrid, addRow, removeRow } = useChordGridStore();
+  const { rows, bpm, isPlaying, currentRow, currentCol, selectedCell } = useChordGridStore();
+  const { setBpm, setCell, clearGrid, addRow, removeRow, clearSelection } = useChordGridStore();
   const { isMuted, toggleMute } = useChordPlaybackStore();
   const { togglePlayback } = useGridPlayback();
   const hasChords = rows.some((row) => row.some((c) => c !== null));
 
   const [dragOverCell, setDragOverCell] = useState<{ row: number; col: number } | null>(null);
+
+  const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -112,9 +116,19 @@ export function ChordGrid() {
       const chord = parseDragData(e);
       if (chord) {
         setCell(row, col, chord);
+        clearSelection();
       }
     },
-    [setCell]
+    [setCell, clearSelection]
+  );
+
+  const handleCellClick = useCallback(
+    (rowIndex: number, col: number) => {
+      const cellChord = rows[rowIndex]?.[col];
+      if (!cellChord) return;
+      selectGridCell(rowIndex, col);
+    },
+    [rows]
   );
 
   return (
@@ -187,6 +201,35 @@ export function ChordGrid() {
         </div>
       </div>
 
+      {/* 選択中セルのアクションバー */}
+      {selectedChord && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-2">
+          <span className="font-bold font-mono text-sm">{selectedChord.symbol}</span>
+          <span className="text-muted text-xs">を選択中</span>
+          <span className="text-muted/40 text-xs">- パレットのコードをタップして置換</span>
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-destructive/10 hover:text-destructive md:h-7 md:w-7"
+              onClick={deleteSelectedGridCell}
+              aria-label="選択中のコードを削除"
+              title="削除"
+            >
+              <TrashIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
+            </button>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
+              onClick={clearSelection}
+              aria-label="選択解除"
+              title="選択解除"
+            >
+              <XIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* グリッド本体 (GitHub 芝生グラフスタイル) */}
       <div className="-mx-4 overflow-x-auto px-4 pb-1">
         <div className="flex w-fit flex-col gap-1">
@@ -241,20 +284,23 @@ export function ChordGrid() {
                 const cellChord = rowCells[col];
                 const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
                 const isDragOver = dragOverCell?.row === rowIndex && dragOverCell?.col === col;
+                const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
 
                 return (
-                  // biome-ignore lint/a11y/noStaticElementInteractions: drop target for D&D
-                  <div
+                  <button
                     key={`cell-${String(rowIndex)}-${String(col)}`}
+                    type="button"
                     className={cn(
-                      "group relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7",
+                      "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7",
                       isCurrentStep && "ring-2 ring-foreground ring-inset",
                       isDragOver && "ring-2 ring-primary ring-inset",
+                      isSelected && "z-10 scale-110 ring-2 ring-foreground ring-inset",
                       cellChord
                         ? cn(
                             FUNCTION_CELL_STYLES[cellChord.chordFunction] ??
                               "border-border bg-card",
-                            isCurrentStep && "brightness-90"
+                            isCurrentStep && "brightness-90",
+                            !isSelected && "cursor-pointer"
                           )
                         : isSustain && displayChord
                           ? cn(
@@ -267,27 +313,18 @@ export function ChordGrid() {
                               isCurrentStep && "bg-surface-elevated"
                             )
                     )}
+                    onClick={() => handleCellClick(rowIndex, col)}
                     onDragOver={handleDragOver}
                     onDragEnter={(e) => handleDragEnter(e, rowIndex, col)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, rowIndex, col)}
                   >
                     {cellChord ? (
-                      <>
-                        <span className="font-bold font-mono text-[8px] leading-none">{label}</span>
-                        <button
-                          type="button"
-                          className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={() => clearCell(rowIndex, col)}
-                          title="コードを削除"
-                        >
-                          <XIcon className="h-2.5 w-2.5" />
-                        </button>
-                      </>
+                      <span className="font-bold font-mono text-[8px] leading-none">{label}</span>
                     ) : isSustain ? (
                       <span className="text-[8px] text-muted/30">-</span>
                     ) : null}
-                  </div>
+                  </button>
                 );
               })}
             </div>

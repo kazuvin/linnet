@@ -297,6 +297,146 @@ describe("chord-grid-store", () => {
     });
   });
 
+  describe("selectCell / clearSelection", () => {
+    it("初期状態では selectedCell は null", () => {
+      const { result } = renderHook(() => useChordGridStore());
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("コードがあるセルを選択できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 4, sampleChord);
+      });
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 4);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 4 });
+    });
+
+    it("同じセルを再度選択すると選択解除される（トグル）", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("異なるセルを選択すると選択が切り替わる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(0, 4, sampleChord2);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 4);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 4 });
+    });
+
+    it("コードがないセルは選択できない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearSelection で選択を解除できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().clearSelection();
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearGrid で選択も解除される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().clearGrid();
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearCell で選択中のセルをクリアすると選択も解除される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().clearCell(0, 0);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearCell で別のセルをクリアしても選択は維持される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(0, 4, sampleChord2);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+
+      await act(async () => {
+        useChordGridStore.getState().clearCell(0, 4);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+    });
+
+    it("removeRow で選択中の行が削除されると選択が解除される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().setCell(1, 0, sampleChord);
+        useChordGridStore.getState().selectCell(1, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 1, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().removeRow(1);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("removeRow で別の行が削除されても選択は維持される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+
+      await act(async () => {
+        useChordGridStore.getState().removeRow(1);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+    });
+  });
+
   describe("_resetChordGridForTesting", () => {
     it("初期状態に戻る", async () => {
       const { result } = renderHook(() => useChordGridStore());
@@ -319,6 +459,7 @@ describe("chord-grid-store", () => {
       expect(result.current.isPlaying).toBe(false);
       expect(result.current.currentRow).toBe(-1);
       expect(result.current.currentCol).toBe(-1);
+      expect(result.current.selectedCell).toBeNull();
     });
   });
 });
