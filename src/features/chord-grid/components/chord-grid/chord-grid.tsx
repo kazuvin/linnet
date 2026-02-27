@@ -77,9 +77,19 @@ function parseDragData(e: React.DragEvent): GridChord | null {
 }
 
 export function ChordGrid() {
-  const { rows, bpm, isPlaying, currentRow, currentCol, selectedCell } = useChordGridStore();
-  const { setBpm, setCell, clearGrid, removeRow, clearSelection } = useChordGridStore();
-  const { isMuted, toggleMute } = useChordPlaybackStore();
+  const rows = useChordGridStore((s) => s.rows);
+  const bpm = useChordGridStore((s) => s.bpm);
+  const isPlaying = useChordGridStore((s) => s.isPlaying);
+  const currentRow = useChordGridStore((s) => s.currentRow);
+  const currentCol = useChordGridStore((s) => s.currentCol);
+  const selectedCell = useChordGridStore((s) => s.selectedCell);
+  const setBpm = useChordGridStore((s) => s.setBpm);
+  const setCell = useChordGridStore((s) => s.setCell);
+  const clearGrid = useChordGridStore((s) => s.clearGrid);
+  const removeRow = useChordGridStore((s) => s.removeRow);
+  const clearSelection = useChordGridStore((s) => s.clearSelection);
+  const isMuted = useChordPlaybackStore((s) => s.isMuted);
+  const toggleMute = useChordPlaybackStore((s) => s.toggleMute);
   const { togglePlayback } = useGridPlayback();
   const hasChords = rows.some((row) => row.some((c) => c !== null));
 

@@ -36,7 +36,8 @@ const MODE_OPTIONS: readonly ModeOption[] = [
 ];
 
 export function ModeSelector() {
-  const { selectedMode, setSelectedMode } = useKeyStore();
+  const selectedMode = useKeyStore((s) => s.selectedMode);
+  const setSelectedMode = useKeyStore((s) => s.setSelectedMode);
 
   return (
     <Select value={selectedMode} onValueChange={(value) => setSelectedMode(value as SelectedMode)}>

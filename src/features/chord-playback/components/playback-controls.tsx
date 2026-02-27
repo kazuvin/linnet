@@ -10,7 +10,9 @@ type PlaybackControlsProps = {
 };
 
 export function PlaybackControls({ onPlay, disabled }: PlaybackControlsProps) {
-  const { isMuted, isPlaying, toggleMute } = useChordPlaybackStore();
+  const isMuted = useChordPlaybackStore((s) => s.isMuted);
+  const isPlaying = useChordPlaybackStore((s) => s.isPlaying);
+  const toggleMute = useChordPlaybackStore((s) => s.toggleMute);
 
   return (
     <div className="flex items-center gap-1">

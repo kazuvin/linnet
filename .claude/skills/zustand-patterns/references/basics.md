@@ -22,23 +22,20 @@ export const useCountStore = create<CountState & CountActions>()((set) => ({
 
 ## Reading State (React)
 
-### Selector（推奨 - 必要なプロパティのみ購読）
+### Selector（必須 - 必要なプロパティのみ購読）
 
 ```tsx
 const Counter: React.FC = () => {
   const count = useCountStore((s) => s.count);
-  return <p>{count}</p>;  // count が変わった時だけ再レンダリング
-};
-```
-
-### Destructuring（小さいストアに適用）
-
-```tsx
-const Counter: React.FC = () => {
-  const { count, increment } = useCountStore();
+  const increment = useCountStore((s) => s.increment);
   return <button onClick={() => increment()}>{count}</button>;
+  // count が変わった時だけ再レンダリング（increment は安定参照）
 };
 ```
+
+> **⚠ 分割代入 `const { count } = useStore()` は禁止**
+> セレクタなしで呼び出すと store 全体を購読し、無関係な state 変更でも再レンダリングが発生する。
+> 必ず個別セレクタ `useStore((s) => s.xxx)` を使用すること。
 
 ## Reading State (Outside React)
 

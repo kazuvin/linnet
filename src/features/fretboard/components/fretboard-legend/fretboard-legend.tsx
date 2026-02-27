@@ -27,8 +27,10 @@ const AVOID_ITEM: LegendItem = {
 };
 
 export function FretboardLegend() {
-  const { showCharacteristicNotes, showAvoidNotes, setShowCharacteristicNotes, setShowAvoidNotes } =
-    useFretboardStore();
+  const showCharacteristicNotes = useFretboardStore((s) => s.showCharacteristicNotes);
+  const showAvoidNotes = useFretboardStore((s) => s.showAvoidNotes);
+  const setShowCharacteristicNotes = useFretboardStore((s) => s.setShowCharacteristicNotes);
+  const setShowAvoidNotes = useFretboardStore((s) => s.setShowAvoidNotes);
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground text-xs">
