@@ -10,6 +10,7 @@ import {
   VolumeOffIcon,
   XIcon,
 } from "@/components/icons";
+import { NumberStepper } from "@/components/ui/number-stepper";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { cn } from "@/lib/utils";
 import type { PaletteDragData } from "../../../chord-board/components/chord-palette/chord-palette";
@@ -165,20 +166,14 @@ export function ChordGrid() {
 
         <div className="flex items-center gap-3">
           {/* BPM コントロール */}
-          <div className="flex items-center gap-1.5">
-            <label htmlFor="bpm-input" className="text-muted text-sm">
-              BPM
-            </label>
-            <input
-              id="bpm-input"
-              type="number"
-              min={30}
-              max={300}
-              value={bpm}
-              onChange={(e) => setBpm(Number(e.target.value))}
-              className="h-8 w-16 rounded-lg border border-border bg-surface px-2 text-center font-mono text-sm outline-none focus:border-foreground/30"
-            />
-          </div>
+          <NumberStepper
+            id="bpm-input"
+            value={bpm}
+            onChange={setBpm}
+            min={30}
+            max={300}
+            label="BPM"
+          />
 
           {hasChords && (
             <button
