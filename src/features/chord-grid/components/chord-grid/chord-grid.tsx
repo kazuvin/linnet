@@ -9,7 +9,6 @@ import {
   TrashIcon,
   VolumeIcon,
   VolumeOffIcon,
-  XIcon,
 } from "@/components/icons";
 import { NumberStepper } from "@/components/ui/number-stepper";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
@@ -179,6 +178,22 @@ export function ChordGrid() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* 選択中: コード名 + アクション */}
+          {selectedChord && (
+            <div className="flex items-center gap-1 rounded-full border border-border bg-surface-elevated py-0.5 pr-1 pl-3">
+              <span className="font-bold font-mono text-xs">{selectedChord.symbol}</span>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-destructive/10 hover:text-destructive md:h-6 md:w-6"
+                onClick={deleteSelectedGridCell}
+                aria-label="選択中のコードを削除"
+                title="削除"
+              >
+                <TrashIcon className="h-3.5 w-3.5 md:h-3 md:w-3" />
+              </button>
+            </div>
+          )}
+
           {/* BPM コントロール */}
           <NumberStepper
             id="bpm-input"
@@ -200,35 +215,6 @@ export function ChordGrid() {
           )}
         </div>
       </div>
-
-      {/* 選択中セルのアクションバー */}
-      {selectedChord && (
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-2">
-          <span className="font-bold font-mono text-sm">{selectedChord.symbol}</span>
-          <span className="text-muted text-xs">を選択中</span>
-          <span className="text-muted/40 text-xs">- パレットのコードをタップして置換</span>
-          <div className="ml-auto flex items-center gap-1">
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-destructive/10 hover:text-destructive md:h-7 md:w-7"
-              onClick={deleteSelectedGridCell}
-              aria-label="選択中のコードを削除"
-              title="削除"
-            >
-              <TrashIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-            </button>
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
-              onClick={clearSelection}
-              aria-label="選択解除"
-              title="選択解除"
-            >
-              <XIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* グリッド本体 (GitHub 芝生グラフスタイル) */}
       <div className="-mx-4 overflow-x-auto px-4 pb-1">
