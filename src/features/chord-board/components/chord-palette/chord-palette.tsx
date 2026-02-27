@@ -1,11 +1,13 @@
+import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
-import { selectChordFromPalette } from "@/features/store-coordination";
+import { replaceSelectedGridCell, selectChordFromPalette } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import type { ChordFunction } from "@/lib/music-theory";
+import { formatChordSymbol } from "@/lib/music-theory";
 import { ChordCard } from "../chord-card";
 import { ModeSelector } from "../mode-selector";
 
@@ -46,6 +48,27 @@ export function ChordPalette() {
 
   function handleClick(chordInfo: (typeof paletteChords)[number]) {
     const source = getEffectiveSource(chordInfo);
+
+    // グリッドでセルが選択中の場合、そのセルのコードを置換する
+    const gridSelected = useChordGridStore.getState().selectedCell;
+    if (gridSelected) {
+      const replaced = replaceSelectedGridCell({
+        rootName: chordInfo.chord.root.name,
+        quality: chordInfo.chord.quality,
+        symbol: formatChordSymbol(chordInfo.chord.root.name, chordInfo.chord.quality),
+        source,
+        chordFunction: chordInfo.chordFunction,
+        romanNumeral: chordInfo.romanNumeral,
+        degree: chordInfo.degree,
+      });
+      if (replaced) {
+        if (!useChordPlaybackStore.getState().isMuted) {
+          playChord(chordInfo.chord.root.name, chordInfo.chord.quality);
+        }
+        return;
+      }
+    }
+
     selectChordFromPalette(
       chordInfo.chord.root.name,
       chordInfo.chord.quality,

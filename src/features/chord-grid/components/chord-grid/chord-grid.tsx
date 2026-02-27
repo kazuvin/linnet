@@ -4,14 +4,14 @@ import { useCallback, useState } from "react";
 import {
   MinusIcon,
   PlayIcon,
-  PlusIcon,
   StopIcon,
+  TrashIcon,
   VolumeIcon,
   VolumeOffIcon,
-  XIcon,
 } from "@/components/icons";
 import { NumberStepper } from "@/components/ui/number-stepper";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
+import { deleteSelectedGridCell, selectGridCell } from "@/features/store-coordination";
 import { cn } from "@/lib/utils";
 import type { PaletteDragData } from "../../../chord-board/components/chord-palette/chord-palette";
 import { useGridPlayback } from "../../hooks/use-grid-playback";
@@ -35,26 +35,23 @@ const SUSTAIN_CELL_STYLES: Record<string, string> = {
 };
 
 function getChordDisplayForCell(
-  rowCells: (GridChord | null)[],
-  colIndex: number,
-  prevRowCells?: (GridChord | null)[]
+  rows: (GridChord | null)[][],
+  rowIndex: number,
+  colIndex: number
 ): { label: string; chord: GridChord | null; isSustain: boolean } {
-  const cell = rowCells[colIndex];
+  const cell = rows[rowIndex][colIndex];
   if (cell !== null) {
     return { label: cell.symbol, chord: cell, isSustain: false };
   }
-  // 同一行で直前のコードを探す
-  for (let i = colIndex - 1; i >= 0; i--) {
-    if (rowCells[i] !== null) {
-      return { label: "-", chord: rowCells[i], isSustain: true };
-    }
-  }
-  // 前の行の末尾から探す
-  if (prevRowCells) {
-    for (let i = COLUMNS - 1; i >= 0; i--) {
-      if (prevRowCells[i] !== null) {
-        return { label: "-", chord: prevRowCells[i], isSustain: true };
-      }
+  // 最大15セル前まで遡る（16セル固定持続、行またぎ対応）
+  const totalPos = rowIndex * COLUMNS + colIndex;
+  for (let offset = 1; offset < COLUMNS; offset++) {
+    const pos = totalPos - offset;
+    if (pos < 0) break;
+    const r = Math.floor(pos / COLUMNS);
+    const c = pos % COLUMNS;
+    if (rows[r][c] !== null) {
+      return { label: "-", chord: rows[r][c], isSustain: true };
     }
   }
   return { label: "", chord: null, isSustain: false };
@@ -80,13 +77,15 @@ function parseDragData(e: React.DragEvent): GridChord | null {
 }
 
 export function ChordGrid() {
-  const { rows, bpm, isPlaying, currentRow, currentCol } = useChordGridStore();
-  const { setBpm, setCell, clearCell, clearGrid, addRow, removeRow } = useChordGridStore();
+  const { rows, bpm, isPlaying, currentRow, currentCol, selectedCell } = useChordGridStore();
+  const { setBpm, setCell, clearGrid, removeRow, clearSelection } = useChordGridStore();
   const { isMuted, toggleMute } = useChordPlaybackStore();
   const { togglePlayback } = useGridPlayback();
   const hasChords = rows.some((row) => row.some((c) => c !== null));
 
   const [dragOverCell, setDragOverCell] = useState<{ row: number; col: number } | null>(null);
+
+  const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -112,9 +111,19 @@ export function ChordGrid() {
       const chord = parseDragData(e);
       if (chord) {
         setCell(row, col, chord);
+        clearSelection();
       }
     },
-    [setCell]
+    [setCell, clearSelection]
+  );
+
+  const handleCellClick = useCallback(
+    (rowIndex: number, col: number) => {
+      const cellChord = rows[rowIndex]?.[col];
+      if (!cellChord) return;
+      selectGridCell(rowIndex, col);
+    },
+    [rows]
   );
 
   return (
@@ -165,6 +174,30 @@ export function ChordGrid() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* 選択中: コード名 + アクション */}
+          {selectedChord && (
+            <div
+              className={cn(
+                "flex h-8 items-center gap-0.5 rounded-sm border pr-0.5 pl-2",
+                FUNCTION_CELL_STYLES[selectedChord.chordFunction] ??
+                  "border-border bg-surface-elevated"
+              )}
+            >
+              <span className="font-bold font-mono text-[8px] leading-none">
+                {selectedChord.symbol}
+              </span>
+              <button
+                type="button"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
+                onClick={deleteSelectedGridCell}
+                aria-label="選択中のコードを削除"
+                title="削除"
+              >
+                <TrashIcon className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+
           {/* BPM コントロール */}
           <NumberStepper
             id="bpm-input"
@@ -233,28 +266,27 @@ export function ChordGrid() {
                   label,
                   chord: displayChord,
                   isSustain,
-                } = getChordDisplayForCell(
-                  rowCells,
-                  col,
-                  rowIndex > 0 ? rows[rowIndex - 1] : undefined
-                );
+                } = getChordDisplayForCell(rows, rowIndex, col);
                 const cellChord = rowCells[col];
                 const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
                 const isDragOver = dragOverCell?.row === rowIndex && dragOverCell?.col === col;
+                const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
 
                 return (
-                  // biome-ignore lint/a11y/noStaticElementInteractions: drop target for D&D
-                  <div
+                  <button
                     key={`cell-${String(rowIndex)}-${String(col)}`}
+                    type="button"
                     className={cn(
-                      "group relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7",
+                      "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7",
                       isCurrentStep && "ring-2 ring-foreground ring-inset",
                       isDragOver && "ring-2 ring-primary ring-inset",
+                      isSelected && "z-10 scale-110 ring-2 ring-foreground ring-inset",
                       cellChord
                         ? cn(
                             FUNCTION_CELL_STYLES[cellChord.chordFunction] ??
                               "border-border bg-card",
-                            isCurrentStep && "brightness-90"
+                            isCurrentStep && "brightness-90",
+                            !isSelected && "cursor-pointer"
                           )
                         : isSustain && displayChord
                           ? cn(
@@ -267,44 +299,22 @@ export function ChordGrid() {
                               isCurrentStep && "bg-surface-elevated"
                             )
                     )}
+                    onClick={() => handleCellClick(rowIndex, col)}
                     onDragOver={handleDragOver}
                     onDragEnter={(e) => handleDragEnter(e, rowIndex, col)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, rowIndex, col)}
                   >
                     {cellChord ? (
-                      <>
-                        <span className="font-bold font-mono text-[8px] leading-none">{label}</span>
-                        <button
-                          type="button"
-                          className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={() => clearCell(rowIndex, col)}
-                          title="コードを削除"
-                        >
-                          <XIcon className="h-2.5 w-2.5" />
-                        </button>
-                      </>
+                      <span className="font-bold font-mono text-[8px] leading-none">{label}</span>
                     ) : isSustain ? (
                       <span className="text-[8px] text-muted/30">-</span>
                     ) : null}
-                  </div>
+                  </button>
                 );
               })}
             </div>
           ))}
-
-          {/* 行追加ボタン */}
-          <div className="flex items-center gap-0.5 pl-7">
-            <button
-              type="button"
-              className="flex h-8 items-center gap-1 rounded-sm border border-border/60 border-dashed px-2 text-muted/50 transition-colors hover:border-foreground/30 hover:text-foreground/60"
-              onClick={addRow}
-              title="行を追加"
-            >
-              <PlusIcon className="h-3 w-3" />
-              <span className="text-[10px]">行を追加</span>
-            </button>
-          </div>
         </div>
       </div>
 

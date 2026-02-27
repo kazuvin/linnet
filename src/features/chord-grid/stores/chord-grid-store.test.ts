@@ -149,14 +149,14 @@ describe("chord-grid-store", () => {
       const { result } = renderHook(() => useChordGridStore());
       await act(async () => {
         useChordGridStore.getState().addRow();
-        useChordGridStore.getState().setCell(1, 0, sampleChord);
+        useChordGridStore.getState().addRow();
       });
-      expect(result.current.rows).toHaveLength(2);
+      expect(result.current.rows).toHaveLength(3);
 
       await act(async () => {
         useChordGridStore.getState().removeRow(1);
       });
-      expect(result.current.rows).toHaveLength(1);
+      expect(result.current.rows).toHaveLength(2);
     });
 
     it("最後の1行は削除できない", async () => {
@@ -235,12 +235,77 @@ describe("chord-grid-store", () => {
       expect(useChordGridStore.getState().getChordAtPosition(0, 5)).toEqual(sampleChord);
     });
 
-    it("前の行の末尾コードを引き継ぐ", async () => {
+    it("コードは16セル固定で持続する（行をまたぐ）", async () => {
       await act(async () => {
         useChordGridStore.getState().addRow();
-        useChordGridStore.getState().setCell(0, 15, sampleChord);
+        useChordGridStore.getState().setCell(0, 4, sampleChord);
       });
-      expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toEqual(sampleChord);
+      // col4 から 15セル先の col3（次の行）まで持続する
+      expect(useChordGridStore.getState().getChordAtPosition(0, 15)).toEqual(sampleChord);
+      expect(useChordGridStore.getState().getChordAtPosition(1, 3)).toEqual(sampleChord);
+      // 16セル目（col4 の次の行）は持続しない
+      expect(useChordGridStore.getState().getChordAtPosition(1, 4)).toBeNull();
+    });
+
+    it("行の先頭に置いたコードは同一行内で持続する", async () => {
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      expect(useChordGridStore.getState().getChordAtPosition(0, 15)).toEqual(sampleChord);
+      // 次の行には持続しない（ちょうど16セルで切れる）
+      expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toBeNull();
+    });
+  });
+
+  describe("自動行追加", () => {
+    it("最後の行にコードを配置すると空の行が自動追加される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      expect(result.current.rows).toHaveLength(1);
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      expect(result.current.rows).toHaveLength(2);
+      expect(result.current.rows[1].every((c) => c === null)).toBe(true);
+    });
+
+    it("最後の行以外にコードを配置しても行は追加されない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+      });
+      expect(result.current.rows).toHaveLength(2);
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 4, sampleChord);
+      });
+      // 最後の行（row 1）は空なので追加されない
+      expect(result.current.rows).toHaveLength(2);
+    });
+
+    it("既に次の空行がある場合は重複追加されない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      // 自動追加で2行になっている
+      expect(result.current.rows).toHaveLength(2);
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 4, sampleChord2);
+      });
+      // row 0 への追加なので行は増えない（row 1 が空行として存在）
+      expect(result.current.rows).toHaveLength(2);
+    });
+
+    it("addChordToNextBeat でも自動行追加される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addChordToNextBeat(sampleChord);
+      });
+      expect(result.current.rows).toHaveLength(2);
+      expect(result.current.rows[0][0]).toEqual(sampleChord);
     });
   });
 
@@ -297,6 +362,146 @@ describe("chord-grid-store", () => {
     });
   });
 
+  describe("selectCell / clearSelection", () => {
+    it("初期状態では selectedCell は null", () => {
+      const { result } = renderHook(() => useChordGridStore());
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("コードがあるセルを選択できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 4, sampleChord);
+      });
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 4);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 4 });
+    });
+
+    it("同じセルを再度選択すると選択解除される（トグル）", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("異なるセルを選択すると選択が切り替わる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(0, 4, sampleChord2);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 4);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 4 });
+    });
+
+    it("コードがないセルは選択できない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearSelection で選択を解除できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().clearSelection();
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearGrid で選択も解除される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().clearGrid();
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearCell で選択中のセルをクリアすると選択も解除される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().clearCell(0, 0);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("clearCell で別のセルをクリアしても選択は維持される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(0, 4, sampleChord2);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+
+      await act(async () => {
+        useChordGridStore.getState().clearCell(0, 4);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+    });
+
+    it("removeRow で選択中の行が削除されると選択が解除される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().setCell(1, 0, sampleChord);
+        useChordGridStore.getState().selectCell(1, 0);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 1, col: 0 });
+
+      await act(async () => {
+        useChordGridStore.getState().removeRow(1);
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("removeRow で別の行が削除されても選択は維持される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+
+      await act(async () => {
+        useChordGridStore.getState().removeRow(1);
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+    });
+  });
+
   describe("_resetChordGridForTesting", () => {
     it("初期状態に戻る", async () => {
       const { result } = renderHook(() => useChordGridStore());
@@ -319,6 +524,7 @@ describe("chord-grid-store", () => {
       expect(result.current.isPlaying).toBe(false);
       expect(result.current.currentRow).toBe(-1);
       expect(result.current.currentCol).toBe(-1);
+      expect(result.current.selectedCell).toBeNull();
     });
   });
 });

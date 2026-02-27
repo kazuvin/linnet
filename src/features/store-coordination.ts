@@ -1,3 +1,4 @@
+import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
@@ -83,4 +84,70 @@ export function addChordToGrid(
     degree,
   });
   useFretboardStore.getState().resetSelectedScaleType();
+}
+
+/**
+ * グリッドセルを選択/選択解除し、フレットボードの表示を更新する。
+ */
+export function selectGridCell(row: number, col: number): void {
+  const gridStore = useChordGridStore.getState();
+  const { selectedCell } = gridStore;
+
+  // トグル判定: 同じセルならこれから解除される
+  const isDeselecting = selectedCell?.row === row && selectedCell?.col === col;
+  gridStore.selectCell(row, col);
+
+  if (isDeselecting) {
+    useChordProgressionStore.getState().setActiveChordOverride(null);
+  } else {
+    const chord = gridStore.rows[row]?.[col];
+    if (chord) {
+      useChordProgressionStore.getState().setActiveChordOverride({
+        id: `grid-cell-${row}-${col}`,
+        rootName: chord.rootName,
+        quality: chord.quality,
+        symbol: chord.symbol,
+        source: chord.source,
+        chordFunction: chord.chordFunction,
+        romanNumeral: chord.romanNumeral,
+        degree: chord.degree,
+      });
+      useFretboardStore.getState().resetSelectedScaleType();
+    }
+  }
+}
+
+/**
+ * グリッドの選択中セルのコードを置換する。
+ * 選択中のセルがなければ通常のパレット選択動作を行う。
+ * @returns 置換が行われた場合 true
+ */
+export function replaceSelectedGridCell(chord: GridChord): boolean {
+  const { selectedCell } = useChordGridStore.getState();
+  if (!selectedCell) return false;
+
+  useChordGridStore.getState().setCell(selectedCell.row, selectedCell.col, chord);
+
+  useChordProgressionStore.getState().setActiveChordOverride({
+    id: `grid-cell-${selectedCell.row}-${selectedCell.col}`,
+    rootName: chord.rootName,
+    quality: chord.quality,
+    symbol: chord.symbol,
+    source: chord.source,
+    chordFunction: chord.chordFunction,
+    romanNumeral: chord.romanNumeral,
+    degree: chord.degree,
+  });
+  useFretboardStore.getState().resetSelectedScaleType();
+  return true;
+}
+
+/**
+ * グリッドの選択中セルを削除し、選択を解除する。
+ */
+export function deleteSelectedGridCell(): void {
+  const { selectedCell } = useChordGridStore.getState();
+  if (!selectedCell) return;
+  useChordGridStore.getState().clearCell(selectedCell.row, selectedCell.col);
+  useChordProgressionStore.getState().setActiveChordOverride(null);
 }
