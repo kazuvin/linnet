@@ -235,12 +235,15 @@ describe("chord-grid-store", () => {
       expect(useChordGridStore.getState().getChordAtPosition(0, 5)).toEqual(sampleChord);
     });
 
-    it("前の行の末尾コードを引き継ぐ", async () => {
+    it("コードの持続は行をまたがない（最大16セル）", async () => {
       await act(async () => {
         useChordGridStore.getState().addRow();
         useChordGridStore.getState().setCell(0, 15, sampleChord);
       });
-      expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toEqual(sampleChord);
+      // 同じ行の末尾は持続する
+      expect(useChordGridStore.getState().getChordAtPosition(0, 15)).toEqual(sampleChord);
+      // 次の行には引き継がない
+      expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toBeNull();
     });
   });
 

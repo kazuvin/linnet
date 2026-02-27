@@ -36,25 +36,16 @@ const SUSTAIN_CELL_STYLES: Record<string, string> = {
 
 function getChordDisplayForCell(
   rowCells: (GridChord | null)[],
-  colIndex: number,
-  prevRowCells?: (GridChord | null)[]
+  colIndex: number
 ): { label: string; chord: GridChord | null; isSustain: boolean } {
   const cell = rowCells[colIndex];
   if (cell !== null) {
     return { label: cell.symbol, chord: cell, isSustain: false };
   }
-  // 同一行で直前のコードを探す
+  // 同一行で直前のコードを探す（行をまたがない）
   for (let i = colIndex - 1; i >= 0; i--) {
     if (rowCells[i] !== null) {
       return { label: "-", chord: rowCells[i], isSustain: true };
-    }
-  }
-  // 前の行の末尾から探す
-  if (prevRowCells) {
-    for (let i = COLUMNS - 1; i >= 0; i--) {
-      if (prevRowCells[i] !== null) {
-        return { label: "-", chord: prevRowCells[i], isSustain: true };
-      }
     }
   }
   return { label: "", chord: null, isSustain: false };
@@ -269,11 +260,7 @@ export function ChordGrid() {
                   label,
                   chord: displayChord,
                   isSustain,
-                } = getChordDisplayForCell(
-                  rowCells,
-                  col,
-                  rowIndex > 0 ? rows[rowIndex - 1] : undefined
-                );
+                } = getChordDisplayForCell(rowCells, col);
                 const cellChord = rowCells[col];
                 const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
                 const isDragOver = dragOverCell?.row === rowIndex && dragOverCell?.col === col;

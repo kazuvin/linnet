@@ -116,12 +116,6 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
     for (let i = col; i >= 0; i--) {
       if (rowCells[i] !== null) return rowCells[i];
     }
-    // 現在の行に見つからない場合、前の行の末尾から探す
-    for (let r = row - 1; r >= 0; r--) {
-      for (let c = COLUMNS - 1; c >= 0; c--) {
-        if (rows[r][c] !== null) return rows[r][c];
-      }
-    }
     return null;
   },
 
