@@ -23,21 +23,19 @@ export function Fretboard() {
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <TabNav value={activeTab} onValueChange={(v) => setActiveTab(v as InstrumentTab)}>
           <TabNavItem value="fretboard">フレットボード</TabNavItem>
           <TabNavItem value="keyboard">鍵盤</TabNavItem>
         </TabNav>
         {activeTab === "fretboard" && <FretboardControls maxFret={maxFret} />}
-      </div>
-      {selectedChord && (
         <ScaleChecker
           availableScales={availableScales}
           activeScaleType={activeScaleType}
-          chordSymbol={selectedChord.symbol}
+          chordSymbol={selectedChord?.symbol ?? null}
           scaleRoot={scaleRoot}
         />
-      )}
+      </div>
       {activeTab === "fretboard" ? (
         <FretboardGrid
           positions={positions}
