@@ -180,7 +180,13 @@ export function ChordGrid() {
         <div className="flex items-center gap-3">
           {/* 選択中: コード名 + アクション */}
           {selectedChord && (
-            <div className="flex items-center gap-1 rounded-full border border-border bg-surface-elevated py-0.5 pr-1 pl-3">
+            <div
+              className={cn(
+                "flex items-center gap-1 rounded-full border py-0.5 pr-1 pl-3",
+                FUNCTION_CELL_STYLES[selectedChord.chordFunction] ??
+                  "border-border bg-surface-elevated"
+              )}
+            >
               <span className="font-bold font-mono text-xs">{selectedChord.symbol}</span>
               <button
                 type="button"
