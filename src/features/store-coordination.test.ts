@@ -1,4 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
+import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
+import {
+  _resetChordGridForTesting,
+  useChordGridStore,
+} from "@/features/chord-grid/stores/chord-grid-store";
 import {
   _resetChordProgressionForTesting,
   useChordProgressionStore,
@@ -13,6 +18,7 @@ import { changeKey, selectChordFromPalette } from "./store-coordination";
 describe("store-coordination", () => {
   beforeEach(() => {
     _resetKeyStoreForTesting();
+    _resetChordGridForTesting();
     _resetChordProgressionForTesting();
     _resetFretboardStoreForTesting();
   });
@@ -26,6 +32,79 @@ describe("store-coordination", () => {
       });
 
       expect(result.current.rootName).toBe("G");
+    });
+
+    it("グリッドのコードもトランスポーズされる（C→G）", async () => {
+      const chordI: GridChord = {
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      };
+      const chordV: GridChord = {
+        rootName: "G",
+        quality: "major",
+        symbol: "G",
+        source: "diatonic",
+        chordFunction: "dominant",
+        romanNumeral: "V",
+        degree: 5,
+      };
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, chordI);
+        useChordGridStore.getState().setCell(0, 4, chordV);
+      });
+
+      const { result: gridResult } = renderHook(() => useChordGridStore());
+
+      await act(async () => {
+        changeKey("G");
+      });
+
+      expect(gridResult.current.rows[0][0]?.rootName).toBe("G");
+      expect(gridResult.current.rows[0][0]?.symbol).toBe("G");
+      expect(gridResult.current.rows[0][4]?.rootName).toBe("D");
+      expect(gridResult.current.rows[0][4]?.symbol).toBe("D");
+    });
+
+    it("グリッドが空の場合はエラーなく動作する", async () => {
+      const { result: gridResult } = renderHook(() => useChordGridStore());
+
+      await act(async () => {
+        changeKey("G");
+      });
+
+      expect(gridResult.current.rows[0].every((c) => c === null)).toBe(true);
+    });
+
+    it("キー変更時に選択中セルが解除される", async () => {
+      const chord: GridChord = {
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      };
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, chord);
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+
+      const { result: gridResult } = renderHook(() => useChordGridStore());
+      expect(gridResult.current.selectedCell).toEqual({ row: 0, col: 0 });
+
+      await act(async () => {
+        changeKey("G");
+      });
+
+      expect(gridResult.current.selectedCell).toBeNull();
     });
   });
 
