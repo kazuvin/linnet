@@ -235,14 +235,25 @@ describe("chord-grid-store", () => {
       expect(useChordGridStore.getState().getChordAtPosition(0, 5)).toEqual(sampleChord);
     });
 
-    it("コードの持続は行をまたがない（最大16セル）", async () => {
+    it("コードは16セル固定で持続する（行をまたぐ）", async () => {
       await act(async () => {
         useChordGridStore.getState().addRow();
-        useChordGridStore.getState().setCell(0, 15, sampleChord);
+        useChordGridStore.getState().setCell(0, 4, sampleChord);
       });
-      // 同じ行の末尾は持続する
+      // col4 から 15セル先の col3（次の行）まで持続する
       expect(useChordGridStore.getState().getChordAtPosition(0, 15)).toEqual(sampleChord);
-      // 次の行には引き継がない
+      expect(useChordGridStore.getState().getChordAtPosition(1, 3)).toEqual(sampleChord);
+      // 16セル目（col4 の次の行）は持続しない
+      expect(useChordGridStore.getState().getChordAtPosition(1, 4)).toBeNull();
+    });
+
+    it("行の先頭に置いたコードは同一行内で持続する", async () => {
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      expect(useChordGridStore.getState().getChordAtPosition(0, 15)).toEqual(sampleChord);
+      // 次の行には持続しない（ちょうど16セルで切れる）
       expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toBeNull();
     });
   });

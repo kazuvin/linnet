@@ -112,9 +112,14 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   getChordAtPosition: (row, col) => {
     const { rows } = get();
     if (row < 0 || row >= rows.length) return null;
-    const rowCells = rows[row];
-    for (let i = col; i >= 0; i--) {
-      if (rowCells[i] !== null) return rowCells[i];
+    // 現在位置から最大15セル前まで遡り、コードを探す（16セル固定持続）
+    const totalPos = row * COLUMNS + col;
+    for (let offset = 0; offset < COLUMNS; offset++) {
+      const pos = totalPos - offset;
+      if (pos < 0) break;
+      const r = Math.floor(pos / COLUMNS);
+      const c = pos % COLUMNS;
+      if (r < rows.length && rows[r][c] !== null) return rows[r][c];
     }
     return null;
   },
