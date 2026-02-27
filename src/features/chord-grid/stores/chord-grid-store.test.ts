@@ -149,14 +149,14 @@ describe("chord-grid-store", () => {
       const { result } = renderHook(() => useChordGridStore());
       await act(async () => {
         useChordGridStore.getState().addRow();
-        useChordGridStore.getState().setCell(1, 0, sampleChord);
+        useChordGridStore.getState().addRow();
       });
-      expect(result.current.rows).toHaveLength(2);
+      expect(result.current.rows).toHaveLength(3);
 
       await act(async () => {
         useChordGridStore.getState().removeRow(1);
       });
-      expect(result.current.rows).toHaveLength(1);
+      expect(result.current.rows).toHaveLength(2);
     });
 
     it("最後の1行は削除できない", async () => {
@@ -241,6 +241,57 @@ describe("chord-grid-store", () => {
         useChordGridStore.getState().setCell(0, 15, sampleChord);
       });
       expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toEqual(sampleChord);
+    });
+  });
+
+  describe("自動行追加", () => {
+    it("最後の行にコードを配置すると空の行が自動追加される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      expect(result.current.rows).toHaveLength(1);
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      expect(result.current.rows).toHaveLength(2);
+      expect(result.current.rows[1].every((c) => c === null)).toBe(true);
+    });
+
+    it("最後の行以外にコードを配置しても行は追加されない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+      });
+      expect(result.current.rows).toHaveLength(2);
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 4, sampleChord);
+      });
+      // 最後の行（row 1）は空なので追加されない
+      expect(result.current.rows).toHaveLength(2);
+    });
+
+    it("既に次の空行がある場合は重複追加されない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      // 自動追加で2行になっている
+      expect(result.current.rows).toHaveLength(2);
+
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 4, sampleChord2);
+      });
+      // row 0 への追加なので行は増えない（row 1 が空行として存在）
+      expect(result.current.rows).toHaveLength(2);
+    });
+
+    it("addChordToNextBeat でも自動行追加される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addChordToNextBeat(sampleChord);
+      });
+      expect(result.current.rows).toHaveLength(2);
+      expect(result.current.rows[0][0]).toEqual(sampleChord);
     });
   });
 

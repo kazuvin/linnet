@@ -59,9 +59,13 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   setCell: (row, col, chord) => {
     const { rows } = get();
     if (row < 0 || row >= rows.length || col < 0 || col >= COLUMNS) return;
+    const isLastRow = row === rows.length - 1;
     set((state) => {
       const newRows = state.rows.map((r) => [...r]);
       newRows[row][col] = chord;
+      if (isLastRow) {
+        newRows.push(createEmptyRow());
+      }
       return { rows: newRows };
     });
   },
@@ -127,9 +131,13 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
     for (let r = 0; r < rows.length; r++) {
       const nextBeat = beatPositions.find((pos) => rows[r][pos] === null);
       if (nextBeat !== undefined) {
+        const isLastRow = r === rows.length - 1;
         set((state) => {
           const newRows = state.rows.map((row) => [...row]);
           newRows[r][nextBeat] = chord;
+          if (isLastRow) {
+            newRows.push(createEmptyRow());
+          }
           return { rows: newRows };
         });
         return;

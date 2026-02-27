@@ -4,7 +4,6 @@ import { useCallback, useState } from "react";
 import {
   MinusIcon,
   PlayIcon,
-  PlusIcon,
   StopIcon,
   TrashIcon,
   VolumeIcon,
@@ -82,7 +81,7 @@ function parseDragData(e: React.DragEvent): GridChord | null {
 
 export function ChordGrid() {
   const { rows, bpm, isPlaying, currentRow, currentCol, selectedCell } = useChordGridStore();
-  const { setBpm, setCell, clearGrid, addRow, removeRow, clearSelection } = useChordGridStore();
+  const { setBpm, setCell, clearGrid, removeRow, clearSelection } = useChordGridStore();
   const { isMuted, toggleMute } = useChordPlaybackStore();
   const { togglePlayback } = useGridPlayback();
   const hasChords = rows.some((row) => row.some((c) => c !== null));
@@ -182,20 +181,22 @@ export function ChordGrid() {
           {selectedChord && (
             <div
               className={cn(
-                "flex items-center gap-1 rounded-full border py-0.5 pr-1 pl-3",
+                "flex h-8 items-center gap-0.5 rounded-sm border pr-0.5 pl-2",
                 FUNCTION_CELL_STYLES[selectedChord.chordFunction] ??
                   "border-border bg-surface-elevated"
               )}
             >
-              <span className="font-bold font-mono text-xs">{selectedChord.symbol}</span>
+              <span className="font-bold font-mono text-[8px] leading-none">
+                {selectedChord.symbol}
+              </span>
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-destructive/10 hover:text-destructive md:h-6 md:w-6"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
                 onClick={deleteSelectedGridCell}
                 aria-label="選択中のコードを削除"
                 title="削除"
               >
-                <TrashIcon className="h-3.5 w-3.5 md:h-3 md:w-3" />
+                <TrashIcon className="h-3 w-3" />
               </button>
             </div>
           )}
@@ -321,19 +322,6 @@ export function ChordGrid() {
               })}
             </div>
           ))}
-
-          {/* 行追加ボタン */}
-          <div className="flex items-center gap-0.5 pl-7">
-            <button
-              type="button"
-              className="flex h-8 items-center gap-1 rounded-sm border border-border/60 border-dashed px-2 text-muted/50 transition-colors hover:border-foreground/30 hover:text-foreground/60"
-              onClick={addRow}
-              title="行を追加"
-            >
-              <PlusIcon className="h-3 w-3" />
-              <span className="text-[10px]">行を追加</span>
-            </button>
-          </div>
         </div>
       </div>
 
