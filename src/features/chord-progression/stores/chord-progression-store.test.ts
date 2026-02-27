@@ -341,7 +341,97 @@ describe("chord-progression-store", () => {
     });
   });
 
-  // 13. _resetChordProgressionForTesting で初期状態に戻る
+  // 13. activeChordOverride
+  describe("activeChordOverride", () => {
+    it("初期値は null", () => {
+      const { result } = renderHook(() => useChordProgressionStore());
+      expect(result.current.activeChordOverride).toBeNull();
+    });
+
+    it("setActiveChordOverride でオーバーライドを設定できる", async () => {
+      const { result } = renderHook(() => useChordProgressionStore());
+      const override = {
+        id: "override-1",
+        rootName: "C",
+        quality: "major7" as const,
+        symbol: "Cmaj7",
+        source: "diatonic" as const,
+        chordFunction: "tonic" as const,
+        romanNumeral: "I",
+        degree: 1,
+      };
+
+      await act(async () => {
+        useChordProgressionStore.getState().setActiveChordOverride(override);
+      });
+
+      expect(result.current.activeChordOverride).toEqual(override);
+    });
+
+    it("setActiveChordOverride(null) でクリアできる", async () => {
+      const { result } = renderHook(() => useChordProgressionStore());
+      const override = {
+        id: "override-1",
+        rootName: "C",
+        quality: "major7" as const,
+        symbol: "Cmaj7",
+        source: "diatonic" as const,
+        chordFunction: "tonic" as const,
+        romanNumeral: "I",
+        degree: 1,
+      };
+
+      await act(async () => {
+        useChordProgressionStore.getState().setActiveChordOverride(override);
+      });
+      expect(result.current.activeChordOverride).not.toBeNull();
+
+      await act(async () => {
+        useChordProgressionStore.getState().setActiveChordOverride(null);
+      });
+      expect(result.current.activeChordOverride).toBeNull();
+    });
+
+    it("useSelectedProgressionChord は activeChordOverride を優先して返す", async () => {
+      const { result } = renderHook(() => useSelectedProgressionChord());
+
+      await act(async () => {
+        const s = useChordProgressionStore.getState();
+        s.addChord("G", "major", "diatonic", "dominant", "V", 5);
+      });
+
+      const { result: storeResult } = renderHook(() => useChordProgressionStore());
+      const chordId = storeResult.current.chords[0].id;
+
+      await act(async () => {
+        useChordProgressionStore.getState().selectChord(chordId);
+      });
+
+      // 通常は selectedChordId のコードが返る
+      expect(result.current?.rootName).toBe("G");
+
+      const override = {
+        id: "override-1",
+        rootName: "A",
+        quality: "minor7" as const,
+        symbol: "Am7",
+        source: "diatonic" as const,
+        chordFunction: "tonic" as const,
+        romanNumeral: "vi",
+        degree: 6,
+      };
+
+      await act(async () => {
+        useChordProgressionStore.getState().setActiveChordOverride(override);
+      });
+
+      // オーバーライドが優先される
+      expect(result.current?.rootName).toBe("A");
+      expect(result.current?.quality).toBe("minor7");
+    });
+  });
+
+  // 14. _resetChordProgressionForTesting で初期状態に戻る
   it("_resetChordProgressionForTesting で初期状態に戻る", async () => {
     const { result } = renderHook(() => useChordProgressionStore());
 

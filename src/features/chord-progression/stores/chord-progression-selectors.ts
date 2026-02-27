@@ -16,7 +16,9 @@ export function useSelectedChord(): Chord | null {
 export function useSelectedProgressionChord(): ProgressionChord | null {
   const selectedChordId = useChordProgressionStore((s) => s.selectedChordId);
   const chords = useChordProgressionStore((s) => s.chords);
+  const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
   return useMemo(() => {
+    if (activeChordOverride) return activeChordOverride;
     if (selectedChordId === null) return null;
     const found = chords.find((c) => c.id === selectedChordId);
     if (!found) return null;
@@ -30,5 +32,5 @@ export function useSelectedProgressionChord(): ProgressionChord | null {
       romanNumeral: found.romanNumeral,
       degree: found.degree,
     };
-  }, [selectedChordId, chords]);
+  }, [selectedChordId, chords, activeChordOverride]);
 }

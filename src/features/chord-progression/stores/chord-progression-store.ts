@@ -23,6 +23,7 @@ export type ProgressionChord = {
 export type ChordProgressionState = {
   chords: ProgressionChord[];
   selectedChordId: string | null;
+  activeChordOverride: ProgressionChord | null;
 };
 
 type ChordProgressionActions = {
@@ -39,11 +40,13 @@ type ChordProgressionActions = {
   selectChord: (id: string | null) => void;
   transposeAllChords: (semitones: number, newRootName: string) => void;
   clearProgression: () => void;
+  setActiveChordOverride: (chord: ProgressionChord | null) => void;
 };
 
 const INITIAL_STATE: ChordProgressionState = {
   chords: [],
   selectedChordId: null,
+  activeChordOverride: null,
 };
 
 export const useChordProgressionStore = create<ChordProgressionState & ChordProgressionActions>()(
@@ -103,9 +106,15 @@ export const useChordProgressionStore = create<ChordProgressionState & ChordProg
     },
 
     clearProgression: () => set({ chords: [], selectedChordId: null }),
+
+    setActiveChordOverride: (chord) => set({ activeChordOverride: chord }),
   })
 );
 
 export function _resetChordProgressionForTesting(): void {
-  useChordProgressionStore.setState({ chords: [], selectedChordId: null });
+  useChordProgressionStore.setState({
+    chords: [],
+    selectedChordId: null,
+    activeChordOverride: null,
+  });
 }
