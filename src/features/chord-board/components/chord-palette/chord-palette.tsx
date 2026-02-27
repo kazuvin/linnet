@@ -1,20 +1,44 @@
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
+import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
-import { addAndSelectChord, addChordToGrid } from "@/features/store-coordination";
+import { selectChordFromPalette } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
-import type { useNativeDnd } from "../../hooks/use-native-dnd";
+import type { ChordFunction } from "@/lib/music-theory";
 import { ChordCard } from "../chord-card";
 import { ModeSelector } from "../mode-selector";
 
-type ChordPaletteProps = {
-  createDragHandlers: ReturnType<typeof useNativeDnd>["createPaletteDragHandlers"];
+const DRAG_DATA_TYPE = "application/x-chord";
+
+export type PaletteDragData = {
+  rootName: string;
+  quality: string;
+  symbol: string;
+  source: string;
+  chordFunction: ChordFunction;
+  romanNumeral: string;
+  degree: number;
 };
 
-export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
+function isSelectedChord(
+  activeChord: { rootName: string; quality: string; source: string } | null,
+  rootName: string,
+  quality: string,
+  source: string
+): boolean {
+  if (!activeChord) return false;
+  return (
+    activeChord.rootName === rootName &&
+    activeChord.quality === quality &&
+    activeChord.source === source
+  );
+}
+
+export function ChordPalette() {
   const paletteChords = useCurrentModeChords();
   const { selectedMode, chordType, setChordType } = useKeyStore();
+  const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
 
   function getEffectiveSource(chordInfo: (typeof paletteChords)[number]) {
     return (chordInfo.source ?? selectedMode) as Exclude<typeof selectedMode, `category:${string}`>;
@@ -22,16 +46,7 @@ export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
 
   function handleClick(chordInfo: (typeof paletteChords)[number]) {
     const source = getEffectiveSource(chordInfo);
-    // グリッドとプログレッションの両方に追加
-    addChordToGrid(
-      chordInfo.chord.root.name,
-      chordInfo.chord.quality,
-      source,
-      chordInfo.chordFunction,
-      chordInfo.romanNumeral,
-      chordInfo.degree
-    );
-    addAndSelectChord(
+    selectChordFromPalette(
       chordInfo.chord.root.name,
       chordInfo.chord.quality,
       source,
@@ -42,6 +57,21 @@ export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
     if (!useChordPlaybackStore.getState().isMuted) {
       playChord(chordInfo.chord.root.name, chordInfo.chord.quality);
     }
+  }
+
+  function handleDragStart(e: React.DragEvent, chordInfo: (typeof paletteChords)[number]) {
+    const source = getEffectiveSource(chordInfo);
+    const data: PaletteDragData = {
+      rootName: chordInfo.chord.root.name,
+      quality: chordInfo.chord.quality,
+      symbol: chordInfo.chord.symbol,
+      source,
+      chordFunction: chordInfo.chordFunction,
+      romanNumeral: chordInfo.romanNumeral,
+      degree: chordInfo.degree,
+    };
+    e.dataTransfer.setData(DRAG_DATA_TYPE, JSON.stringify(data));
+    e.dataTransfer.effectAllowed = "copy";
   }
 
   return (
@@ -56,6 +86,12 @@ export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
       <div className="-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2">
         {paletteChords.map((chordInfo) => {
           const source = getEffectiveSource(chordInfo);
+          const selected = isSelectedChord(
+            activeChordOverride,
+            chordInfo.chord.root.name,
+            chordInfo.chord.quality,
+            source as string
+          );
           return (
             <ChordCard
               key={`${chordInfo.degree}-${chordInfo.chord.symbol}-${source}`}
@@ -65,15 +101,10 @@ export function ChordPalette({ createDragHandlers }: ChordPaletteProps) {
                 chordFunction: chordInfo.chordFunction,
                 source,
               }}
+              isSelected={selected}
               onClick={() => handleClick(chordInfo)}
-              {...createDragHandlers({
-                rootName: chordInfo.chord.root.name,
-                quality: chordInfo.chord.quality,
-                source,
-                chordFunction: chordInfo.chordFunction,
-                romanNumeral: chordInfo.romanNumeral,
-                degree: chordInfo.degree,
-              })}
+              draggable
+              onDragStart={(e) => handleDragStart(e, chordInfo)}
             />
           );
         })}

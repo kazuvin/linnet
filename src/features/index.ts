@@ -47,4 +47,4 @@ export {
 } from "./key-selection/stores/key-store";
 
 // store-coordination (cross-store composite actions)
-export { addChordToGrid, changeKey, selectProgressionChord } from "./store-coordination";
+export { addChordToGrid, changeKey, selectChordFromPalette } from "./store-coordination";

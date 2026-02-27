@@ -111,3 +111,29 @@ export async function playChord(
     }, durationSec * 1000);
   });
 }
+
+/**
+ * コードを持続的に鳴らす（triggerAttack のみ）。
+ * 次に startSustainChord / stopAllSound が呼ばれるまで音が鳴り続ける。
+ * グリッド再生時の「-」セルでの持続再生に使用する。
+ */
+export async function startSustainChord(
+  rootName: string,
+  quality: ChordQuality,
+  octave = 4
+): Promise<void> {
+  const Tone = await getTone();
+  await Tone.start();
+
+  const synth = getOrCreateSynth(Tone);
+
+  // 前回の音を即座に停止
+  synth.releaseAll();
+  if (releaseTimer) {
+    clearTimeout(releaseTimer);
+    releaseTimer = null;
+  }
+
+  const notes = chordToToneNotes(rootName, quality, octave);
+  synth.triggerAttack(notes);
+}

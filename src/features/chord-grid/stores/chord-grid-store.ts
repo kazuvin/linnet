@@ -1,10 +1,9 @@
 import { create } from "zustand";
 import type { ChordFunction, ChordQuality, ScaleType } from "@/lib/music-theory";
 
-export const GRID_SIZE = 16;
+export const COLUMNS = 16;
 const MIN_BPM = 30;
 const MAX_BPM = 300;
-const BEAT_POSITIONS = [0, 4, 8, 12];
 
 export type GridChord = {
   rootName: string;
@@ -18,30 +17,34 @@ export type GridChord = {
 
 type ChordGridState = {
   bpm: number;
-  cells: (GridChord | null)[];
+  rows: (GridChord | null)[][];
   isPlaying: boolean;
-  currentStep: number;
+  currentRow: number;
+  currentCol: number;
 };
 
 type ChordGridActions = {
   setBpm: (bpm: number) => void;
-  setCell: (index: number, chord: GridChord) => void;
-  clearCell: (index: number) => void;
+  setCell: (row: number, col: number, chord: GridChord) => void;
+  clearCell: (row: number, col: number) => void;
   clearGrid: () => void;
+  addRow: () => void;
+  removeRow: (rowIndex: number) => void;
   setPlaying: (playing: boolean) => void;
-  setCurrentStep: (step: number) => void;
+  setCurrentPosition: (row: number, col: number) => void;
   stop: () => void;
-  getChordAtStep: (step: number) => GridChord | null;
+  getChordAtPosition: (row: number, col: number) => GridChord | null;
   addChordToNextBeat: (chord: GridChord) => void;
 };
 
-const createEmptyCells = (): (GridChord | null)[] => Array.from({ length: GRID_SIZE }, () => null);
+const createEmptyRow = (): (GridChord | null)[] => Array.from({ length: COLUMNS }, () => null);
 
 const INITIAL_STATE: ChordGridState = {
   bpm: 120,
-  cells: createEmptyCells(),
+  rows: [createEmptyRow()],
   isPlaying: false,
-  currentStep: -1,
+  currentRow: -1,
+  currentCol: -1,
 };
 
 export const useChordGridStore = create<ChordGridState & ChordGridActions>()((set, get) => ({
@@ -49,52 +52,80 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
 
   setBpm: (bpm) => set({ bpm: Math.max(MIN_BPM, Math.min(MAX_BPM, bpm)) }),
 
-  setCell: (index, chord) => {
-    if (index < 0 || index >= GRID_SIZE) return;
+  setCell: (row, col, chord) => {
+    const { rows } = get();
+    if (row < 0 || row >= rows.length || col < 0 || col >= COLUMNS) return;
     set((state) => {
-      const cells = [...state.cells];
-      cells[index] = chord;
-      return { cells };
+      const newRows = state.rows.map((r) => [...r]);
+      newRows[row][col] = chord;
+      return { rows: newRows };
     });
   },
 
-  clearCell: (index) => {
-    if (index < 0 || index >= GRID_SIZE) return;
+  clearCell: (row, col) => {
+    const { rows } = get();
+    if (row < 0 || row >= rows.length || col < 0 || col >= COLUMNS) return;
     set((state) => {
-      const cells = [...state.cells];
-      cells[index] = null;
-      return { cells };
+      const newRows = state.rows.map((r) => [...r]);
+      newRows[row][col] = null;
+      return { rows: newRows };
     });
   },
 
-  clearGrid: () => set({ cells: createEmptyCells(), isPlaying: false, currentStep: -1 }),
+  clearGrid: () =>
+    set({ rows: [createEmptyRow()], isPlaying: false, currentRow: -1, currentCol: -1 }),
+
+  addRow: () =>
+    set((state) => ({
+      rows: [...state.rows, createEmptyRow()],
+    })),
+
+  removeRow: (rowIndex) =>
+    set((state) => {
+      if (state.rows.length <= 1) return state;
+      const newRows = state.rows.filter((_, i) => i !== rowIndex);
+      return { rows: newRows };
+    }),
 
   setPlaying: (playing) => set({ isPlaying: playing }),
 
-  setCurrentStep: (step) => set({ currentStep: step }),
+  setCurrentPosition: (row, col) => set({ currentRow: row, currentCol: col }),
 
-  stop: () => set({ isPlaying: false, currentStep: -1 }),
+  stop: () => set({ isPlaying: false, currentRow: -1, currentCol: -1 }),
 
-  getChordAtStep: (step) => {
-    const { cells } = get();
-    for (let i = step; i >= 0; i--) {
-      if (cells[i] !== null) return cells[i];
+  getChordAtPosition: (row, col) => {
+    const { rows } = get();
+    if (row < 0 || row >= rows.length) return null;
+    const rowCells = rows[row];
+    for (let i = col; i >= 0; i--) {
+      if (rowCells[i] !== null) return rowCells[i];
+    }
+    // 現在の行に見つからない場合、前の行の末尾から探す
+    for (let r = row - 1; r >= 0; r--) {
+      for (let c = COLUMNS - 1; c >= 0; c--) {
+        if (rows[r][c] !== null) return rows[r][c];
+      }
     }
     return null;
   },
 
   addChordToNextBeat: (chord) => {
-    const { cells } = get();
-    const nextBeat = BEAT_POSITIONS.find((pos) => cells[pos] === null);
-    if (nextBeat === undefined) return;
-    set((state) => {
-      const newCells = [...state.cells];
-      newCells[nextBeat] = chord;
-      return { cells: newCells };
-    });
+    const { rows } = get();
+    const beatPositions = [0, 4, 8, 12];
+    for (let r = 0; r < rows.length; r++) {
+      const nextBeat = beatPositions.find((pos) => rows[r][pos] === null);
+      if (nextBeat !== undefined) {
+        set((state) => {
+          const newRows = state.rows.map((row) => [...row]);
+          newRows[r][nextBeat] = chord;
+          return { rows: newRows };
+        });
+        return;
+      }
+    }
   },
 }));
 
 export function _resetChordGridForTesting(): void {
-  useChordGridStore.setState({ ...INITIAL_STATE, cells: createEmptyCells() });
+  useChordGridStore.setState({ ...INITIAL_STATE, rows: [createEmptyRow()] });
 }

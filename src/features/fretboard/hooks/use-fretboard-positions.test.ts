@@ -8,7 +8,6 @@ import {
   useFretboardStore,
 } from "@/features/fretboard/stores/fretboard-store";
 import { _resetKeyStoreForTesting } from "@/features/key-selection/stores/key-store";
-import { changeKey } from "@/features/store-coordination";
 import { useFretboardPositions } from "./use-fretboard-positions";
 
 describe("useFretboardPositions", () => {
@@ -26,16 +25,17 @@ describe("useFretboardPositions", () => {
 
   // 2. diatonicコード選択時、メジャースケール + コード構成音のオーバーレイを返す
   it("diatonicコード選択時、メジャースケール + コード構成音のオーバーレイを返す", async () => {
-    useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
-
-    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
-
-    await act(async () => {});
-
-    const chordId = progressionResult.current.chords[0].id;
-
     await act(async () => {
-      useChordProgressionStore.getState().selectChord(chordId);
+      useChordProgressionStore.getState().setActiveChordOverride({
+        id: "test-c-major",
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      });
     });
 
     const { result } = renderHook(() => useFretboardPositions());
@@ -74,19 +74,17 @@ describe("useFretboardPositions", () => {
 
   // 3. modal interchange コード選択時、対応するモードスケールのオーバーレイを返す
   it("natural-minor sourceのコード選択時、ナチュラルマイナースケールのオーバーレイを返す", async () => {
-    // E♭M7 from natural minor
-    useChordProgressionStore
-      .getState()
-      .addChord("Eb", "major7", "natural-minor", "tonic", "III", 3);
-
-    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
-
-    await act(async () => {});
-
-    const chordId = progressionResult.current.chords[0].id;
-
     await act(async () => {
-      useChordProgressionStore.getState().selectChord(chordId);
+      useChordProgressionStore.getState().setActiveChordOverride({
+        id: "test-eb-major7",
+        rootName: "Eb",
+        quality: "major7",
+        symbol: "EbM7",
+        source: "natural-minor",
+        chordFunction: "tonic",
+        romanNumeral: "III",
+        degree: 3,
+      });
     });
 
     const { result } = renderHook(() => useFretboardPositions());
@@ -111,12 +109,17 @@ describe("useFretboardPositions", () => {
 
   // 4. maxFret の変更がポジション数に影響する
   it("maxFret の変更がポジション数に影響する", async () => {
-    useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
-    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
-    await act(async () => {});
-    const chordId = progressionResult.current.chords[0].id;
     await act(async () => {
-      useChordProgressionStore.getState().selectChord(chordId);
+      useChordProgressionStore.getState().setActiveChordOverride({
+        id: "test-c-major",
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      });
     });
 
     await act(async () => {
@@ -136,29 +139,43 @@ describe("useFretboardPositions", () => {
     expect(countAt12).toBeGreaterThan(countAt3);
   });
 
-  // 5. rootName 変更後の結果が変わる
-  it("rootName 変更後の結果が変わる", async () => {
-    useChordProgressionStore.getState().addChord("C", "major", "diatonic", "tonic", "I", 1);
-    const { result: progressionResult } = renderHook(() => useChordProgressionStore());
-    await act(async () => {});
-    const chordId = progressionResult.current.chords[0].id;
+  // 5. activeChordOverride を変更すると結果が変わる
+  it("activeChordOverride 変更後の結果が変わる", async () => {
     await act(async () => {
-      useChordProgressionStore.getState().selectChord(chordId);
+      useChordProgressionStore.getState().setActiveChordOverride({
+        id: "test-c-major",
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      });
     });
 
     const { result: resultC } = renderHook(() => useFretboardPositions());
     expect(resultC.current.length).toBeGreaterThan(0);
 
-    // keyをGに変更するとコードもG majorにトランスポーズされる
+    // G majorに変更
     await act(async () => {
-      changeKey("G");
+      useChordProgressionStore.getState().setActiveChordOverride({
+        id: "test-g-major",
+        rootName: "G",
+        quality: "major",
+        symbol: "G",
+        source: "diatonic",
+        chordFunction: "dominant",
+        romanNumeral: "V",
+        degree: 5,
+      });
     });
 
     const { result: resultG } = renderHook(() => useFretboardPositions());
 
-    // G メジャースケールの構成音: G(7), A(9), B(11), C(0), D(2), E(4), F#(6)
+    // G mixolydian (degree 5): G(7), A(9), B(11), C(0), D(2), E(4), F(5)
     const allPCs = new Set(resultG.current.map((p) => p.note.pitchClass));
-    expect(allPCs.has(6)).toBe(true); // F# がある
-    expect(allPCs.has(5)).toBe(false); // F がない
+    expect(allPCs.has(7)).toBe(true); // G
+    expect(allPCs.has(5)).toBe(true); // F (mixolydian)
   });
 });
