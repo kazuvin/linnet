@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { PlayIcon } from "@/components/icons";
+import { PlayIcon, StopIcon } from "@/components/icons";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { playScale, stopScale } from "@/lib/audio/scale-player";
 import type { AvailableScaleInfo, ScaleType } from "@/lib/music-theory";
@@ -10,9 +17,11 @@ import { cn } from "@/lib/utils";
 type ScaleCheckerProps = {
   availableScales: readonly AvailableScaleInfo[];
   activeScaleType: ScaleType | null;
-  chordSymbol: string;
+  chordSymbol: string | null;
   scaleRoot: string | null;
 };
+
+const NONE_VALUE = "__none__";
 
 export function ScaleChecker({
   availableScales,
@@ -23,65 +32,87 @@ export function ScaleChecker({
   const setSelectedScaleType = useFretboardStore((s) => s.setSelectedScaleType);
   const [playingScaleType, setPlayingScaleType] = useState<ScaleType | null>(null);
 
-  if (availableScales.length === 0) return null;
+  const hasScales = availableScales.length > 0;
 
-  const handlePlayScale = async (scaleType: ScaleType, rootName: string) => {
-    if (playingScaleType === scaleType) {
+  const handleScaleChange = (value: string) => {
+    if (value === NONE_VALUE) {
+      setSelectedScaleType(null);
+    } else {
+      setSelectedScaleType(value as ScaleType);
+    }
+  };
+
+  const handlePlayScale = async () => {
+    if (!activeScaleType || !scaleRoot) return;
+
+    if (playingScaleType === activeScaleType) {
       stopScale();
       setPlayingScaleType(null);
       return;
     }
-    setPlayingScaleType(scaleType);
+    setPlayingScaleType(activeScaleType);
     try {
-      await playScale(rootName, scaleType);
+      await playScale(scaleRoot, activeScaleType);
     } finally {
       setPlayingScaleType(null);
     }
   };
 
+  const isPlaying = playingScaleType !== null && playingScaleType === activeScaleType;
+
+  const activeScaleDisplayName = hasScales
+    ? availableScales.find((s) => s.scaleType === activeScaleType)?.displayName
+    : undefined;
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-muted text-sm">
-        <span className="font-bold font-mono text-foreground">{chordSymbol}</span> で使えるスケール:
+    <div className="flex items-center gap-2">
+      <span className="shrink-0 text-muted text-sm">
+        {chordSymbol ? (
+          <>
+            <span className="font-bold font-mono text-foreground">{chordSymbol}</span> スケール
+          </>
+        ) : (
+          "スケール"
+        )}
       </span>
-      <div className="flex flex-wrap gap-1.5">
-        {availableScales.map((scale) => {
-          const isActive = scale.scaleType === activeScaleType;
-          const isPlaying = scale.scaleType === playingScaleType;
-          return (
-            <div key={scale.scaleType} className="flex items-center gap-0.5">
-              <button
-                type="button"
-                className={cn(
-                  "rounded-full px-3.5 py-2 font-mono text-xs transition-colors md:px-3 md:py-1",
-                  isActive
-                    ? "bg-foreground text-background"
-                    : "bg-surface text-muted hover:bg-border hover:text-foreground"
-                )}
-                onClick={() => setSelectedScaleType(isActive ? null : scale.scaleType)}
-              >
-                {scaleRoot} {scale.displayName}
-              </button>
-              {isActive && scaleRoot && (
-                <button
-                  type="button"
-                  className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-full transition-colors md:h-6 md:w-6",
-                    isPlaying
-                      ? "bg-foreground text-background"
-                      : "text-muted hover:bg-foreground/10 hover:text-foreground"
-                  )}
-                  onClick={() => handlePlayScale(scale.scaleType, scaleRoot)}
-                  aria-label={isPlaying ? "スケール再生を停止" : "スケールを再生"}
-                  title={isPlaying ? "スケール再生を停止" : "スケールを再生"}
-                >
-                  <PlayIcon className="h-4 w-4 md:h-3 md:w-3" />
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <Select
+        value={activeScaleType ?? NONE_VALUE}
+        onValueChange={handleScaleChange}
+        disabled={!hasScales}
+      >
+        <SelectTrigger>
+          <SelectValue>
+            {hasScales && activeScaleDisplayName ? `${scaleRoot} ${activeScaleDisplayName}` : "---"}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {availableScales.map((scale) => (
+            <SelectItem key={scale.scaleType} value={scale.scaleType}>
+              {scaleRoot} {scale.displayName}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {activeScaleType && scaleRoot && (
+        <button
+          type="button"
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
+            isPlaying
+              ? "bg-foreground text-background"
+              : "text-muted hover:bg-foreground/10 hover:text-foreground"
+          )}
+          onClick={handlePlayScale}
+          aria-label={isPlaying ? "スケール再生を停止" : "スケールを再生"}
+          title={isPlaying ? "スケール再生を停止" : "スケールを再生"}
+        >
+          {isPlaying ? (
+            <StopIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
+          ) : (
+            <PlayIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
+          )}
+        </button>
+      )}
     </div>
   );
 }
