@@ -146,7 +146,7 @@ export function NumberStepper({
             onChange={(e) => setEditValue(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={handleEditKeyDown}
-            className="h-8 w-12 bg-transparent text-center text-sm outline-none md:h-7 md:w-10"
+            className="h-8 w-12 bg-transparent text-center text-base outline-none sm:text-sm md:h-7 md:w-10"
           />
         ) : (
           <button

@@ -9,6 +9,7 @@ import {
   VolumeIcon,
   VolumeOffIcon,
 } from "@/components/icons";
+import { IconButton } from "@/components/ui/button";
 import { NumberStepper } from "@/components/ui/number-stepper";
 import {
   CHORD_DRAG_TYPE,
@@ -170,43 +171,28 @@ export function ChordGrid() {
           <div className="flex min-w-0 items-center gap-2">
             <h2 className="shrink-0 font-bold text-lg">Grid</h2>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
-                  !hasChords
-                    ? "cursor-not-allowed text-muted"
-                    : isPlaying
-                      ? "bg-foreground text-background"
-                      : "text-muted hover:bg-foreground/10 hover:text-foreground"
-                )}
+              <IconButton
+                className={
+                  isPlaying ? "bg-foreground text-background hover:bg-foreground" : undefined
+                }
                 onClick={togglePlayback}
                 disabled={!hasChords}
                 aria-label={isPlaying ? "停止" : "再生"}
                 title={isPlaying ? "停止" : "再生"}
               >
-                {isPlaying ? (
-                  <StopIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-                ) : (
-                  <PlayIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-                )}
-              </button>
-              <button
-                type="button"
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
-                  "text-muted hover:bg-foreground/10 hover:text-foreground"
-                )}
+                {isPlaying ? <StopIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
+              </IconButton>
+              <IconButton
                 onClick={toggleMute}
                 aria-label={isMuted ? "ミュート解除" : "ミュート"}
                 title={isMuted ? "ミュート解除" : "ミュート"}
               >
                 {isMuted ? (
-                  <VolumeOffIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
+                  <VolumeOffIcon className="h-4 w-4" />
                 ) : (
-                  <VolumeIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
+                  <VolumeIcon className="h-4 w-4" />
                 )}
-              </button>
+              </IconButton>
               <GridActionsMenu />
             </div>
           </div>

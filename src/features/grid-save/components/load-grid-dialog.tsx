@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FolderIcon, TrashIcon } from "@/components/icons";
+import { IconButton } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -54,14 +55,9 @@ export function LoadGridDialog({ open: controlledOpen, onOpenChange }: LoadGridD
     <Dialog open={open} onOpenChange={setOpen}>
       {!isControlled && (
         <DialogTrigger asChild>
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
-            aria-label="読み込み"
-            title="読み込み"
-          >
-            <FolderIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-          </button>
+          <IconButton aria-label="読み込み" title="読み込み">
+            <FolderIcon className="h-4 w-4" />
+          </IconButton>
         </DialogTrigger>
       )}
       <DialogContent size="md">
@@ -93,15 +89,15 @@ export function LoadGridDialog({ open: controlledOpen, onOpenChange }: LoadGridD
                     >
                       復元
                     </button>
-                    <button
-                      type="button"
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    <IconButton
+                      variant="danger"
+                      className="h-7 w-7 md:h-7 md:w-7"
                       onClick={() => handleDelete(preset.id)}
                       aria-label={`${preset.name} を削除`}
                       title="削除"
                     >
                       <TrashIcon className="h-3.5 w-3.5" />
-                    </button>
+                    </IconButton>
                   </div>
                 </li>
               ))}

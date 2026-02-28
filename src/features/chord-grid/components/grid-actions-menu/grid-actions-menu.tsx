@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { EllipsisVerticalIcon, FolderIcon, SaveIcon, ShareIcon } from "@/components/icons";
+import { IconButton } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,14 +22,9 @@ export function GridActionsMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
-            aria-label="メニュー"
-            title="メニュー"
-          >
-            <EllipsisVerticalIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-          </button>
+          <IconButton aria-label="メニュー" title="メニュー">
+            <EllipsisVerticalIcon className="h-4 w-4" />
+          </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           <DropdownMenuItem onSelect={() => setSaveOpen(true)}>

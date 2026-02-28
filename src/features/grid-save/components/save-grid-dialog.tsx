@@ -2,6 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 import { SaveIcon } from "@/components/icons";
+import { IconButton } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -43,14 +44,9 @@ export function SaveGridDialog({ open: controlledOpen, onOpenChange }: SaveGridD
     <Dialog open={open} onOpenChange={setOpen}>
       {!isControlled && (
         <DialogTrigger asChild>
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
-            aria-label="保存"
-            title="保存"
-          >
-            <SaveIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-          </button>
+          <IconButton aria-label="保存" title="保存">
+            <SaveIcon className="h-4 w-4" />
+          </IconButton>
         </DialogTrigger>
       )}
       <DialogContent size="sm">

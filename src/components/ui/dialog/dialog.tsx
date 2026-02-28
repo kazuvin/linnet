@@ -56,13 +56,16 @@ export function DialogContent({ className, size = "md", children, ...props }: Di
       <DialogOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2",
-          "rounded-2xl border border-foreground/10 bg-background p-5 shadow-lg sm:p-6",
+          "fixed left-1/2 z-50 w-full -translate-x-1/2 sm:w-[calc(100%-2rem)]",
+          "bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-2xl sm:top-1/2 sm:bottom-auto sm:-translate-y-1/2 sm:rounded-2xl",
+          "border border-foreground/10 bg-background p-5 shadow-lg sm:p-6",
           "data-[state=closed]:animate-out data-[state=open]:animate-in",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2",
-          "focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2",
+          "data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4",
+          "sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0",
+          "sm:data-[state=closed]:slide-out-to-top-2 sm:data-[state=open]:slide-in-from-top-2",
+          "sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
+          "focus:outline-none",
           "duration-200",
           sizeStyles[size],
           className
