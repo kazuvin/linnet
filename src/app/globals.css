@@ -116,6 +116,7 @@
   --animate-check-bounce: check-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
   --animate-shake: shake 0.4s ease 0.3s both;
   --animate-draw: draw 0.3s ease forwards 0.15s;
+  --animate-slide-in-right: slide-in-right 0.3s ease;
 }
 
 /* ============================================
@@ -200,6 +201,28 @@
   }
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
 

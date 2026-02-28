@@ -25,7 +25,7 @@ export function DialogOverlay({ className, ...props }: DialogOverlayProps) {
   return (
     <DialogPrimitive.Overlay
       className={cn(
-        "fixed inset-0 z-50 bg-foreground/50 backdrop-blur-sm",
+        "fixed inset-0 z-50 bg-foreground/70 backdrop-blur-sm",
         "data-[state=closed]:animate-out data-[state=open]:animate-in",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "duration-200",
@@ -77,7 +77,7 @@ export function DialogContent({ className, size = "md", children, ...props }: Di
             "disabled:pointer-events-none"
           )}
         >
-          <XIcon />
+          <XIcon className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
@@ -91,10 +91,7 @@ export type DialogHeaderProps = ComponentProps<"div">;
 // Dialog Header
 export function DialogHeader({ className, ...props }: DialogHeaderProps) {
   return (
-    <div
-      className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
-      {...props}
-    />
+    <div className={cn("flex flex-col space-y-3 text-center sm:text-left", className)} {...props} />
   );
 }
 
