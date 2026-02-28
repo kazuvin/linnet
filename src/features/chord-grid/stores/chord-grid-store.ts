@@ -35,6 +35,7 @@ type ChordGridActions = {
   setCurrentPosition: (row: number, col: number) => void;
   stop: () => void;
   getChordAtPosition: (row: number, col: number) => GridChord | null;
+  getPlayableRowCount: () => number;
   addChordToNextBeat: (chord: GridChord) => void;
   selectCell: (row: number, col: number) => void;
   clearSelection: () => void;
@@ -122,6 +123,11 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
       if (r < rows.length && rows[r][c] !== null) return rows[r][c];
     }
     return null;
+  },
+
+  getPlayableRowCount: () => {
+    const { rows } = get();
+    return Math.max(0, rows.length - 1);
   },
 
   addChordToNextBeat: (chord) => {

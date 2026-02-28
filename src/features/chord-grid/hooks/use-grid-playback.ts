@@ -33,7 +33,9 @@ export function useGridPlayback() {
     await stopPlayback();
 
     const gridState = useChordGridStore.getState();
-    const hasChords = gridState.rows.some((row) => row.some((c) => c !== null));
+    const playableRowCount = gridState.getPlayableRowCount();
+    const playableRows = gridState.rows.slice(0, playableRowCount);
+    const hasChords = playableRows.some((row) => row.some((c) => c !== null));
     if (!hasChords) return;
 
     useChordGridStore.getState().setPlaying(true);
@@ -69,7 +71,9 @@ export function useGridPlayback() {
       if (col >= COLUMNS) {
         col = 0;
         row = row + 1;
-        if (row >= state.rows.length) {
+        // 最後の行（バッファ行）は再生対象外
+        const playableCount = state.getPlayableRowCount();
+        if (row >= playableCount) {
           row = 0;
         }
       }

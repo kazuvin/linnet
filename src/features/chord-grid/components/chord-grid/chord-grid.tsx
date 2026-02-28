@@ -91,7 +91,9 @@ export function ChordGrid() {
   const isMuted = useChordPlaybackStore((s) => s.isMuted);
   const toggleMute = useChordPlaybackStore((s) => s.toggleMute);
   const { togglePlayback } = useGridPlayback();
-  const hasChords = rows.some((row) => row.some((c) => c !== null));
+  const playableRowCount = useChordGridStore((s) => s.getPlayableRowCount());
+  const playableRows = rows.slice(0, playableRowCount);
+  const hasChords = playableRows.some((row) => row.some((c) => c !== null));
 
   const [dragOverCell, setDragOverCell] = useState<{ row: number; col: number } | null>(null);
 
@@ -252,79 +254,99 @@ export function ChordGrid() {
           </div>
 
           {/* 行 */}
-          {rows.map((rowCells, rowIndex) => (
-            <div key={`row-${String(rowIndex)}`} className="flex items-center gap-0.5">
-              {/* 行番号 & 削除ボタン */}
-              <div className="group/row flex w-6 shrink-0 items-center justify-center">
-                {rows.length > 1 ? (
-                  <button
-                    type="button"
-                    className="flex h-5 w-5 items-center justify-center rounded text-muted/40 transition-colors hover:bg-foreground/10 hover:text-foreground"
-                    onClick={() => removeRow(rowIndex)}
-                    title="行を削除"
-                  >
-                    <MinusIcon className="h-3 w-3" />
-                  </button>
-                ) : (
-                  <span className="text-[10px] text-muted/40">&nbsp;</span>
-                )}
-              </div>
+          {rows.map((rowCells, rowIndex) => {
+            const isBufferRow = rowIndex === rows.length - 1;
+            return (
+              <div key={`row-${String(rowIndex)}`} className="flex items-center gap-0.5">
+                {/* 行番号 & 削除ボタン */}
+                <div className="group/row flex w-6 shrink-0 items-center justify-center">
+                  {rows.length > 1 ? (
+                    <button
+                      type="button"
+                      className="flex h-5 w-5 items-center justify-center rounded text-muted/40 transition-colors hover:bg-foreground/10 hover:text-foreground"
+                      onClick={() => removeRow(rowIndex)}
+                      title="行を削除"
+                    >
+                      <MinusIcon className="h-3 w-3" />
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-muted/40">&nbsp;</span>
+                  )}
+                </div>
 
-              {/* セル */}
-              {COL_INDICES.map((col) => {
-                const {
-                  label,
-                  chord: displayChord,
-                  isSustain,
-                } = getChordDisplayForCell(rows, rowIndex, col);
-                const cellChord = rowCells[col];
-                const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
-                const isDragOver = dragOverCell?.row === rowIndex && dragOverCell?.col === col;
-                const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
+                {/* セル */}
+                {COL_INDICES.map((col) => {
+                  const {
+                    label,
+                    chord: displayChord,
+                    isSustain,
+                  } = getChordDisplayForCell(rows, rowIndex, col);
+                  const cellChord = rowCells[col];
+                  const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
+                  const isDragOver = dragOverCell?.row === rowIndex && dragOverCell?.col === col;
+                  const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
 
-                return (
-                  <button
-                    key={`cell-${String(rowIndex)}-${String(col)}`}
-                    type="button"
-                    className={cn(
-                      "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7",
-                      isCurrentStep && "ring-2 ring-foreground ring-inset",
-                      isDragOver && "ring-2 ring-primary ring-inset",
-                      isSelected && "z-10 scale-110 ring-2 ring-foreground ring-inset",
-                      cellChord
-                        ? cn(
-                            FUNCTION_CELL_STYLES[cellChord.chordFunction] ??
-                              "border-border bg-card",
-                            isCurrentStep && "brightness-90",
-                            !isSelected && "cursor-pointer"
-                          )
-                        : isSustain && displayChord
+                  return (
+                    <button
+                      key={`cell-${String(rowIndex)}-${String(col)}`}
+                      type="button"
+                      className={cn(
+                        "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7",
+                        isCurrentStep && "ring-2 ring-foreground ring-inset",
+                        isDragOver && "ring-2 ring-primary ring-inset",
+                        isSelected && "z-10 scale-110 ring-2 ring-foreground ring-inset",
+                        isBufferRow
                           ? cn(
-                              SUSTAIN_CELL_STYLES[displayChord.chordFunction] ?? "bg-card/50",
-                              "border-transparent",
-                              isCurrentStep && "brightness-90"
+                              "border-border/20 bg-surface/50",
+                              cellChord &&
+                                cn(
+                                  FUNCTION_CELL_STYLES[cellChord.chordFunction] ??
+                                    "border-border bg-card",
+                                  "opacity-50",
+                                  !isSelected && "cursor-pointer"
+                                ),
+                              isSustain &&
+                                displayChord &&
+                                cn(
+                                  SUSTAIN_CELL_STYLES[displayChord.chordFunction] ?? "bg-card/50",
+                                  "border-transparent opacity-50"
+                                )
                             )
-                          : cn(
-                              "border-border/40 bg-surface",
-                              isCurrentStep && "bg-surface-elevated"
-                            )
-                    )}
-                    onClick={() => handleCellClick(rowIndex, col)}
-                    onDragOver={handleDragOver}
-                    onDragEnter={(e) => handleDragEnter(e, rowIndex, col)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, rowIndex, col)}
-                  >
-                    {cellChord ? (
-                      <span className="font-bold font-mono text-[8px] leading-none">{label}</span>
-                    ) : isSustain ? (
-                      <span className="text-[8px] text-muted/30">-</span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
+                          : cellChord
+                            ? cn(
+                                FUNCTION_CELL_STYLES[cellChord.chordFunction] ??
+                                  "border-border bg-card",
+                                isCurrentStep && "brightness-90",
+                                !isSelected && "cursor-pointer"
+                              )
+                            : isSustain && displayChord
+                              ? cn(
+                                  SUSTAIN_CELL_STYLES[displayChord.chordFunction] ?? "bg-card/50",
+                                  "border-transparent",
+                                  isCurrentStep && "brightness-90"
+                                )
+                              : cn(
+                                  "border-border/40 bg-surface",
+                                  isCurrentStep && "bg-surface-elevated"
+                                )
+                      )}
+                      onClick={() => handleCellClick(rowIndex, col)}
+                      onDragOver={handleDragOver}
+                      onDragEnter={(e) => handleDragEnter(e, rowIndex, col)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, rowIndex, col)}
+                    >
+                      {cellChord ? (
+                        <span className="font-bold font-mono text-[8px] leading-none">{label}</span>
+                      ) : isSustain ? (
+                        <span className="text-[8px] text-muted/30">-</span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
 

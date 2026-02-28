@@ -502,6 +502,32 @@ describe("chord-grid-store", () => {
     });
   });
 
+  describe("getPlayableRowCount", () => {
+    it("初期状態（1行）では 0 を返す（バッファ行のみ）", () => {
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(0);
+    });
+
+    it("コード追加後（2行）では 1 を返す", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      // 自動追加で2行になる → 再生可能行は1
+      expect(useChordGridStore.getState().rows).toHaveLength(2);
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(1);
+    });
+
+    it("3行あるとき 2 を返す", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        // row 0にコード追加 → 2行になる
+        // row 1（最後の行）にコード追加 → 3行になる
+        useChordGridStore.getState().setCell(1, 0, sampleChord2);
+      });
+      expect(useChordGridStore.getState().rows).toHaveLength(3);
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(2);
+    });
+  });
+
   describe("_resetChordGridForTesting", () => {
     it("初期状態に戻る", async () => {
       const { result } = renderHook(() => useChordGridStore());
