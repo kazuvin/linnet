@@ -28,9 +28,9 @@ export function useAvailableScales(): {
 
   // ソースモードから導出されるデフォルトスケール
   const sourceDefaultScaleType = useMemo(() => {
-    if (!selectedChord || isDominantSource) return null;
+    if (!selectedChord) return null;
     return getDefaultScaleForSource(selectedChord.source, selectedChord.degree);
-  }, [selectedChord, isDominantSource]);
+  }, [selectedChord]);
 
   const availableScales = useMemo(() => {
     if (!selectedChord) return [];
@@ -54,14 +54,6 @@ export function useAvailableScales(): {
   const activeScaleType = useMemo(() => {
     if (!selectedChord) return null;
     if (selectedScaleType !== null) return selectedScaleType;
-    // デフォルト: コードのソースに対応するスケール
-    if (selectedChord.source === "secondary-dominant") {
-      return "mixolydian" as ScaleType;
-    }
-    // 裏コードはリディアンドミナントがデフォルト（#4 が元のセカンダリードミナントのルート）
-    if (selectedChord.source === "tritone-substitution") {
-      return "lydian-dominant" as ScaleType;
-    }
     // ソースモードのデフォルト、または availableScales の最初のエントリ
     return (
       sourceDefaultScaleType ?? (availableScales.length > 0 ? availableScales[0].scaleType : null)

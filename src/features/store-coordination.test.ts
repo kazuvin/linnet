@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import {
   _resetChordGridForTesting,
+  type GridChord,
   useChordGridStore,
 } from "@/features/chord-grid/stores/chord-grid-store";
 import {
@@ -13,6 +14,26 @@ import {
 } from "@/features/fretboard/stores/fretboard-store";
 import { _resetKeyStoreForTesting, useKeyStore } from "@/features/key-selection/stores/key-store";
 import { changeKey, selectChordFromPalette } from "./store-coordination";
+
+const chordC: GridChord = {
+  rootName: "C",
+  quality: "major",
+  symbol: "C",
+  source: "diatonic",
+  chordFunction: "tonic",
+  romanNumeral: "I",
+  degree: 1,
+};
+
+const chordG: GridChord = {
+  rootName: "G",
+  quality: "major",
+  symbol: "G",
+  source: "diatonic",
+  chordFunction: "dominant",
+  romanNumeral: "V",
+  degree: 5,
+};
 
 describe("store-coordination", () => {
   beforeEach(() => {
@@ -38,24 +59,8 @@ describe("store-coordination", () => {
 
       // C キーで I (C) と V (G) をグリッドに配置
       await act(async () => {
-        useChordGridStore.getState().setCell(0, 0, {
-          rootName: "C",
-          quality: "major",
-          symbol: "C",
-          source: "diatonic",
-          chordFunction: "tonic",
-          romanNumeral: "I",
-          degree: 1,
-        });
-        useChordGridStore.getState().setCell(0, 4, {
-          rootName: "G",
-          quality: "major",
-          symbol: "G",
-          source: "diatonic",
-          chordFunction: "dominant",
-          romanNumeral: "V",
-          degree: 5,
-        });
+        useChordGridStore.getState().setCell(0, 0, chordC);
+        useChordGridStore.getState().setCell(0, 4, chordG);
       });
 
       // G キーに変更
@@ -110,7 +115,7 @@ describe("store-coordination", () => {
       const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
-        selectChordFromPalette("C", "major", "diatonic", "tonic", "I", 1);
+        selectChordFromPalette(chordC);
       });
 
       expect(result.current.activeChordOverride).not.toBeNull();
@@ -122,13 +127,13 @@ describe("store-coordination", () => {
       const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
-        selectChordFromPalette("C", "major", "diatonic", "tonic", "I", 1);
+        selectChordFromPalette(chordC);
       });
 
       expect(result.current.activeChordOverride).not.toBeNull();
 
       await act(async () => {
-        selectChordFromPalette("C", "major", "diatonic", "tonic", "I", 1);
+        selectChordFromPalette(chordC);
       });
 
       expect(result.current.activeChordOverride).toBeNull();
@@ -138,13 +143,13 @@ describe("store-coordination", () => {
       const { result } = renderHook(() => useChordProgressionStore());
 
       await act(async () => {
-        selectChordFromPalette("C", "major", "diatonic", "tonic", "I", 1);
+        selectChordFromPalette(chordC);
       });
 
       expect(result.current.activeChordOverride?.rootName).toBe("C");
 
       await act(async () => {
-        selectChordFromPalette("G", "major", "diatonic", "dominant", "V", 5);
+        selectChordFromPalette(chordG);
       });
 
       expect(result.current.activeChordOverride?.rootName).toBe("G");
@@ -161,7 +166,7 @@ describe("store-coordination", () => {
       expect(fretboardResult.current.selectedScaleType).toBe("dorian");
 
       await act(async () => {
-        selectChordFromPalette("C", "major", "diatonic", "tonic", "I", 1);
+        selectChordFromPalette(chordC);
       });
 
       expect(fretboardResult.current.selectedScaleType).toBeNull();

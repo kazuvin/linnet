@@ -24,9 +24,15 @@ describe("chord-progression-store", () => {
 
     let returnedId = "";
     await act(async () => {
-      returnedId = useChordProgressionStore
-        .getState()
-        .addChord("C", "major", "diatonic", "tonic", "I", 1);
+      returnedId = useChordProgressionStore.getState().addChord({
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      });
     });
 
     expect(result.current.chords).toHaveLength(1);
@@ -48,8 +54,24 @@ describe("chord-progression-store", () => {
 
     await act(async () => {
       const s = useChordProgressionStore.getState();
-      s.addChord("C", "major", "diatonic", "tonic", "I", 1);
-      s.addChord("G", "major", "diatonic", "dominant", "V", 5);
+      s.addChord({
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      });
+      s.addChord({
+        rootName: "G",
+        quality: "major",
+        symbol: "G",
+        source: "diatonic",
+        chordFunction: "dominant",
+        romanNumeral: "V",
+        degree: 5,
+      });
     });
 
     const idToRemove = result.current.chords[0].id;
@@ -185,7 +207,15 @@ describe("chord-progression-store", () => {
 
     await act(async () => {
       const s = useChordProgressionStore.getState();
-      s.addChord("C", "major", "diatonic", "tonic", "I", 1);
+      s.addChord({
+        rootName: "C",
+        quality: "major",
+        symbol: "C",
+        source: "diatonic",
+        chordFunction: "tonic",
+        romanNumeral: "I",
+        degree: 1,
+      });
       s.setActiveChordOverride({
         id: "test-1",
         rootName: "C",

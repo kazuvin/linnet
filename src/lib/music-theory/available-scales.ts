@@ -1,4 +1,5 @@
 import { CHORD_INTERVAL_PATTERNS, type ChordQuality } from "./chord";
+import type { ChordSource } from "./chord-source";
 import { getDiatonicChords } from "./diatonic";
 import { ALL_MODE_SOURCES } from "./modal-interchange";
 import { createNote } from "./note";
@@ -132,16 +133,14 @@ export function computeChordQualityFromScale(
 
 /**
  * コードのソース（出所モード）と度数から、デフォルトで表示すべきスケールを返す。
- * "diatonic" → major の回転モード、ScaleType → そのモードの回転モード。
- * "secondary-dominant" / "tritone-substitution" は別途ハンドリングするため null。
+ * - "secondary-dominant" → mixolydian
+ * - "tritone-substitution" → lydian-dominant
+ * - "diatonic" → major の回転モード
+ * - ScaleType → そのモードの回転モード
  */
-export function getDefaultScaleForSource(
-  source: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType,
-  degree: number
-): ScaleType | null {
-  if (source === "secondary-dominant" || source === "tritone-substitution") {
-    return null;
-  }
+export function getDefaultScaleForSource(source: ChordSource, degree: number): ScaleType | null {
+  if (source === "secondary-dominant") return "mixolydian";
+  if (source === "tritone-substitution") return "lydian-dominant";
   const parentScaleType: ScaleType = source === "diatonic" ? "major" : source;
   return getRotatedMode(parentScaleType, degree);
 }

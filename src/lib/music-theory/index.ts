@@ -1,3 +1,5 @@
+// Chord Source
+
 // Avoid Notes
 export { getAvoidPitchClasses } from "./avoid-notes";
 // Characteristic Notes
@@ -5,6 +7,7 @@ export {
   CHARACTERISTIC_INTERVALS,
   getCharacteristicPitchClasses,
 } from "./characteristic-notes";
+export type { ChordSource } from "./chord-source";
 // Category Codes
 
 // Available Scales
