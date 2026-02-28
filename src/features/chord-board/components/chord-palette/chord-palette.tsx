@@ -6,12 +6,14 @@ import { useCurrentModeChords } from "@/features/key-selection/stores/key-select
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { replaceSelectedGridCell, selectChordFromPalette } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
+import { useDrag } from "@/lib/dnd";
 import type { ChordFunction } from "@/lib/music-theory";
 import { formatChordSymbol } from "@/lib/music-theory";
 import { ChordCard } from "../chord-card";
+import type { ChordCardData } from "../chord-card/chord-card";
 import { ModeSelector } from "../mode-selector";
 
-const DRAG_DATA_TYPE = "application/x-chord";
+export const CHORD_DRAG_TYPE = "chord";
 
 export type PaletteDragData = {
   rootName: string;
@@ -34,6 +36,30 @@ function isSelectedChord(
     activeChord.rootName === rootName &&
     activeChord.quality === quality &&
     activeChord.source === source
+  );
+}
+
+type DraggableChordCardProps = {
+  chord: ChordCardData;
+  isSelected: boolean;
+  onClick: () => void;
+  dragData: PaletteDragData;
+};
+
+function DraggableChordCard({ chord, isSelected, onClick, dragData }: DraggableChordCardProps) {
+  const { dragAttributes, isDragging } = useDrag<PaletteDragData>({
+    type: CHORD_DRAG_TYPE,
+    data: dragData,
+  });
+
+  return (
+    <ChordCard
+      chord={chord}
+      isSelected={isSelected}
+      isDragging={isDragging}
+      onClick={onClick}
+      {...dragAttributes}
+    />
   );
 }
 
@@ -86,21 +112,6 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
     }
   }
 
-  function handleDragStart(e: React.DragEvent, chordInfo: (typeof paletteChords)[number]) {
-    const source = getEffectiveSource(chordInfo);
-    const data: PaletteDragData = {
-      rootName: chordInfo.chord.root.name,
-      quality: chordInfo.chord.quality,
-      symbol: chordInfo.chord.symbol,
-      source,
-      chordFunction: chordInfo.chordFunction,
-      romanNumeral: chordInfo.romanNumeral,
-      degree: chordInfo.degree,
-    };
-    e.dataTransfer.setData(DRAG_DATA_TYPE, JSON.stringify(data));
-    e.dataTransfer.effectAllowed = "copy";
-  }
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
@@ -126,7 +137,7 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
             source as string
           );
           return (
-            <ChordCard
+            <DraggableChordCard
               key={`${chordInfo.degree}-${chordInfo.chord.symbol}-${source}`}
               chord={{
                 romanNumeral: chordInfo.romanNumeral,
@@ -136,8 +147,15 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
               }}
               isSelected={selected}
               onClick={() => handleClick(chordInfo)}
-              draggable
-              onDragStart={(e) => handleDragStart(e, chordInfo)}
+              dragData={{
+                rootName: chordInfo.chord.root.name,
+                quality: chordInfo.chord.quality,
+                symbol: chordInfo.chord.symbol,
+                source,
+                chordFunction: chordInfo.chordFunction,
+                romanNumeral: chordInfo.romanNumeral,
+                degree: chordInfo.degree,
+              }}
             />
           );
         })}
