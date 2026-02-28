@@ -36,7 +36,7 @@ export function FretboardGrid({
   const strings = [1, 2, 3, 4, 5, 6] as const;
 
   return (
-    <div className="overflow-x-auto pb-1">
+    <div className="-mx-4 overflow-x-auto px-4 pb-1 lg:-mx-8 lg:px-8">
       <div
         className="inline-grid min-w-full"
         style={{

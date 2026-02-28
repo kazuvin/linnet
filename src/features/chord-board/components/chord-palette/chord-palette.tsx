@@ -124,7 +124,7 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
       <div
         className={
           layout === "wrap"
-            ? "-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:pb-0"
+            ? "grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 lg:grid-cols-4 lg:gap-2"
             : "-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2"
         }
       >

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Serif } from "next/font/google";
 import { Header, HeaderGitHubLink, HeaderLogo, HeaderNav, HeaderNavList } from "@/components";
 import { Providers } from "./providers";
@@ -8,6 +8,13 @@ const notoSerif = Noto_Serif({
   variable: "--font-noto-serif",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: {
