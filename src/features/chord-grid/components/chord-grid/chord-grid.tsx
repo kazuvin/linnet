@@ -9,14 +9,13 @@ import {
   VolumeIcon,
   VolumeOffIcon,
 } from "@/components/icons";
+import { IconButton } from "@/components/ui/button";
 import { NumberStepper } from "@/components/ui/number-stepper";
 import {
   CHORD_DRAG_TYPE,
   type PaletteDragData,
 } from "@/features/chord-board/components/chord-palette/chord-palette";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
-import { LoadGridDialog } from "@/features/grid-save/components/load-grid-dialog";
-import { SaveGridDialog } from "@/features/grid-save/components/save-grid-dialog";
 import { deleteSelectedGridCell, selectGridCell } from "@/features/store-coordination";
 import type { DragItem } from "@/lib/dnd";
 import { useDrop } from "@/lib/dnd";
@@ -24,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useGridPlayback } from "../../hooks/use-grid-playback";
 import type { GridChord } from "../../stores/chord-grid-store";
 import { COLUMNS, useChordGridStore } from "../../stores/chord-grid-store";
+import { GridActionsMenu } from "../grid-actions-menu";
 
 const COL_INDICES = Array.from({ length: COLUMNS }, (_, i) => i);
 
@@ -166,53 +166,10 @@ export function ChordGrid() {
   return (
     <div className="flex flex-col gap-4">
       {/* コントロールバー */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="font-bold text-lg">Grid</h2>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
-                !hasChords
-                  ? "cursor-not-allowed text-muted"
-                  : isPlaying
-                    ? "bg-foreground text-background"
-                    : "text-muted hover:bg-foreground/10 hover:text-foreground"
-              )}
-              onClick={togglePlayback}
-              disabled={!hasChords}
-              aria-label={isPlaying ? "停止" : "再生"}
-              title={isPlaying ? "停止" : "再生"}
-            >
-              {isPlaying ? (
-                <StopIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-              ) : (
-                <PlayIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-              )}
-            </button>
-            <button
-              type="button"
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
-                "text-muted hover:bg-foreground/10 hover:text-foreground"
-              )}
-              onClick={toggleMute}
-              aria-label={isMuted ? "ミュート解除" : "ミュート"}
-              title={isMuted ? "ミュート解除" : "ミュート"}
-            >
-              {isMuted ? (
-                <VolumeOffIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-              ) : (
-                <VolumeIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-              )}
-            </button>
-            <SaveGridDialog />
-            <LoadGridDialog />
-          </div>
-        </div>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-x-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="shrink-0 font-bold text-lg">Grid</h2>
 
-        <div className="flex items-center gap-3">
           {/* 選択中: コード名 + アクション */}
           {selectedChord && (
             <div
@@ -235,6 +192,30 @@ export function ChordGrid() {
             </div>
           )}
 
+          <div className="ml-auto flex items-center gap-1">
+            <IconButton
+              className={
+                isPlaying ? "bg-foreground text-background hover:bg-foreground" : undefined
+              }
+              onClick={togglePlayback}
+              disabled={!hasChords}
+              aria-label={isPlaying ? "停止" : "再生"}
+              title={isPlaying ? "停止" : "再生"}
+            >
+              {isPlaying ? <StopIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
+            </IconButton>
+            <IconButton
+              onClick={toggleMute}
+              aria-label={isMuted ? "ミュート解除" : "ミュート"}
+              title={isMuted ? "ミュート解除" : "ミュート"}
+            >
+              {isMuted ? <VolumeOffIcon className="h-4 w-4" /> : <VolumeIcon className="h-4 w-4" />}
+            </IconButton>
+            <GridActionsMenu />
+          </div>
+        </div>
+
+        <div className="flex min-w-0 items-center gap-3">
           {/* BPM コントロール */}
           <NumberStepper
             id="bpm-input"

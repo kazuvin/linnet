@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PlayIcon, StopIcon } from "@/components/icons";
+import { IconButton } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,6 @@ import {
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { playScale, stopScale } from "@/lib/audio/scale-player";
 import type { AvailableScaleInfo, ScaleType } from "@/lib/music-theory";
-import { cn } from "@/lib/utils";
 
 type ScaleCheckerProps = {
   availableScales: readonly AvailableScaleInfo[];
@@ -94,24 +94,14 @@ export function ScaleChecker({
         </SelectContent>
       </Select>
       {activeScaleType && scaleRoot && (
-        <button
-          type="button"
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
-            isPlaying
-              ? "bg-foreground text-background"
-              : "text-muted hover:bg-foreground/10 hover:text-foreground"
-          )}
+        <IconButton
+          className={isPlaying ? "bg-foreground text-background hover:bg-foreground" : undefined}
           onClick={handlePlayScale}
           aria-label={isPlaying ? "スケール再生を停止" : "スケールを再生"}
           title={isPlaying ? "スケール再生を停止" : "スケールを再生"}
         >
-          {isPlaying ? (
-            <StopIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-          ) : (
-            <PlayIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-          )}
-        </button>
+          {isPlaying ? <StopIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
+        </IconButton>
       )}
     </div>
   );

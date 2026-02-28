@@ -228,6 +228,32 @@ function TextContainer({ state, texts, textRefs, width }: TextContainerProps) {
 }
 
 // ============================================================================
+// IconButton Component
+// ============================================================================
+
+export type IconButtonProps = ComponentProps<"button"> & {
+  variant?: "ghost" | "danger";
+};
+
+export function IconButton({ variant = "ghost", className, children, ...props }: IconButtonProps) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors md:h-9 md:w-9",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        variant === "ghost" && "text-muted hover:bg-foreground/10 hover:text-foreground",
+        variant === "danger" && "text-muted hover:bg-destructive/10 hover:text-destructive",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ============================================================================
 // Main Component
 // ============================================================================
 

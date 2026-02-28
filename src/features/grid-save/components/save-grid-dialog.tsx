@@ -2,6 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 import { SaveIcon } from "@/components/icons";
+import { IconButton } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -16,8 +17,17 @@ import { Input } from "@/components/ui/input/input";
 import { addToast } from "@/components/ui/toast";
 import { useGridSaveStore } from "../stores/grid-save-store";
 
-export function SaveGridDialog() {
-  const [open, setOpen] = useState(false);
+type SaveGridDialogProps = {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function SaveGridDialog({ open: controlledOpen, onOpenChange }: SaveGridDialogProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
+
   const [name, setName] = useState("");
   const saveCurrentGrid = useGridSaveStore((s) => s.saveCurrentGrid);
   const handleSave = (e: FormEvent) => {
@@ -32,16 +42,13 @@ export function SaveGridDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
-          aria-label="保存"
-          title="保存"
-        >
-          <SaveIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-        </button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <IconButton aria-label="保存" title="保存">
+            <SaveIcon className="h-4 w-4" />
+          </IconButton>
+        </DialogTrigger>
+      )}
       <DialogContent size="sm">
         <form onSubmit={handleSave}>
           <DialogHeader>
