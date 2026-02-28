@@ -53,13 +53,10 @@ export {
 } from "./diatonic";
 // Fretboard
 export {
-  type ChordVoicing,
   type FretPosition,
-  findChordPositions,
   findNotePositions,
   findOverlayPositions,
   findScalePositions,
-  getCommonVoicings,
   getNoteAtPosition,
   type NoteRole,
   type OverlayPosition,
@@ -118,3 +115,5 @@ export {
   getTritoneSubstitutionChords,
   type TritoneSubstitutionChordInfo,
 } from "./tritone-substitution";
+// Voicing
+export { type ChordVoicing, findChordPositions } from "./voicing";

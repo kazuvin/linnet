@@ -1,9 +1,7 @@
 import {
-  findChordPositions,
   findNotePositions,
   findOverlayPositions,
   findScalePositions,
-  getCommonVoicings,
   getNoteAtPosition,
   STANDARD_TUNING,
 } from "./fretboard";
@@ -200,130 +198,6 @@ describe("fretboard", () => {
       // 7音 x 6弦 = 42 以下（12フレットまで、各弦で各音は最大2回出現）
       expect(positions.length).toBeLessThanOrEqual(7 * 6 * 2);
       expect(positions.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe("findChordPositions", () => {
-    it("Cメジャーの構成音（C, E, G）がポジションに含まれる", () => {
-      const positions = findChordPositions("C", "major");
-      const pitchClasses = new Set(positions.map((p) => p.note.pitchClass));
-      expect(pitchClasses.has(0)).toBe(true); // C
-      expect(pitchClasses.has(4)).toBe(true); // E
-      expect(pitchClasses.has(7)).toBe(true); // G
-    });
-
-    it("Cメジャーの構成音以外が含まれない", () => {
-      const positions = findChordPositions("C", "major");
-      const cMajorPitchClasses = new Set([0, 4, 7]);
-      for (const pos of positions) {
-        expect(cMajorPitchClasses.has(pos.note.pitchClass)).toBe(true);
-      }
-    });
-
-    it("Amの構成音（A, C, E）がポジションに含まれる", () => {
-      const positions = findChordPositions("A", "minor");
-      const pitchClasses = new Set(positions.map((p) => p.note.pitchClass));
-      expect(pitchClasses.has(9)).toBe(true); // A
-      expect(pitchClasses.has(0)).toBe(true); // C
-      expect(pitchClasses.has(4)).toBe(true); // E
-    });
-
-    it("maxFretを指定できる", () => {
-      const positions = findChordPositions("C", "major", 5);
-      for (const pos of positions) {
-        expect(pos.fret).toBeLessThanOrEqual(5);
-      }
-    });
-
-    it("7thコードでも動作する", () => {
-      const positions = findChordPositions("G", "dominant7");
-      const pitchClasses = new Set(positions.map((p) => p.note.pitchClass));
-      // G7: G(7), B(11), D(2), F(5)
-      expect(pitchClasses.has(7)).toBe(true); // G
-      expect(pitchClasses.has(11)).toBe(true); // B
-      expect(pitchClasses.has(2)).toBe(true); // D
-      expect(pitchClasses.has(5)).toBe(true); // F
-    });
-  });
-
-  describe("getCommonVoicings", () => {
-    it("Cメジャーのオープンコードが返る", () => {
-      const voicings = getCommonVoicings("C", "major");
-      expect(voicings.length).toBeGreaterThan(0);
-    });
-
-    it("各ボイシングにchordプロパティがある", () => {
-      const voicings = getCommonVoicings("C", "major");
-      for (const voicing of voicings) {
-        expect(voicing.chord).toBeDefined();
-        expect(voicing.chord.root.name).toBe("C");
-        expect(voicing.chord.quality).toBe("major");
-      }
-    });
-
-    it("各ボイシングのpositionsが妥当", () => {
-      const voicings = getCommonVoicings("C", "major");
-      for (const voicing of voicings) {
-        expect(voicing.positions.length).toBeGreaterThanOrEqual(3);
-        expect(voicing.positions.length).toBeLessThanOrEqual(6);
-        for (const pos of voicing.positions) {
-          expect(pos.string).toBeGreaterThanOrEqual(1);
-          expect(pos.string).toBeLessThanOrEqual(6);
-          expect(pos.fret).toBeGreaterThanOrEqual(0);
-        }
-      }
-    });
-
-    it("Gメジャーのボイシングが返る", () => {
-      const voicings = getCommonVoicings("G", "major");
-      expect(voicings.length).toBeGreaterThan(0);
-    });
-
-    it("Amのボイシングが返る", () => {
-      const voicings = getCommonVoicings("A", "minor");
-      expect(voicings.length).toBeGreaterThan(0);
-    });
-
-    it("Fメジャーのバレーコードが返る", () => {
-      const voicings = getCommonVoicings("F", "major");
-      expect(voicings.length).toBeGreaterThan(0);
-      // バレーコード情報があるボイシングが含まれるか
-      const hasBarreVoicing = voicings.some((v) => v.barreInfo !== undefined);
-      expect(hasBarreVoicing).toBe(true);
-    });
-
-    it("バレーコードのbarreInfoが妥当", () => {
-      const voicings = getCommonVoicings("F", "major");
-      const barreVoicing = voicings.find((v) => v.barreInfo !== undefined);
-      expect(barreVoicing).toBeDefined();
-      if (barreVoicing?.barreInfo) {
-        expect(barreVoicing.barreInfo.fret).toBeGreaterThanOrEqual(1);
-        expect(barreVoicing.barreInfo.fromString).toBeGreaterThanOrEqual(1);
-        expect(barreVoicing.barreInfo.toString).toBeLessThanOrEqual(6);
-        expect(barreVoicing.barreInfo.fromString).toBeLessThanOrEqual(
-          barreVoicing.barreInfo.toString
-        );
-      }
-    });
-
-    it("Emのボイシングが返る", () => {
-      const voicings = getCommonVoicings("E", "minor");
-      expect(voicings.length).toBeGreaterThan(0);
-    });
-
-    it("Dメジャーのボイシングが返る", () => {
-      const voicings = getCommonVoicings("D", "major");
-      expect(voicings.length).toBeGreaterThan(0);
-    });
-
-    it("Bマイナーのバレーコードが返る", () => {
-      const voicings = getCommonVoicings("B", "minor");
-      expect(voicings.length).toBeGreaterThan(0);
-    });
-
-    it("対応していないコードでは空配列を返す", () => {
-      const voicings = getCommonVoicings("C", "diminished");
-      expect(voicings).toEqual([]);
     });
   });
 
