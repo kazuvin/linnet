@@ -193,9 +193,7 @@ export function ChordGrid() {
                   "border-border bg-surface-elevated"
               )}
             >
-              <span className="font-bold font-mono text-[8px] leading-none">
-                {selectedChord.symbol}
-              </span>
+              <span className="font-bold text-[8px] leading-none">{selectedChord.symbol}</span>
               <button
                 type="button"
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
@@ -232,7 +230,7 @@ export function ChordGrid() {
 
       {/* グリッド本体 (GitHub 芝生グラフスタイル) */}
       <div className="-mx-4 overflow-x-auto px-4 pb-1">
-        <div className="flex w-fit flex-col gap-1">
+        <div className="flex w-fit flex-col gap-1 lg:w-full">
           {/* ビート番号ヘッダー */}
           <div className="flex items-end gap-0.5 pl-7">
             {COL_INDICES.map((col) => {
@@ -241,7 +239,7 @@ export function ChordGrid() {
                 <div
                   key={`header-${String(col)}`}
                   className={cn(
-                    "flex h-4 w-8 shrink-0 items-center justify-center font-mono text-[9px] md:w-7",
+                    "flex h-4 w-8 shrink-0 items-center justify-center text-[9px] md:w-7 lg:w-auto lg:flex-1",
                     isBeat ? "font-semibold text-foreground" : "text-muted/50"
                   )}
                 >
@@ -287,7 +285,7 @@ export function ChordGrid() {
                     key={`cell-${String(rowIndex)}-${String(col)}`}
                     type="button"
                     className={cn(
-                      "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7",
+                      "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7 lg:aspect-square lg:h-auto lg:w-auto lg:flex-1",
                       isCurrentStep && "ring-2 ring-foreground ring-inset",
                       isDragOver && "ring-2 ring-primary ring-inset",
                       isSelected && "z-10 scale-110 ring-2 ring-foreground ring-inset",
@@ -316,7 +314,7 @@ export function ChordGrid() {
                     onDrop={(e) => handleDrop(e, rowIndex, col)}
                   >
                     {cellChord ? (
-                      <span className="font-bold font-mono text-[8px] leading-none">{label}</span>
+                      <span className="font-bold text-[8px] leading-none">{label}</span>
                     ) : isSustain ? (
                       <span className="text-[8px] text-muted/30">-</span>
                     ) : null}
@@ -330,9 +328,7 @@ export function ChordGrid() {
 
       {/* ガイド */}
       {!hasChords && (
-        <p className="text-center text-muted text-sm">
-          コードをクリックまたはドラッグしてグリッドに追加
-        </p>
+        <p className="text-center text-muted text-sm">コードをドラッグしてグリッドに追加</p>
       )}
     </div>
   );

@@ -41,20 +41,20 @@
 
   /* Fretboard Overlay — Chord tones & Scale */
   /* Chord root — Red (hue 25) */
-  --color-chord-root: oklch(0.55 0.2 25);
-  --color-chord-root-fg: oklch(1 0 0);
+  --color-chord-root: oklch(0.8 0.09 25);
+  --color-chord-root-fg: oklch(0.3 0.09 25);
 
   /* Chord tone (non-root) — Orange (hue 55) */
-  --color-chord-tone: oklch(0.7 0.16 55);
-  --color-chord-tone-fg: oklch(0.3 0.1 55);
+  --color-chord-tone: oklch(0.8 0.09 55);
+  --color-chord-tone-fg: oklch(0.3 0.09 55);
 
   /* Scale tone — Gray */
-  --color-scale-tone: oklch(0.82 0 0);
-  --color-scale-tone-fg: oklch(0.4 0 0);
+  --color-scale-tone: oklch(0.8 0 0);
+  --color-scale-tone-fg: oklch(0.3 0 0);
 
   /* Avoid note — Muted Purple (hue 274.42) */
-  --color-avoid-note: oklch(0.75 0.08 274.42);
-  --color-avoid-note-fg: oklch(0.35 0.08 274.42);
+  --color-avoid-note: oklch(0.8 0.09 274.42);
+  --color-avoid-note-fg: oklch(0.3 0.09 274.42);
 
   /* Semantic */
   --color-success: oklch(0.72 0.19 145);
@@ -64,8 +64,7 @@
   /* ============================================
      Typography
      ============================================ */
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-noto-serif), system-ui, serif;
 
   /* ============================================
      Radius — generous, soft feel

@@ -105,8 +105,7 @@
 
 | トークン | フォント | 用途 |
 |---|---|---|
-| `--font-sans` | Geist Sans | UI テキスト全般 |
-| `--font-mono` | Geist Mono | コード名（Cmaj7, Dm7 等）、度数表記（I, IV, V） |
+| `--font-sans` | Noto Serif | UI テキスト全般 |
 
 ### スケール
 
@@ -119,7 +118,7 @@
 | `text-xl` | 1.25rem | セクション見出し |
 | `text-2xl` | 1.5rem | ページタイトル |
 
-コード名・度数表記は `font-mono font-medium` を基本とし、読み取りやすさを優先。
+コード名・度数表記も Playfair Display で統一。
 
 ---
 

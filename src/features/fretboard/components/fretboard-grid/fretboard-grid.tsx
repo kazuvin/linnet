@@ -48,7 +48,7 @@ export function FretboardGrid({
         {frets.map((fret) => (
           <div
             key={`fn-${fret}`}
-            className="flex h-5 items-end justify-center pb-0.5 font-mono text-[10px] text-muted"
+            className="flex h-5 items-end justify-center pb-0.5 text-[10px] text-muted"
           >
             {fret > 0 ? fret : ""}
           </div>
@@ -57,7 +57,7 @@ export function FretboardGrid({
         {/* String rows */}
         {strings.map((stringNum) => (
           <Fragment key={`s-${stringNum}`}>
-            <div className="flex h-9 items-center justify-center font-medium font-mono text-muted text-xs">
+            <div className="flex h-9 items-center justify-center font-medium text-muted text-xs">
               {STANDARD_TUNING[6 - stringNum]}
             </div>
             {frets.map((fret) => {
@@ -84,7 +84,7 @@ export function FretboardGrid({
                   {pos && (
                     <div
                       className={cn(
-                        "relative z-10 flex size-5 items-center justify-center rounded-full font-bold font-mono text-[10px]",
+                        "relative z-10 flex size-5 items-center justify-center rounded-full font-bold text-[10px]",
                         "transition-colors duration-[120ms] ease-out",
                         showAvoidNotes && pos.isAvoid
                           ? "bg-avoid-note text-avoid-note-fg"

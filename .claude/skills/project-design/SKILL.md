@@ -23,8 +23,7 @@ Tailwind v4 + oklch. Auto-sorted by Biome: `pnpm format`
   --color-success: oklch(0.72 0.19 145);
   --color-warning: oklch(0.75 0.18 75);
   --color-error: oklch(0.63 0.24 27);
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-noto-serif), system-ui, serif;
 }
 
 .dark {

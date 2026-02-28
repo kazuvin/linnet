@@ -81,14 +81,14 @@ export function ChordCard({
     >
       <span
         className={cn(
-          "max-w-full truncate px-1 text-center font-mono text-[10px] leading-tight",
+          "max-w-full truncate px-1 text-center text-[10px] leading-tight",
           isSelected ? "text-background/60" : "text-muted"
         )}
       >
         {romanNumeral}
         {sourceLabel && <span className="ml-0.5 text-[9px]">({sourceLabel})</span>}
       </span>
-      <span className="font-bold font-mono text-base">{symbol}</span>
+      <span className="font-bold text-base">{symbol}</span>
       <span
         className={cn(
           "inline-flex items-center rounded-full px-1.5 py-0.5 font-semibold text-[10px]",
