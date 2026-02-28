@@ -34,44 +34,41 @@
 
 | トークン | 用途 | 値 |
 |---|---|---|
-| `--color-primary` | ボタン・リンク・選択状態 | `oklch(0.55 0.18 264)` |
-| `--color-primary-hover` | ホバー | `oklch(0.50 0.19 264)` |
-| `--color-primary-active` | アクティブ | `oklch(0.45 0.20 264)` |
-| `--color-primary-subtle` | 薄い背景 | `oklch(0.93 0.04 264)` |
+| `--color-primary` | ボタン・リンク・選択状態 | `oklch(0.55 0.18 274.42)` |
+| `--color-primary-hover` | ホバー | `oklch(0.50 0.19 274.42)` |
+| `--color-primary-active` | アクティブ | `oklch(0.45 0.20 274.42)` |
+| `--color-primary-subtle` | 薄い背景 | `oklch(0.93 0.04 274.42)` |
 
 ### コード機能色（Music Theory Colors）
 
 コードのハーモニック機能に基づく色分け。各色は `bg`（淡い背景）と `fg`（暗いテキスト）のペア。
 
-#### トニック（I, IIIm, VIm）— パープル/ラベンダー（hue 290）
+#### トニック（I, IIIm, VIm）— パープル/ラベンダー（hue 300.42）
 
 安定・着地の印象。
 
 | トークン | 用途 | 値 |
 |---|---|---|
-| `--color-tonic` | 背景・バッジ・指板ドット | `oklch(0.80 0.09 290)` |
-| `--color-tonic-fg` | テキスト | `oklch(0.30 0.09 290)` |
-| `--color-tonic-subtle` | 薄い背景（カード内区分） | `oklch(0.93 0.04 290)` |
+| `--color-tonic` | 背景・バッジ・指板ドット | `oklch(0.80 0.09 300.42)` |
+| `--color-tonic-foreground` | テキスト | `oklch(0.30 0.09 300.42)` |
 
-#### サブドミナント（IIm, IV）— セージ/グリーン（hue 160）
+#### サブドミナント（IIm, IV）— セージ/グリーン（hue 170.42）
 
 穏やか・展開の印象。
 
 | トークン | 用途 | 値 |
 |---|---|---|
-| `--color-subdominant` | 背景・バッジ・指板ドット | `oklch(0.82 0.08 160)` |
-| `--color-subdominant-fg` | テキスト | `oklch(0.30 0.08 160)` |
-| `--color-subdominant-subtle` | 薄い背景 | `oklch(0.93 0.04 160)` |
+| `--color-subdominant` | 背景・バッジ・指板ドット | `oklch(0.82 0.08 170.42)` |
+| `--color-subdominant-foreground` | テキスト | `oklch(0.30 0.08 170.42)` |
 
-#### ドミナント（V, VIIdim）— ローズ/ピンク（hue 10）
+#### ドミナント（V, VIIdim）— ローズ/ピンク（hue 20.42）
 
 緊張・解決への推進力。
 
 | トークン | 用途 | 値 |
 |---|---|---|
-| `--color-dominant` | 背景・バッジ・指板ドット | `oklch(0.78 0.10 10)` |
-| `--color-dominant-fg` | テキスト | `oklch(0.32 0.10 10)` |
-| `--color-dominant-subtle` | 薄い背景 | `oklch(0.93 0.04 10)` |
+| `--color-dominant` | 背景・バッジ・指板ドット | `oklch(0.78 0.10 20.42)` |
+| `--color-dominant-foreground` | テキスト | `oklch(0.32 0.10 20.42)` |
 
 #### 色の使い方
 
