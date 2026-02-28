@@ -429,12 +429,12 @@ describe("chord-grid-store", () => {
       expect(result.current.selectedCell).toEqual({ row: 0, col: 4 });
     });
 
-    it("コードがないセルは選択できない", async () => {
+    it("コードがないセルも選択できる", async () => {
       const { result } = renderHook(() => useChordGridStore());
       await act(async () => {
         useChordGridStore.getState().selectCell(0, 0);
       });
-      expect(result.current.selectedCell).toBeNull();
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
     });
 
     it("clearSelection で選択を解除できる", async () => {

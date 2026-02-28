@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import {
   MinusIcon,
   PlayIcon,
@@ -10,15 +10,18 @@ import {
   VolumeOffIcon,
 } from "@/components/icons";
 import { NumberStepper } from "@/components/ui/number-stepper";
+import {
+  CHORD_DRAG_TYPE,
+  type PaletteDragData,
+} from "@/features/chord-board/components/chord-palette/chord-palette";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { deleteSelectedGridCell, selectGridCell } from "@/features/store-coordination";
+import type { DragItem } from "@/lib/dnd";
+import { useDrop } from "@/lib/dnd";
 import { cn } from "@/lib/utils";
-import type { PaletteDragData } from "../../../chord-board/components/chord-palette/chord-palette";
 import { useGridPlayback } from "../../hooks/use-grid-playback";
 import type { GridChord } from "../../stores/chord-grid-store";
 import { COLUMNS, useChordGridStore } from "../../stores/chord-grid-store";
-
-const DRAG_DATA_TYPE = "application/x-chord";
 
 const COL_INDICES = Array.from({ length: COLUMNS }, (_, i) => i);
 
@@ -57,23 +60,84 @@ function getChordDisplayForCell(
   return { label: "", chord: null, isSustain: false };
 }
 
-function parseDragData(e: React.DragEvent): GridChord | null {
-  try {
-    const raw = e.dataTransfer.getData(DRAG_DATA_TYPE);
-    if (!raw) return null;
-    const data: PaletteDragData = JSON.parse(raw);
-    return {
-      rootName: data.rootName,
-      quality: data.quality as GridChord["quality"],
-      symbol: data.symbol,
-      source: data.source as GridChord["source"],
-      chordFunction: data.chordFunction,
-      romanNumeral: data.romanNumeral,
-      degree: data.degree,
-    };
-  } catch {
-    return null;
-  }
+type GridCellProps = {
+  rowIndex: number;
+  col: number;
+  cellChord: GridChord | null;
+  displayChord: GridChord | null;
+  label: string;
+  isSustain: boolean;
+  isCurrentStep: boolean;
+  isSelected: boolean;
+  onClick: () => void;
+};
+
+function GridCell({
+  rowIndex,
+  col,
+  cellChord,
+  displayChord,
+  label,
+  isSustain,
+  isCurrentStep,
+  isSelected,
+  onClick,
+}: GridCellProps) {
+  const setCell = useChordGridStore((s) => s.setCell);
+  const clearSelection = useChordGridStore((s) => s.clearSelection);
+
+  const { dropAttributes, isOver } = useDrop<PaletteDragData>({
+    dropZoneId: `cell-${rowIndex}-${col}`,
+    accept: CHORD_DRAG_TYPE,
+    onDrop: (item: DragItem<PaletteDragData>) => {
+      const data = item.data;
+      const chord: GridChord = {
+        rootName: data.rootName,
+        quality: data.quality as GridChord["quality"],
+        symbol: data.symbol,
+        source: data.source as GridChord["source"],
+        chordFunction: data.chordFunction,
+        romanNumeral: data.romanNumeral,
+        degree: data.degree,
+      };
+      setCell(rowIndex, col, chord);
+      clearSelection();
+    },
+  });
+
+  return (
+    <button
+      key={`cell-${String(rowIndex)}-${String(col)}`}
+      type="button"
+      className={cn(
+        "relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-sm border transition-all duration-150 md:w-7 lg:aspect-square lg:h-auto lg:w-auto lg:flex-1",
+        "ring-0 ring-foreground ring-offset-0 ring-offset-background",
+        isCurrentStep && "ring-2 ring-offset-2",
+        isOver && "z-10 ring-2 ring-primary ring-offset-2",
+        isSelected && "z-10 ring-2 ring-offset-2",
+        cellChord
+          ? cn(
+              FUNCTION_CELL_STYLES[cellChord.chordFunction] ?? "border-foreground/10 bg-background",
+              isCurrentStep && "brightness-90"
+            )
+          : isSustain && displayChord
+            ? cn(
+                SUSTAIN_CELL_STYLES[displayChord.chordFunction] ?? "bg-card/50",
+                "border-transparent",
+                isCurrentStep && "brightness-90"
+              )
+            : cn("border-foreground/10 bg-background", isCurrentStep && "bg-surface-elevated")
+      )}
+      onClick={onClick}
+      {...dropAttributes}
+    >
+      {cellChord ? (
+        <span className="font-bold text-[8px] leading-none">{label}</span>
+      ) : isSustain ? (
+        <span className="text-[8px] text-muted/30">-</span>
+      ) : null}
+    </button>
+  );
 }
 
 export function ChordGrid() {
@@ -84,57 +148,18 @@ export function ChordGrid() {
   const currentCol = useChordGridStore((s) => s.currentCol);
   const selectedCell = useChordGridStore((s) => s.selectedCell);
   const setBpm = useChordGridStore((s) => s.setBpm);
-  const setCell = useChordGridStore((s) => s.setCell);
   const clearGrid = useChordGridStore((s) => s.clearGrid);
   const removeRow = useChordGridStore((s) => s.removeRow);
-  const clearSelection = useChordGridStore((s) => s.clearSelection);
   const isMuted = useChordPlaybackStore((s) => s.isMuted);
   const toggleMute = useChordPlaybackStore((s) => s.toggleMute);
   const { togglePlayback } = useGridPlayback();
   const hasChords = useChordGridStore((s) => s.getPlayableRowCount()) > 0;
 
-  const [dragOverCell, setDragOverCell] = useState<{ row: number; col: number } | null>(null);
-
   const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
+  const handleCellClick = useCallback((rowIndex: number, col: number) => {
+    selectGridCell(rowIndex, col);
   }, []);
-
-  const handleDragEnter = useCallback((e: React.DragEvent, row: number, col: number) => {
-    e.preventDefault();
-    setDragOverCell({ row, col });
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    const related = e.relatedTarget as HTMLElement | null;
-    if (!related || !e.currentTarget.contains(related)) {
-      setDragOverCell(null);
-    }
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent, row: number, col: number) => {
-      e.preventDefault();
-      setDragOverCell(null);
-      const chord = parseDragData(e);
-      if (chord) {
-        setCell(row, col, chord);
-        clearSelection();
-      }
-    },
-    [setCell, clearSelection]
-  );
-
-  const handleCellClick = useCallback(
-    (rowIndex: number, col: number) => {
-      const cellChord = rows[rowIndex]?.[col];
-      if (!cellChord) return;
-      selectGridCell(rowIndex, col);
-    },
-    [rows]
-  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -232,7 +257,7 @@ export function ChordGrid() {
       <div className="-mx-4 overflow-x-auto px-4 pb-1">
         <div className="flex w-fit flex-col gap-1 lg:w-full">
           {/* ビート番号ヘッダー */}
-          <div className="flex items-end gap-0.5 pl-7">
+          <div className="flex items-end gap-0.5">
             {COL_INDICES.map((col) => {
               const isBeat = col % 4 === 0;
               return (
@@ -247,27 +272,12 @@ export function ChordGrid() {
                 </div>
               );
             })}
+            <div className="w-6 shrink-0" />
           </div>
 
           {/* 行 */}
           {rows.map((rowCells, rowIndex) => (
             <div key={`row-${String(rowIndex)}`} className="flex items-center gap-0.5">
-              {/* 行番号 & 削除ボタン */}
-              <div className="group/row flex w-6 shrink-0 items-center justify-center">
-                {rows.length > 1 ? (
-                  <button
-                    type="button"
-                    className="flex h-5 w-5 items-center justify-center rounded text-muted/40 transition-colors hover:bg-foreground/10 hover:text-foreground"
-                    onClick={() => removeRow(rowIndex)}
-                    title="行を削除"
-                  >
-                    <MinusIcon className="h-3 w-3" />
-                  </button>
-                ) : (
-                  <span className="text-[10px] text-muted/40">&nbsp;</span>
-                )}
-              </div>
-
               {/* セル */}
               {COL_INDICES.map((col) => {
                 const {
@@ -277,50 +287,37 @@ export function ChordGrid() {
                 } = getChordDisplayForCell(rows, rowIndex, col);
                 const cellChord = rowCells[col];
                 const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
-                const isDragOver = dragOverCell?.row === rowIndex && dragOverCell?.col === col;
                 const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
 
                 return (
-                  <button
+                  <GridCell
                     key={`cell-${String(rowIndex)}-${String(col)}`}
-                    type="button"
-                    className={cn(
-                      "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border transition-all md:w-7 lg:aspect-square lg:h-auto lg:w-auto lg:flex-1",
-                      isCurrentStep && "ring-2 ring-foreground ring-inset",
-                      isDragOver && "ring-2 ring-primary ring-inset",
-                      isSelected && "z-10 scale-110 ring-2 ring-foreground ring-inset",
-                      cellChord
-                        ? cn(
-                            FUNCTION_CELL_STYLES[cellChord.chordFunction] ??
-                              "border-foreground/10 bg-background",
-                            isCurrentStep && "brightness-90",
-                            !isSelected && "cursor-pointer"
-                          )
-                        : isSustain && displayChord
-                          ? cn(
-                              SUSTAIN_CELL_STYLES[displayChord.chordFunction] ?? "bg-card/50",
-                              "border-transparent",
-                              isCurrentStep && "brightness-90"
-                            )
-                          : cn(
-                              "border-foreground/10 bg-background",
-                              isCurrentStep && "bg-surface-elevated"
-                            )
-                    )}
+                    rowIndex={rowIndex}
+                    col={col}
+                    cellChord={cellChord}
+                    displayChord={displayChord}
+                    label={label}
+                    isSustain={isSustain}
+                    isCurrentStep={isCurrentStep}
+                    isSelected={isSelected}
                     onClick={() => handleCellClick(rowIndex, col)}
-                    onDragOver={handleDragOver}
-                    onDragEnter={(e) => handleDragEnter(e, rowIndex, col)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, rowIndex, col)}
-                  >
-                    {cellChord ? (
-                      <span className="font-bold text-[8px] leading-none">{label}</span>
-                    ) : isSustain ? (
-                      <span className="text-[8px] text-muted/30">-</span>
-                    ) : null}
-                  </button>
+                  />
                 );
               })}
+
+              {/* 行削除ボタン */}
+              <div className="flex w-6 shrink-0 items-center justify-center">
+                {rows.length > 1 && (
+                  <button
+                    type="button"
+                    className="flex h-5 w-5 items-center justify-center rounded text-muted/40 transition-colors hover:bg-foreground/10 hover:text-foreground"
+                    onClick={() => removeRow(rowIndex)}
+                    title="行を削除"
+                  >
+                    <MinusIcon className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

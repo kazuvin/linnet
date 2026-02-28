@@ -69,11 +69,11 @@ export function ChordCard({
   return (
     <div
       className={cn(
-        "group relative flex aspect-square flex-col items-center justify-center rounded-2xl border shadow-card transition-shadow hover:shadow-card-hover",
+        "group relative flex aspect-square flex-col items-center justify-center rounded-2xl border shadow-card transition-all duration-150 hover:shadow-card-hover active:scale-90 active:shadow-inner",
         "cursor-grab select-none gap-1 overflow-visible active:cursor-grabbing",
-        isSelected
-          ? "border-foreground bg-foreground text-background"
-          : CARD_BG_STYLES[chordFunction],
+        "ring-0 ring-foreground ring-offset-0 ring-offset-background",
+        CARD_BG_STYLES[chordFunction],
+        isSelected && "ring-2 ring-offset-2",
         isDragging && "opacity-0",
         className
       )}
@@ -82,7 +82,7 @@ export function ChordCard({
       <span
         className={cn(
           "max-w-full truncate px-1 text-center text-[10px] leading-tight",
-          isSelected ? "text-background/60" : "text-muted"
+          "text-muted"
         )}
       >
         {romanNumeral}
@@ -102,7 +102,7 @@ export function ChordCard({
           type="button"
           className={cn(
             "absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full transition-opacity md:h-5 md:w-5 md:opacity-0 md:group-hover:opacity-100",
-            isSelected ? "bg-background text-foreground" : "bg-foreground text-background"
+            "bg-foreground text-background"
           )}
           onClick={(e) => {
             e.stopPropagation();

@@ -157,7 +157,6 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   selectCell: (row, col) => {
     const { rows, selectedCell } = get();
     if (row < 0 || row >= rows.length || col < 0 || col >= COLUMNS) return;
-    if (rows[row][col] === null) return;
     if (selectedCell?.row === row && selectedCell?.col === col) {
       set({ selectedCell: null });
     } else {
