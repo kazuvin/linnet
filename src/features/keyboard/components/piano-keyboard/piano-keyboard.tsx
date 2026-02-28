@@ -118,7 +118,7 @@ function WhiteKey({
   return (
     <div
       className={cn(
-        "relative flex flex-1 flex-col items-center justify-end border-foreground/20 border-r pb-2 last:border-r-0",
+        "relative flex flex-1 flex-col items-center justify-end border-foreground/20 border-r pb-2 first:rounded-l-lg last:rounded-r-lg last:border-r-0",
         "transition-colors duration-[120ms] ease-out",
         isAvoid
           ? "bg-avoid-note text-avoid-note-fg"
@@ -160,7 +160,7 @@ function BlackKey({
           : isHighlighted
             ? NOTE_ROLE_STYLES[noteInfo.role].black
             : "bg-foreground/85 text-background/60",
-        isCharacteristic && "ring-2 ring-background/60 ring-inset"
+        isCharacteristic && "ring-2 ring-background ring-inset"
       )}
       style={{
         left: `${left}%`,
