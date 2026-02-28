@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import {
   ALL_MODE_SOURCES,
   type CategoryId,
+  type ChordSource,
   type DiatonicChordInfo,
   filterNonDiatonicChords,
   getAllModalInterchangeChords,
@@ -19,7 +20,7 @@ import { useKeyStore } from "./key-store";
 
 export type PaletteChordInfo = DiatonicChordInfo & {
   isAvailable: boolean;
-  source?: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
+  source?: ChordSource;
 };
 
 export type ModalInterchangeModeGroup = {

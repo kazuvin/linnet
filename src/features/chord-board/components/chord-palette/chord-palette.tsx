@@ -1,3 +1,4 @@
+import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
@@ -8,7 +9,6 @@ import { replaceSelectedGridCell, selectChordFromPalette } from "@/features/stor
 import { playChord } from "@/lib/audio/chord-player";
 import { useDrag } from "@/lib/dnd";
 import type { ChordFunction } from "@/lib/music-theory";
-import { formatChordSymbol } from "@/lib/music-theory";
 import { ChordCard } from "../chord-card";
 import type { ChordCardData } from "../chord-card/chord-card";
 import { ModeSelector } from "../mode-selector";
@@ -76,39 +76,37 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
     return (chordInfo.source ?? selectedMode) as Exclude<typeof selectedMode, `category:${string}`>;
   }
 
-  function handleClick(chordInfo: (typeof paletteChords)[number]) {
+  function toGridChord(chordInfo: (typeof paletteChords)[number]): GridChord {
     const source = getEffectiveSource(chordInfo);
+    return {
+      rootName: chordInfo.chord.root.name,
+      quality: chordInfo.chord.quality,
+      symbol: chordInfo.chord.symbol,
+      source,
+      chordFunction: chordInfo.chordFunction,
+      romanNumeral: chordInfo.romanNumeral,
+      degree: chordInfo.degree,
+    };
+  }
+
+  function handleClick(chordInfo: (typeof paletteChords)[number]) {
+    const gridChord = toGridChord(chordInfo);
 
     // グリッドでセルが選択中の場合、そのセルのコードを置換する
     const gridSelected = useChordGridStore.getState().selectedCell;
     if (gridSelected) {
-      const replaced = replaceSelectedGridCell({
-        rootName: chordInfo.chord.root.name,
-        quality: chordInfo.chord.quality,
-        symbol: formatChordSymbol(chordInfo.chord.root.name, chordInfo.chord.quality),
-        source,
-        chordFunction: chordInfo.chordFunction,
-        romanNumeral: chordInfo.romanNumeral,
-        degree: chordInfo.degree,
-      });
+      const replaced = replaceSelectedGridCell(gridChord);
       if (replaced) {
         if (!useChordPlaybackStore.getState().isMuted) {
-          playChord(chordInfo.chord.root.name, chordInfo.chord.quality);
+          playChord(gridChord.rootName, gridChord.quality);
         }
         return;
       }
     }
 
-    selectChordFromPalette(
-      chordInfo.chord.root.name,
-      chordInfo.chord.quality,
-      source,
-      chordInfo.chordFunction,
-      chordInfo.romanNumeral,
-      chordInfo.degree
-    );
+    selectChordFromPalette(gridChord);
     if (!useChordPlaybackStore.getState().isMuted) {
-      playChord(chordInfo.chord.root.name, chordInfo.chord.quality);
+      playChord(gridChord.rootName, gridChord.quality);
     }
   }
 

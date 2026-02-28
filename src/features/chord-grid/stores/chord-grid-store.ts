@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ChordFunction, ChordQuality, ScaleType } from "@/lib/music-theory";
+import type { ChordFunction, ChordQuality, ChordSource } from "@/lib/music-theory";
 
 export const COLUMNS = 16;
 export const INITIAL_ROWS = 4;
@@ -10,7 +10,7 @@ export type GridChord = {
   rootName: string;
   quality: ChordQuality;
   symbol: string;
-  source: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
+  source: ChordSource;
   chordFunction: ChordFunction;
   romanNumeral: string;
   degree: number;

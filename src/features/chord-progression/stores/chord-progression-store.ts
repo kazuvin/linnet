@@ -1,24 +1,8 @@
 import { create } from "zustand";
-import {
-  type ChordFunction,
-  type ChordQuality,
-  createNote,
-  formatChordSymbol,
-  type ScaleType,
-  shouldPreferFlat,
-  transposeNote,
-} from "@/lib/music-theory";
+import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
+import { createNote, formatChordSymbol, shouldPreferFlat, transposeNote } from "@/lib/music-theory";
 
-export type ProgressionChord = {
-  id: string;
-  rootName: string;
-  quality: ChordQuality;
-  symbol: string;
-  source: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
-  chordFunction: ChordFunction;
-  romanNumeral: string;
-  degree: number;
-};
+export type ProgressionChord = GridChord & { id: string };
 
 export type ChordProgressionState = {
   chords: ProgressionChord[];
@@ -27,14 +11,7 @@ export type ChordProgressionState = {
 };
 
 type ChordProgressionActions = {
-  addChord: (
-    rootName: string,
-    quality: ChordQuality,
-    source: "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType,
-    chordFunction: ChordFunction,
-    romanNumeral: string,
-    degree: number
-  ) => string;
+  addChord: (chord: GridChord) => string;
   removeChord: (id: string) => void;
   reorderChords: (fromIndex: number, toIndex: number) => void;
   selectChord: (id: string | null) => void;
@@ -53,22 +30,10 @@ export const useChordProgressionStore = create<ChordProgressionState & ChordProg
   (set) => ({
     ...INITIAL_STATE,
 
-    addChord: (rootName, quality, source, chordFunction, romanNumeral, degree) => {
+    addChord: (chord) => {
       const id = crypto.randomUUID();
       set((state) => ({
-        chords: [
-          ...state.chords,
-          {
-            id,
-            rootName,
-            quality,
-            symbol: formatChordSymbol(rootName, quality),
-            source,
-            chordFunction,
-            romanNumeral,
-            degree,
-          },
-        ],
+        chords: [...state.chords, { ...chord, id }],
       }));
       return id;
     },

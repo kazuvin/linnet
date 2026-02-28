@@ -411,13 +411,13 @@ describe("getDefaultScaleForSource", () => {
     });
   });
 
-  describe("secondary-dominant / tritone-substitution は null を返す", () => {
-    it("secondary-dominant は null", () => {
-      expect(getDefaultScaleForSource("secondary-dominant", 5)).toBeNull();
+  describe("secondary-dominant / tritone-substitution のデフォルトスケール", () => {
+    it("secondary-dominant は mixolydian", () => {
+      expect(getDefaultScaleForSource("secondary-dominant", 5)).toBe("mixolydian");
     });
 
-    it("tritone-substitution は null", () => {
-      expect(getDefaultScaleForSource("tritone-substitution", 5)).toBeNull();
+    it("tritone-substitution は lydian-dominant", () => {
+      expect(getDefaultScaleForSource("tritone-substitution", 5)).toBe("lydian-dominant");
     });
   });
 });
