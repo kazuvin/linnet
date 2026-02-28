@@ -10,6 +10,7 @@ export { PlayIcon } from "./play-icon";
 export { PlusIcon } from "./plus-icon";
 export { SaveIcon } from "./save-icon";
 export { SearchIcon } from "./search-icon";
+export { ShareIcon } from "./share-icon";
 export { StopIcon } from "./stop-icon";
 export { TrashIcon } from "./trash-icon";
 export type { IconProps } from "./types";

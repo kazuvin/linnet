@@ -17,6 +17,7 @@ import {
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { LoadGridDialog } from "@/features/grid-save/components/load-grid-dialog";
 import { SaveGridDialog } from "@/features/grid-save/components/save-grid-dialog";
+import { ShareGridButton } from "@/features/grid-share";
 import { deleteSelectedGridCell, selectGridCell } from "@/features/store-coordination";
 import type { DragItem } from "@/lib/dnd";
 import { useDrop } from "@/lib/dnd";
@@ -209,6 +210,7 @@ export function ChordGrid() {
             </button>
             <SaveGridDialog />
             <LoadGridDialog />
+            <ShareGridButton />
           </div>
         </div>
 
