@@ -69,7 +69,7 @@ export function ChordCard({
   return (
     <div
       className={cn(
-        "group relative flex aspect-square flex-col items-center justify-center rounded-lg border shadow-card transition-all duration-150 hover:shadow-card-hover active:scale-90 active:shadow-inner lg:rounded-2xl",
+        "group relative flex aspect-square flex-col items-center justify-center rounded-sm border shadow-card transition-all duration-150 hover:shadow-card-hover active:scale-90 active:shadow-inner lg:rounded-2xl",
         "cursor-grab select-none gap-0.5 overflow-visible active:cursor-grabbing lg:gap-1",
         "ring-0 ring-foreground ring-offset-0 ring-offset-background",
         CARD_BG_STYLES[chordFunction],
