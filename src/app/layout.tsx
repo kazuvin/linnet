@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Noto_Serif } from "next/font/google";
 import { Header, HeaderGitHubLink, HeaderLogo, HeaderNav, HeaderNavList } from "@/components";
 import { Providers } from "./providers";
@@ -8,13 +8,6 @@ const notoSerif = Noto_Serif({
   variable: "--font-noto-serif",
   subsets: ["latin"],
 });
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 export const metadata: Metadata = {
   title: {
@@ -32,6 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={notoSerif.variable}>
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content"
+        />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml"></link>
       </head>
       <body className="antialiased">
