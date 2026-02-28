@@ -502,6 +502,56 @@ describe("chord-grid-store", () => {
     });
   });
 
+  describe("getPlayableRowCount", () => {
+    it("全行が空なら 0 を返す", () => {
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(0);
+    });
+
+    it("コードがある行までを再生対象とする", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      // row 0 にコード → 自動追加で row 1 は空
+      expect(useChordGridStore.getState().rows).toHaveLength(2);
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(1);
+    });
+
+    it("複数行にコードがある場合、最後のコードがある行までを返す", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(1, 0, sampleChord2);
+      });
+      // row 0, 1 にコード → row 2 は自動追加の空行
+      expect(useChordGridStore.getState().rows).toHaveLength(3);
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(2);
+    });
+
+    it("コードがある行の後に空行が複数あっても末尾の空行はスキップされる", async () => {
+      await act(async () => {
+        // 手動で空行を追加（自動追加ではなく明示的に追加）
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().addRow();
+        // row 0 にだけコードを置く → 3行あるが再生対象は1行
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      expect(useChordGridStore.getState().rows).toHaveLength(3);
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(1);
+    });
+
+    it("中間に空行があってもコードがある最後の行まで含む", async () => {
+      await act(async () => {
+        useChordGridStore.getState().addRow();
+        useChordGridStore.getState().addRow();
+        // row 0: コードあり, row 1: 空, row 2: コードあり
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(2, 0, sampleChord2);
+      });
+      // row 2 にコード追加 → row 3 が自動追加
+      expect(useChordGridStore.getState().rows).toHaveLength(4);
+      expect(useChordGridStore.getState().getPlayableRowCount()).toBe(3);
+    });
+  });
+
   describe("_resetChordGridForTesting", () => {
     it("初期状態に戻る", async () => {
       const { result } = renderHook(() => useChordGridStore());

@@ -91,7 +91,7 @@ export function ChordGrid() {
   const isMuted = useChordPlaybackStore((s) => s.isMuted);
   const toggleMute = useChordPlaybackStore((s) => s.toggleMute);
   const { togglePlayback } = useGridPlayback();
-  const hasChords = rows.some((row) => row.some((c) => c !== null));
+  const hasChords = useChordGridStore((s) => s.getPlayableRowCount()) > 0;
 
   const [dragOverCell, setDragOverCell] = useState<{ row: number; col: number } | null>(null);
 
