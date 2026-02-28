@@ -11,7 +11,7 @@ export type CardFooterProps = ComponentProps<"div">;
 
 export function Card({ variant = "default", className, children, ...props }: CardProps) {
   return (
-    <div className={cn("rounded-3xl px-2 py-5", variantStyles[variant], className)} {...props}>
+    <div className={cn("rounded-3xl p-8", variantStyles[variant], className)} {...props}>
       {children}
     </div>
   );
@@ -42,6 +42,6 @@ export function CardFooter({ className, children, ...props }: CardFooterProps) {
 }
 
 const variantStyles = {
-  default: "bg-stone-50",
+  default: "bg-card",
   outline: "bg-transparent",
 } as const;

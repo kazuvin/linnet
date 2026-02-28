@@ -37,7 +37,11 @@ function isSelectedChord(
   );
 }
 
-export function ChordPalette() {
+type ChordPaletteProps = {
+  layout?: "row" | "wrap";
+};
+
+export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
   const paletteChords = useCurrentModeChords();
   const { selectedMode, chordType, setChordType } = useKeyStore();
   const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
@@ -99,14 +103,20 @@ export function ChordPalette() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <h2 className="font-bold text-lg">Chords</h2>
         <div className="flex items-center gap-2">
           <ModeSelector />
           <ChordTypeSelector value={chordType} onValueChange={setChordType} />
         </div>
       </div>
-      <div className="-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2">
+      <div
+        className={
+          layout === "wrap"
+            ? "-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:pb-0"
+            : "-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2"
+        }
+      >
         {paletteChords.map((chordInfo) => {
           const source = getEffectiveSource(chordInfo);
           const selected = isSelectedChord(

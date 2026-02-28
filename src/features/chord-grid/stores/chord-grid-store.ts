@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { ChordFunction, ChordQuality, ScaleType } from "@/lib/music-theory";
 
 export const COLUMNS = 16;
+export const INITIAL_ROWS = 4;
 const MIN_BPM = 30;
 const MAX_BPM = 300;
 
@@ -45,7 +46,7 @@ const createEmptyRow = (): (GridChord | null)[] => Array.from({ length: COLUMNS 
 
 const INITIAL_STATE: ChordGridState = {
   bpm: 120,
-  rows: [createEmptyRow()],
+  rows: Array.from({ length: INITIAL_ROWS }, () => createEmptyRow()),
   isPlaying: false,
   currentRow: -1,
   currentCol: -1,
@@ -84,7 +85,7 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
 
   clearGrid: () =>
     set({
-      rows: [createEmptyRow()],
+      rows: Array.from({ length: INITIAL_ROWS }, () => createEmptyRow()),
       isPlaying: false,
       currentRow: -1,
       currentCol: -1,
@@ -168,5 +169,9 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
 }));
 
 export function _resetChordGridForTesting(): void {
-  useChordGridStore.setState({ ...INITIAL_STATE, rows: [createEmptyRow()], selectedCell: null });
+  useChordGridStore.setState({
+    ...INITIAL_STATE,
+    rows: Array.from({ length: INITIAL_ROWS }, () => createEmptyRow()),
+    selectedCell: null,
+  });
 }
