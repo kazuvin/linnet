@@ -25,15 +25,15 @@ const FUNCTION_LABEL: Record<ChordFunction, string> = {
 };
 
 const CARD_BG_STYLES: Record<ChordFunction, string> = {
-  tonic: "bg-tonic-subtle border-tonic/30",
-  subdominant: "bg-subdominant-subtle border-subdominant/30",
-  dominant: "bg-dominant-subtle border-dominant/30",
+  tonic: "bg-tonic text-tonic-foreground border-transparent",
+  subdominant: "bg-subdominant text-subdominant-foreground border-transparent",
+  dominant: "bg-dominant text-dominant-foreground border-transparent",
 };
 
 const BADGE_STYLES: Record<ChordFunction, string> = {
-  tonic: "bg-tonic text-tonic-fg",
-  subdominant: "bg-subdominant text-subdominant-fg",
-  dominant: "bg-dominant text-dominant-fg",
+  tonic: "bg-tonic text-tonic-foreground",
+  subdominant: "bg-subdominant text-subdominant-foreground",
+  dominant: "bg-dominant text-dominant-foreground",
 };
 
 const MODE_SHORT_NAMES: Record<string, string> = {

@@ -23,15 +23,15 @@ const DRAG_DATA_TYPE = "application/x-chord";
 const COL_INDICES = Array.from({ length: COLUMNS }, (_, i) => i);
 
 const FUNCTION_CELL_STYLES: Record<string, string> = {
-  tonic: "border-tonic/40 bg-tonic-subtle",
-  subdominant: "border-subdominant/40 bg-subdominant-subtle",
-  dominant: "border-dominant/40 bg-dominant-subtle",
+  tonic: "border-transparent bg-tonic text-tonic-foreground",
+  subdominant: "border-transparent bg-subdominant text-subdominant-foreground",
+  dominant: "border-transparent bg-dominant text-dominant-foreground",
 };
 
 const SUSTAIN_CELL_STYLES: Record<string, string> = {
-  tonic: "bg-tonic-subtle/40",
-  subdominant: "bg-subdominant-subtle/40",
-  dominant: "bg-dominant-subtle/40",
+  tonic: "bg-tonic/40",
+  subdominant: "bg-subdominant/40",
+  dominant: "bg-dominant/40",
 };
 
 function getChordDisplayForCell(

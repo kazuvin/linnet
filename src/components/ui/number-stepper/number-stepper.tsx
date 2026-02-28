@@ -110,12 +110,12 @@ export function NumberStepper({
           {label}
         </label>
       )}
-      <div className="flex items-center gap-0 rounded-full border border-border bg-surface">
+      <div className="flex items-center gap-0 rounded-full border border-foreground/10 bg-background">
         {/* Decrement button */}
         <button
           type="button"
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
+            "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-9 md:w-9",
             isAtMin
               ? "cursor-not-allowed text-muted/30"
               : "text-muted hover:bg-foreground/10 hover:text-foreground active:bg-foreground/15"
@@ -146,13 +146,13 @@ export function NumberStepper({
             onChange={(e) => setEditValue(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={handleEditKeyDown}
-            className="h-8 w-12 bg-transparent text-center font-mono text-sm outline-none md:h-6 md:w-10"
+            className="h-8 w-12 bg-transparent text-center font-mono text-sm outline-none md:h-7 md:w-10"
           />
         ) : (
           <button
             type="button"
             id={id}
-            className="flex h-8 min-w-12 items-center justify-center px-1 font-mono text-sm tabular-nums md:h-6 md:min-w-10"
+            className="flex h-8 min-w-12 items-center justify-center px-1 font-mono text-sm tabular-nums md:h-7 md:min-w-10"
             onClick={startEditing}
             aria-label={`${label ?? "値"}: ${value}、タップして編集`}
           >
@@ -164,7 +164,7 @@ export function NumberStepper({
         <button
           type="button"
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-7 md:w-7",
+            "flex h-10 w-10 items-center justify-center rounded-full transition-colors md:h-9 md:w-9",
             isAtMax
               ? "cursor-not-allowed text-muted/30"
               : "text-muted hover:bg-foreground/10 hover:text-foreground active:bg-foreground/15"

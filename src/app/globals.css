@@ -7,7 +7,7 @@
      ============================================ */
 
   /* Neutral */
-  --color-background: oklch(0.955 0 0);
+  --color-background: oklch(0.9848 0.0054 95.1);
   --color-foreground: oklch(0.2 0 0);
   --color-card: oklch(1 0 0);
   --color-surface: oklch(0.97 0 0);
@@ -16,31 +16,28 @@
   --color-muted: oklch(0.55 0 0);
   --color-muted-foreground: oklch(0.45 0 0);
 
-  /* Primary (blue: 264) */
-  --color-primary: oklch(0.55 0.18 264);
-  --color-primary-hover: oklch(0.5 0.19 264);
-  --color-primary-active: oklch(0.45 0.2 264);
-  --color-primary-subtle: oklch(0.93 0.04 264);
+  /* Primary (purple: 274.42) */
+  --color-primary: oklch(0.55 0.18 274.42);
+  --color-primary-hover: oklch(0.5 0.19 274.42);
+  --color-primary-active: oklch(0.45 0.2 274.42);
+  --color-primary-subtle: oklch(0.93 0.04 274.42);
 
   /* ============================================
      Music Theory Colors
      Pastel bg + dark same-hue fg
      ============================================ */
 
-  /* Tonic (I, IIIm, VIm) — Purple / Lavender (hue 290) */
-  --color-tonic: oklch(0.8 0.09 290);
-  --color-tonic-fg: oklch(0.3 0.09 290);
-  --color-tonic-subtle: oklch(0.93 0.04 290);
+  /* Tonic (I, IIIm, VIm) — Purple / Lavender (hue 300.42) */
+  --color-tonic: oklch(0.8 0.09 300.42);
+  --color-tonic-foreground: oklch(0.3 0.09 300.42);
 
-  /* Subdominant (IIm, IV) — Sage / Green (hue 160) */
-  --color-subdominant: oklch(0.82 0.08 160);
-  --color-subdominant-fg: oklch(0.3 0.08 160);
-  --color-subdominant-subtle: oklch(0.93 0.04 160);
+  /* Subdominant (IIm, IV) — Sage / Green (hue 170.42) */
+  --color-subdominant: oklch(0.82 0.08 170.42);
+  --color-subdominant-foreground: oklch(0.3 0.08 170.42);
 
-  /* Dominant (V, VIIdim) — Rose / Pink (hue 10) */
-  --color-dominant: oklch(0.78 0.1 10);
-  --color-dominant-fg: oklch(0.32 0.1 10);
-  --color-dominant-subtle: oklch(0.93 0.04 10);
+  /* Dominant (V, VIIdim) — Rose / Pink (hue 20.42) */
+  --color-dominant: oklch(0.78 0.1 20.42);
+  --color-dominant-foreground: oklch(0.32 0.1 20.42);
 
   /* Fretboard Overlay — Chord tones & Scale */
   /* Chord root — Red (hue 25) */
@@ -55,9 +52,9 @@
   --color-scale-tone: oklch(0.82 0 0);
   --color-scale-tone-fg: oklch(0.4 0 0);
 
-  /* Avoid note — Muted Blue (hue 264) */
-  --color-avoid-note: oklch(0.75 0.08 264);
-  --color-avoid-note-fg: oklch(0.35 0.08 264);
+  /* Avoid note — Muted Purple (hue 274.42) */
+  --color-avoid-note: oklch(0.75 0.08 274.42);
+  --color-avoid-note-fg: oklch(0.35 0.08 274.42);
 
   /* Semantic */
   --color-success: oklch(0.72 0.19 145);
