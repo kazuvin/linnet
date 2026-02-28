@@ -173,8 +173,8 @@ describe("grid-share-codec", () => {
     it("共有URLを構築し、パースすると元のデータに戻る", async () => {
       const baseUrl = "https://example.com";
       const url = await buildShareUrl(baseUrl, sampleShareData);
-      expect(url).not.toBeNull();
-      const parsed = await parseShareUrl(url!);
+      if (url === null) throw new Error("url should not be null");
+      const parsed = await parseShareUrl(url);
       expect(parsed).toEqual(sampleShareData);
     });
 

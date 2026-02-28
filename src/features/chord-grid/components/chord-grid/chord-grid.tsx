@@ -15,9 +15,6 @@ import {
   type PaletteDragData,
 } from "@/features/chord-board/components/chord-palette/chord-palette";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
-import { LoadGridDialog } from "@/features/grid-save/components/load-grid-dialog";
-import { SaveGridDialog } from "@/features/grid-save/components/save-grid-dialog";
-import { ShareGridButton } from "@/features/grid-share";
 import { deleteSelectedGridCell, selectGridCell } from "@/features/store-coordination";
 import type { DragItem } from "@/lib/dnd";
 import { useDrop } from "@/lib/dnd";
@@ -25,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { useGridPlayback } from "../../hooks/use-grid-playback";
 import type { GridChord } from "../../stores/chord-grid-store";
 import { COLUMNS, useChordGridStore } from "../../stores/chord-grid-store";
+import { GridActionsMenu } from "../grid-actions-menu";
 
 const COL_INDICES = Array.from({ length: COLUMNS }, (_, i) => i);
 
@@ -208,9 +206,7 @@ export function ChordGrid() {
                 <VolumeIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
               )}
             </button>
-            <SaveGridDialog />
-            <LoadGridDialog />
-            <ShareGridButton />
+            <GridActionsMenu />
           </div>
         </div>
 

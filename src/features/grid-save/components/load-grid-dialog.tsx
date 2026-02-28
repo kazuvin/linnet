@@ -23,8 +23,17 @@ function formatDate(timestamp: number): string {
   });
 }
 
-export function LoadGridDialog() {
-  const [open, setOpen] = useState(false);
+type LoadGridDialogProps = {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function LoadGridDialog({ open: controlledOpen, onOpenChange }: LoadGridDialogProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
+
   const presets = useGridSaveStore((s) => s.presets);
   const loadPreset = useGridSaveStore((s) => s.loadPreset);
   const deletePreset = useGridSaveStore((s) => s.deletePreset);
@@ -43,16 +52,18 @@ export function LoadGridDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
-          aria-label="読み込み"
-          title="読み込み"
-        >
-          <FolderIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
-        </button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground md:h-7 md:w-7"
+            aria-label="読み込み"
+            title="読み込み"
+          >
+            <FolderIcon className="h-4 w-4 md:h-3.5 md:w-3.5" />
+          </button>
+        </DialogTrigger>
+      )}
       <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>保存したコード進行</DialogTitle>

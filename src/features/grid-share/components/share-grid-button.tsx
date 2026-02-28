@@ -1,45 +1,13 @@
 "use client";
 
 import { ShareIcon } from "@/components/icons";
-import { addToast } from "@/components/ui/toast";
 import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
-import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { cn } from "@/lib/utils";
-import { buildShareUrl, type ShareData } from "../lib/grid-share-codec";
+import { useShareGrid } from "../hooks/use-share-grid";
 
 export function ShareGridButton() {
   const hasChords = useChordGridStore((s) => s.getPlayableRowCount()) > 0;
-
-  const handleShare = async () => {
-    const gridState = useChordGridStore.getState();
-    const keyState = useKeyStore.getState();
-
-    const data: ShareData = {
-      grid: {
-        rows: gridState.rows,
-        bpm: gridState.bpm,
-      },
-      key: {
-        rootName: keyState.rootName,
-        chordType: keyState.chordType,
-        selectedMode: keyState.selectedMode,
-      },
-    };
-
-    const url = await buildShareUrl(window.location.origin + window.location.pathname, data);
-
-    if (!url) {
-      addToast("コード進行が大きすぎるため共有リンクを作成できません", "error");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      addToast("共有リンクをコピーしました");
-    } catch {
-      addToast("クリップボードへのコピーに失敗しました", "error");
-    }
-  };
+  const shareGrid = useShareGrid();
 
   return (
     <button
@@ -50,7 +18,7 @@ export function ShareGridButton() {
           ? "text-muted hover:bg-foreground/10 hover:text-foreground"
           : "cursor-not-allowed text-muted/40"
       )}
-      onClick={handleShare}
+      onClick={shareGrid}
       disabled={!hasChords}
       aria-label="共有"
       title="共有"
