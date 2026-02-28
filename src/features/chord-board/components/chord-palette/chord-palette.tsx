@@ -103,7 +103,7 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
         <h2 className="font-bold text-lg">Chords</h2>
         <div className="flex items-center gap-2">
           <ModeSelector />
@@ -113,7 +113,7 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
       <div
         className={
           layout === "wrap"
-            ? "-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:pb-0"
+            ? "-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:pb-0"
             : "-mx-4 grid auto-cols-[6rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-2"
         }
       >

@@ -56,6 +56,13 @@
   --color-avoid-note: oklch(0.8 0.09 274.42);
   --color-avoid-note-fg: oklch(0.3 0.09 274.42);
 
+  /* Black key overlay — higher saturation for visibility on dark surface */
+  --color-chord-root-vivid: oklch(0.7 0.14 25);
+  --color-chord-tone-vivid: oklch(0.72 0.14 55);
+  --color-scale-tone-vivid: oklch(0.65 0 0);
+  --color-avoid-note-vivid: oklch(0.7 0.14 274.42);
+  --color-vivid-fg: oklch(0.98 0 0);
+
   /* Semantic */
   --color-success: oklch(0.72 0.19 145);
   --color-warning: oklch(0.75 0.18 75);

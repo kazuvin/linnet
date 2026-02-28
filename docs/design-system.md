@@ -270,6 +270,42 @@ Bento Grid 内で最も大きなカードとして配置。
 
 ---
 
+## キーボードビジュアライゼーション
+
+ピアノ鍵盤コンポーネント。コンテナに `overflow-hidden rounded-lg` + 薄いボーダーを適用し、鍵盤全体に丸みを持たせる。
+
+### コンテナ
+
+`overflow-hidden rounded-lg border border-foreground/15` で鍵盤全体をクリッピング。左右・下端の白鍵が自然に丸まる。
+
+### 白鍵
+
+| 状態 | スタイル |
+|---|---|
+| 非ハイライト | `bg-card`（白） |
+| chord-root | `bg-chord-root text-chord-root-fg` |
+| chord-tone | `bg-chord-tone text-chord-tone-fg` |
+| scale | `bg-scale-tone text-scale-tone-fg` |
+| avoid | `bg-avoid-note text-avoid-note-fg` |
+
+鍵間ボーダー: `border-foreground/20`
+
+### 黒鍵（Vivid バリアント）
+
+黒鍵は面積が小さいため、白鍵と同じパステルカラーでは判別しにくい。彩度・明度を上げた vivid バリアントを使用。
+
+| トークン | 用途 | 値 |
+|---|---|---|
+| `--color-chord-root-vivid` | 黒鍵ルート | `oklch(0.70 0.14 25)` |
+| `--color-chord-tone-vivid` | 黒鍵コードトーン | `oklch(0.72 0.14 55)` |
+| `--color-scale-tone-vivid` | 黒鍵スケール | `oklch(0.65 0 0)` |
+| `--color-avoid-note-vivid` | 黒鍵アボイド | `oklch(0.70 0.14 274.42)` |
+| `--color-vivid-fg` | vivid 上のテキスト | `oklch(0.98 0 0)` |
+
+非ハイライト黒鍵: `bg-foreground/85`（フレームよりわずかに明るい）
+
+---
+
 ## レスポンシブ戦略
 
 | ブレークポイント | 幅 | Grid カラム | 指板表示 |
