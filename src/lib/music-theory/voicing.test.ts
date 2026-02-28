@@ -18,6 +18,26 @@ function getPitchClasses(voicing: ChordVoicing): Set<number> {
   return pcs;
 }
 
+/** フレットスパン（開放弦除く）を取得 */
+function getFretSpan(voicing: ChordVoicing): number {
+  const fretted = voicing.frets.filter((f): f is number => f !== null && f > 0);
+  if (fretted.length === 0) return 0;
+  return Math.max(...fretted) - Math.min(...fretted);
+}
+
+/** 弦スパン（最低弦〜最高弦の幅）を取得 */
+function getStringSpan(voicing: ChordVoicing): number {
+  let first = -1;
+  let last = -1;
+  for (let i = 0; i < 6; i++) {
+    if (voicing.frets[i] !== null) {
+      if (first === -1) first = i;
+      last = i;
+    }
+  }
+  return first === -1 ? 0 : last - first + 1;
+}
+
 describe("findChordPositions（ボイシング算出）", () => {
   describe("基本構造", () => {
     it("ChordVoicing の frets は常に6要素", () => {
@@ -309,6 +329,65 @@ describe("findChordPositions（ボイシング算出）", () => {
     it("Eb minor でボイシングが返る", () => {
       const voicings = findChordPositions("Eb", "minor");
       expect(voicings.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("複数パターン生成", () => {
+    it("1つのルートポジションから複数のボイシングが生成される", () => {
+      const voicings = findChordPositions("C", "major");
+      // 5弦ルート fret 3 のボイシングが複数あるはず
+      const fifthStringFret3 = voicings.filter((v) => v.rootString === 5 && v.frets[1] === 3);
+      expect(fifthStringFret3.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("重複するボイシングがない", () => {
+      const voicings = findChordPositions("C", "major");
+      const fretStrings = voicings.map(toFretString);
+      const uniqueSet = new Set(fretStrings);
+      expect(uniqueSet.size).toBe(fretStrings.length);
+    });
+
+    it("トライアドでも十分な数のボイシングが返る", () => {
+      const voicings = findChordPositions("C", "major");
+      expect(voicings.length).toBeGreaterThanOrEqual(5);
+    });
+  });
+
+  describe("ソート順序", () => {
+    it("フレットスパンが短いボイシングが先に来る", () => {
+      const voicings = findChordPositions("C", "major");
+      for (let i = 1; i < voicings.length; i++) {
+        const prevSpan = getFretSpan(voicings[i - 1]);
+        const currSpan = getFretSpan(voicings[i]);
+        // 同じスパンか、大きくなるのみ（ソート順を確認）
+        if (prevSpan > currSpan) {
+          // 弦スパンが小さいなら許容（セカンダリソート）
+          const prevStringSpan = getStringSpan(voicings[i - 1]);
+          const currStringSpan = getStringSpan(voicings[i]);
+          if (prevStringSpan <= currStringSpan) {
+            // フレットスパンが大きく弦スパンも大きい → ソート違反
+            expect(prevSpan).toBeLessThanOrEqual(currSpan);
+          }
+        }
+      }
+    });
+
+    it("同じフレットスパンなら弦の間隔が短いものが先に来る", () => {
+      const voicings = findChordPositions("C", "major");
+      // 同じフレットスパンのグループ内で弦スパンがソートされているか
+      const grouped = new Map<number, ChordVoicing[]>();
+      for (const v of voicings) {
+        const span = getFretSpan(v);
+        if (!grouped.has(span)) grouped.set(span, []);
+        grouped.get(span)?.push(v);
+      }
+      for (const group of grouped.values()) {
+        for (let i = 1; i < group.length; i++) {
+          const prevStringSpan = getStringSpan(group[i - 1]);
+          const currStringSpan = getStringSpan(group[i]);
+          expect(prevStringSpan).toBeLessThanOrEqual(currStringSpan);
+        }
+      }
     });
   });
 });

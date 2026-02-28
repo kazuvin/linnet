@@ -23,6 +23,7 @@ const BASS_STRINGS = [6, 5, 4] as const;
 
 /**
  * 6弦・5弦・4弦ルートで人間が押さえられるコードボイシングを算出する
+ * フレットスパンが短い順、弦の間隔が短い順にソートして返す
  */
 export function findChordPositions(
   rootName: string,
@@ -33,34 +34,82 @@ export function findChordPositions(
   const chord = createChord(rootName, quality);
   const rootPC = chord.root.pitchClass;
   const chordPCs = new Set(chord.notes.map((n) => n.pitchClass));
-  const results: ChordVoicing[] = [];
+  const allVoicings: ChordVoicing[] = [];
 
   for (const bassString of BASS_STRINGS) {
     for (let rootFret = 0; rootFret <= maxFret; rootFret++) {
       const rootNote = getNoteAtPosition(bassString, rootFret, tuning);
       if (rootNote.pitchClass !== rootPC) continue;
 
-      const voicing = buildBestVoicing(chord, chordPCs, bassString, rootFret, maxFret, tuning);
-      if (voicing) {
-        results.push(voicing);
-      }
+      const voicings = buildAllVoicings(chord, chordPCs, bassString, rootFret, maxFret, tuning);
+      allVoicings.push(...voicings);
     }
   }
 
-  return results;
+  // 重複除去
+  const seen = new Set<string>();
+  const unique = allVoicings.filter((v) => {
+    const key = v.frets.map((f) => (f === null ? "x" : String(f))).join(",");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // ソート: フレットスパン昇順 → 弦スパン昇順 → フレット位置昇順
+  unique.sort((a, b) => {
+    const spanA = getFretSpan(a.frets);
+    const spanB = getFretSpan(b.frets);
+    if (spanA !== spanB) return spanA - spanB;
+
+    const stringSpanA = getStringSpan(a.frets);
+    const stringSpanB = getStringSpan(b.frets);
+    if (stringSpanA !== stringSpanB) return stringSpanA - stringSpanB;
+
+    const posA = getMinFret(a.frets);
+    const posB = getMinFret(b.frets);
+    return posA - posB;
+  });
+
+  return unique;
+}
+
+/** フレットスパン（開放弦除く） */
+function getFretSpan(frets: readonly (number | null)[]): number {
+  const fretted = frets.filter((f): f is number => f !== null && f > 0);
+  if (fretted.length === 0) return 0;
+  return Math.max(...fretted) - Math.min(...fretted);
+}
+
+/** 弦スパン（使用弦の幅） */
+function getStringSpan(frets: readonly (number | null)[]): number {
+  let first = -1;
+  let last = -1;
+  for (let i = 0; i < frets.length; i++) {
+    if (frets[i] !== null) {
+      if (first === -1) first = i;
+      last = i;
+    }
+  }
+  return first === -1 ? 0 : last - first + 1;
+}
+
+/** 最小フレット位置 */
+function getMinFret(frets: readonly (number | null)[]): number {
+  const fretted = frets.filter((f): f is number => f !== null && f > 0);
+  return fretted.length === 0 ? 0 : Math.min(...fretted);
 }
 
 /**
- * 指定ルートポジションから最適なボイシングを組み立てる
+ * 指定ルートポジションから全ての有効なボイシングを生成する
  */
-function buildBestVoicing(
+function buildAllVoicings(
   chord: Chord,
   chordPCs: ReadonlySet<number>,
   bassString: number,
   rootFret: number,
   maxFret: number,
   tuning: readonly string[]
-): ChordVoicing | null {
+): ChordVoicing[] {
   // 各弦の候補を収集
   const candidatesPerString: number[][] = [];
   const stringNumbers: number[] = [];
@@ -93,8 +142,8 @@ function buildBestVoicing(
     stringNumbers.push(s);
   }
 
-  // 組み合わせ探索で最適ボイシングを見つける
-  const best = { frets: null as (number | null)[] | null, score: -Infinity };
+  // 全有効組み合わせを収集
+  const results: ChordVoicing[] = [];
 
   function search(idx: number, current: (number | null)[]) {
     if (idx === candidatesPerString.length) {
@@ -125,12 +174,23 @@ function buildBestVoicing(
       const hasAllTones = chord.notes.every((n) => presentPCs.has(n.pitchClass));
       if (!hasAllTones) return;
 
-      // スコア計算
-      const score = computeScore(current, frettedNotes, rootFret);
-      if (score > best.score) {
-        best.score = score;
-        best.frets = [...current];
+      // frets配列を6要素に変換
+      const fullFrets: (number | null)[] = Array(6).fill(null);
+      for (let i = 0; i < current.length; i++) {
+        const stringNum = stringNumbers[i];
+        const fretIdx = 6 - stringNum;
+        fullFrets[fretIdx] = current[i];
       }
+
+      const barreInfo = detectBarre(fullFrets);
+
+      results.push({
+        chord,
+        frets: fullFrets,
+        rootString: bassString,
+        barreInfo,
+      });
+
       return;
     }
 
@@ -153,24 +213,7 @@ function buildBestVoicing(
 
   search(0, []);
 
-  if (!best.frets) return null;
-
-  // frets配列を6要素に変換（0=6弦, 1=5弦, ..., 5=1弦）
-  const fullFrets: (number | null)[] = Array(6).fill(null);
-  for (let i = 0; i < best.frets.length; i++) {
-    const stringNum = stringNumbers[i];
-    const idx = 6 - stringNum; // 6弦=0, 5弦=1, ..., 1弦=5
-    fullFrets[idx] = best.frets[i];
-  }
-
-  const barreInfo = detectBarre(fullFrets);
-
-  return {
-    chord,
-    frets: fullFrets,
-    rootString: bassString,
-    barreInfo,
-  };
+  return results;
 }
 
 /**
@@ -213,42 +256,6 @@ function hasInnerMutedStrings(voicingPart: (number | null)[]): boolean {
   }
 
   return false;
-}
-
-/**
- * ボイシングのスコアを計算（大きいほど良い）
- */
-function computeScore(
-  voicingPart: (number | null)[],
-  frettedNotes: number[],
-  rootFret: number
-): number {
-  let score = 0;
-
-  // 演奏弦数が多いほど良い（フルな響き）
-  const playedStrings = voicingPart.filter((f) => f !== null).length;
-  score += playedStrings * 20;
-
-  // 開放弦が多いほど楽に弾ける
-  const openStrings = voicingPart.filter((f) => f === 0).length;
-  score += openStrings * 10;
-
-  // フレットスパンが小さいほど楽
-  if (frettedNotes.length > 0) {
-    const span = Math.max(...frettedNotes) - Math.min(...frettedNotes);
-    score -= span * 5;
-  }
-
-  // ルートフレットから近いほど良い
-  for (const f of frettedNotes) {
-    score -= Math.abs(f - rootFret);
-  }
-
-  // 指の本数が少ないほど楽
-  const fingers = countFingers(voicingPart);
-  score -= fingers * 3;
-
-  return score;
 }
 
 /**

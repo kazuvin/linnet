@@ -30,14 +30,17 @@ export function ChordVoicingPanel() {
     setSelectedVoicingIdx(0);
   };
 
+  // コード変更時にインデックスをリセット
+  const safeIdx = selectedVoicingIdx >= filteredVoicings.length ? 0 : selectedVoicingIdx;
+
   if (!selectedChord || voicings.length === 0) {
     return null;
   }
 
-  const selectedVoicing: ChordVoicing | undefined = filteredVoicings[selectedVoicingIdx];
+  const selectedVoicing: ChordVoicing | undefined = filteredVoicings[safeIdx];
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {/* ヘッダー */}
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-medium text-sm">{selectedChord.symbol} のボイシング</h3>
@@ -58,17 +61,19 @@ export function ChordVoicingPanel() {
             </button>
           ))}
         </div>
+        {/* ボイシング数 */}
+        <span className="text-[11px] text-muted">{filteredVoicings.length}件</span>
       </div>
 
-      {/* ダイアグラム一覧 */}
+      {/* ダイアグラム一覧（横スクロール） */}
       {filteredVoicings.length > 0 ? (
-        <div className="-mx-4 overflow-x-auto px-4 pb-1 lg:-mx-8 lg:px-8">
-          <div className="flex gap-2">
+        <div className="overflow-x-auto pb-2">
+          <div className="flex gap-1.5">
             {filteredVoicings.map((v, i) => (
               <ChordDiagram
                 key={`${v.rootString}-${v.frets.join(",")}`}
                 voicing={v}
-                isSelected={i === selectedVoicingIdx}
+                isSelected={i === safeIdx}
                 onClick={() => setSelectedVoicingIdx(i)}
               />
             ))}
