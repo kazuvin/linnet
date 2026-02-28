@@ -1,3 +1,5 @@
+export { ChordDiagram } from "./chord-diagram";
+export { ChordVoicingPanel } from "./chord-voicing-panel";
 export { Fretboard } from "./fretboard";
 export { FretboardControls } from "./fretboard-controls";
 export { FretboardGrid } from "./fretboard-grid";

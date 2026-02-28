@@ -7,6 +7,7 @@ import { useAvailableScales } from "@/features/fretboard/hooks/use-available-sca
 import { useFretboardPositions } from "@/features/fretboard/hooks/use-fretboard-positions";
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { PianoKeyboard } from "@/features/keyboard/components";
+import { ChordVoicingPanel } from "../chord-voicing-panel";
 import { FretboardControls } from "../fretboard-controls";
 import { FretboardGrid } from "../fretboard-grid";
 import { FretboardLegend } from "../fretboard-legend";
@@ -51,6 +52,7 @@ export function Fretboard() {
         />
       )}
       <FretboardLegend />
+      <ChordVoicingPanel />
       {positions.length === 0 && (
         <p className="text-center text-muted text-sm">
           コードを選択すると構成音とスケールが表示されます
