@@ -2,10 +2,14 @@
 
 import { ChordPalette } from "../chord-palette";
 
-export function ChordBoard() {
+type ChordBoardProps = {
+  layout?: "row" | "wrap";
+};
+
+export function ChordBoard({ layout }: ChordBoardProps) {
   return (
     <section className="flex flex-col gap-6">
-      <ChordPalette />
+      <ChordPalette layout={layout} />
     </section>
   );
 }

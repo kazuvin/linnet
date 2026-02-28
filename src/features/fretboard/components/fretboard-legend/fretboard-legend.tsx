@@ -39,7 +39,7 @@ export function FretboardLegend() {
         <div key={item.label} className="flex items-center gap-1.5">
           <span
             className={cn(
-              "inline-flex size-4 items-center justify-center rounded-full font-bold font-mono text-[8px]",
+              "inline-flex size-4 items-center justify-center rounded-full font-bold text-[8px]",
               item.dotClass,
               item.ringClass
             )}
@@ -59,7 +59,7 @@ export function FretboardLegend() {
       >
         <span
           className={cn(
-            "inline-flex size-4 items-center justify-center rounded-full font-bold font-mono text-[8px]",
+            "inline-flex size-4 items-center justify-center rounded-full font-bold text-[8px]",
             CHARACTERISTIC_ITEM.dotClass,
             CHARACTERISTIC_ITEM.ringClass
           )}
@@ -86,7 +86,7 @@ export function FretboardLegend() {
       >
         <span
           className={cn(
-            "inline-flex size-4 items-center justify-center rounded-full font-bold font-mono text-[8px]",
+            "inline-flex size-4 items-center justify-center rounded-full font-bold text-[8px]",
             AVOID_ITEM.dotClass
           )}
         />

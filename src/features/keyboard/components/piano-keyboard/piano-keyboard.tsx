@@ -128,9 +128,7 @@ function WhiteKey({
         isCharacteristic && "ring-2 ring-foreground/40 ring-inset"
       )}
     >
-      {isHighlighted && (
-        <span className="font-bold font-mono text-[11px]">{noteInfo.noteName}</span>
-      )}
+      {isHighlighted && <span className="font-bold text-[11px]">{noteInfo.noteName}</span>}
     </div>
   );
 }
@@ -170,7 +168,7 @@ function BlackKey({
         height: "62%",
       }}
     >
-      {isHighlighted && <span className="font-bold font-mono text-[9px]">{noteInfo.noteName}</span>}
+      {isHighlighted && <span className="font-bold text-[9px]">{noteInfo.noteName}</span>}
     </div>
   );
 }

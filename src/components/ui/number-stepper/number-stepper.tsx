@@ -146,13 +146,13 @@ export function NumberStepper({
             onChange={(e) => setEditValue(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={handleEditKeyDown}
-            className="h-8 w-12 bg-transparent text-center font-mono text-sm outline-none md:h-7 md:w-10"
+            className="h-8 w-12 bg-transparent text-center text-sm outline-none md:h-7 md:w-10"
           />
         ) : (
           <button
             type="button"
             id={id}
-            className="flex h-8 min-w-12 items-center justify-center px-1 font-mono text-sm tabular-nums md:h-7 md:min-w-10"
+            className="flex h-8 min-w-12 items-center justify-center px-1 text-sm tabular-nums md:h-7 md:min-w-10"
             onClick={startEditing}
             aria-label={`${label ?? "値"}: ${value}、タップして編集`}
           >

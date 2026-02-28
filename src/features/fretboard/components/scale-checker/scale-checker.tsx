@@ -69,7 +69,7 @@ export function ScaleChecker({
       <span className="shrink-0 text-muted text-sm">
         {chordSymbol ? (
           <>
-            <span className="font-bold font-mono text-foreground">{chordSymbol}</span> スケール
+            <span className="font-bold text-foreground">{chordSymbol}</span> スケール
           </>
         ) : (
           "スケール"

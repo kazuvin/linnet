@@ -26,8 +26,7 @@
   --color-error: oklch(0.63 0.24 27);
 
   /* Typography */
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-noto-serif), system-ui, serif;
 
   /* Radius */
   --radius-sm: 0.25rem;
