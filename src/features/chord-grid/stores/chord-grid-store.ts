@@ -127,7 +127,10 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
 
   getPlayableRowCount: () => {
     const { rows } = get();
-    return Math.max(0, rows.length - 1);
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (rows[i].some((c) => c !== null)) return i + 1;
+    }
+    return 0;
   },
 
   addChordToNextBeat: (chord) => {
