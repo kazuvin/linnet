@@ -1,3 +1,4 @@
+import { transposeGridChord } from "@/features/chord-grid/lib/transpose-grid-chord";
 import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
@@ -7,10 +8,15 @@ import type { ChordFunction, ChordQuality, ScaleType } from "@/lib/music-theory"
 import { formatChordSymbol } from "@/lib/music-theory";
 
 /**
- * キーを変更する。
+ * キーを変更し、グリッドのコードも移調する。
  */
-export function changeKey(rootName: string): void {
-  useKeyStore.getState().setRootName(rootName);
+export function changeKey(newRootName: string): void {
+  const gridStore = useChordGridStore.getState();
+  const newRows = gridStore.rows.map((row) =>
+    row.map((cell) => (cell ? transposeGridChord(cell, newRootName) : null))
+  );
+  useChordGridStore.setState({ rows: newRows });
+  useKeyStore.getState().setRootName(newRootName);
 }
 
 /**
