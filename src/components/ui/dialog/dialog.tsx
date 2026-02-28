@@ -3,6 +3,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import type { ComponentProps } from "react";
 import { XIcon } from "@/components/icons";
+import { useKeyboardOffset } from "@/hooks/use-keyboard-offset";
 import { cn } from "@/lib/utils";
 
 // Root Dialog component
@@ -51,6 +52,8 @@ const sizeStyles = {
 
 // Dialog Content
 export function DialogContent({ className, size = "md", children, ...props }: DialogContentProps) {
+  const keyboardOffset = useKeyboardOffset();
+
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -70,6 +73,7 @@ export function DialogContent({ className, size = "md", children, ...props }: Di
           sizeStyles[size],
           className
         )}
+        style={keyboardOffset > 0 ? { bottom: `${keyboardOffset}px` } : undefined}
         {...props}
       >
         {children}
