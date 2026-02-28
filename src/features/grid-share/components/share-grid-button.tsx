@@ -26,7 +26,12 @@ export function ShareGridButton() {
       },
     };
 
-    const url = buildShareUrl(window.location.origin + window.location.pathname, data);
+    const url = await buildShareUrl(window.location.origin + window.location.pathname, data);
+
+    if (!url) {
+      addToast("コード進行が大きすぎるため共有リンクを作成できません", "error");
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(url);

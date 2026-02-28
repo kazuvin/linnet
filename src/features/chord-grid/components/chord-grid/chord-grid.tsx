@@ -167,10 +167,10 @@ export function ChordGrid() {
   return (
     <div className="flex flex-col gap-4">
       {/* コントロールバー */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="font-bold text-lg">Grid</h2>
-          <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="shrink-0 font-bold text-lg">Grid</h2>
+          <div className="flex flex-wrap items-center gap-1">
             <button
               type="button"
               className={cn(
@@ -214,7 +214,7 @@ export function ChordGrid() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           {/* 選択中: コード名 + アクション */}
           {selectedChord && (
             <div

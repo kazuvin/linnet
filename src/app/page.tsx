@@ -12,7 +12,7 @@ export default function Home() {
         <Card className="h-full overflow-y-auto">
           <ChordBoard layout="wrap" />
         </Card>
-        <Card>
+        <Card className="min-w-0">
           <ChordGrid />
         </Card>
       </div>
