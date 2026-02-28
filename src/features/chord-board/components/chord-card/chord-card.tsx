@@ -69,8 +69,8 @@ export function ChordCard({
   return (
     <div
       className={cn(
-        "group relative flex aspect-square flex-col items-center justify-center rounded-2xl border shadow-card transition-all duration-150 hover:shadow-card-hover active:scale-90 active:shadow-inner",
-        "cursor-grab select-none gap-1 overflow-visible active:cursor-grabbing",
+        "group relative flex aspect-square flex-col items-center justify-center rounded-lg border shadow-card transition-all duration-150 hover:shadow-card-hover active:scale-90 active:shadow-inner lg:rounded-2xl",
+        "cursor-grab select-none gap-0.5 overflow-visible active:cursor-grabbing lg:gap-1",
         "ring-0 ring-foreground ring-offset-0 ring-offset-background",
         CARD_BG_STYLES[chordFunction],
         isSelected && "ring-2 ring-offset-2",
@@ -81,17 +81,17 @@ export function ChordCard({
     >
       <span
         className={cn(
-          "max-w-full truncate px-1 text-center text-[10px] leading-tight",
+          "max-w-full truncate px-1 text-center text-[7px] leading-tight lg:text-[10px]",
           "text-muted"
         )}
       >
         {romanNumeral}
-        {sourceLabel && <span className="ml-0.5 text-[9px]">({sourceLabel})</span>}
+        {sourceLabel && <span className="ml-0.5 hidden text-[9px] lg:inline">({sourceLabel})</span>}
       </span>
-      <span className="font-bold text-base">{symbol}</span>
+      <span className="font-bold text-[10px] lg:text-base">{symbol}</span>
       <span
         className={cn(
-          "inline-flex items-center rounded-full px-1.5 py-0.5 font-semibold text-[10px]",
+          "inline-flex items-center rounded-full px-1 py-0 font-semibold text-[7px] lg:px-1.5 lg:py-0.5 lg:text-[10px]",
           BADGE_STYLES[chordFunction]
         )}
       >
@@ -101,7 +101,7 @@ export function ChordCard({
         <button
           type="button"
           className={cn(
-            "absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full transition-opacity md:h-5 md:w-5 md:opacity-0 md:group-hover:opacity-100",
+            "absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full transition-opacity md:opacity-0 md:group-hover:opacity-100 lg:-top-2 lg:-right-2 lg:h-7 lg:w-7",
             "bg-foreground text-background"
           )}
           onClick={(e) => {

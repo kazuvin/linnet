@@ -11,7 +11,7 @@ export type CardFooterProps = ComponentProps<"div">;
 
 export function Card({ variant = "default", className, children, ...props }: CardProps) {
   return (
-    <div className={cn("rounded-3xl p-8", variantStyles[variant], className)} {...props}>
+    <div className={cn("rounded-3xl p-4 lg:p-8", variantStyles[variant], className)} {...props}>
       {children}
     </div>
   );
