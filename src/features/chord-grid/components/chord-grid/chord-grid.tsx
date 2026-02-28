@@ -292,7 +292,7 @@ export function ChordGrid() {
                       cellChord
                         ? cn(
                             FUNCTION_CELL_STYLES[cellChord.chordFunction] ??
-                              "border-border bg-card",
+                              "border-foreground/10 bg-background",
                             isCurrentStep && "brightness-90",
                             !isSelected && "cursor-pointer"
                           )
@@ -303,7 +303,7 @@ export function ChordGrid() {
                               isCurrentStep && "brightness-90"
                             )
                           : cn(
-                              "border-border/40 bg-surface",
+                              "border-foreground/10 bg-background",
                               isCurrentStep && "bg-surface-elevated"
                             )
                     )}

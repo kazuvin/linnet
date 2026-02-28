@@ -62,7 +62,7 @@ type TabNavContextValue = {
 /** Base styles for the tab nav container */
 const containerBaseStyles = [
   "relative inline-flex items-center gap-1 rounded-full p-1",
-  "bg-foreground/5",
+  "bg-background border border-foreground/10",
 ] as const;
 
 /** Base styles for the indicator */

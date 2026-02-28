@@ -23,15 +23,15 @@ const BLACK_KEY_WIDTH_RATIO = 0.6;
 const NOTE_ROLE_STYLES: Record<NoteRole, { white: string; black: string }> = {
   "chord-root": {
     white: "bg-chord-root text-chord-root-fg",
-    black: "bg-chord-root text-chord-root-fg",
+    black: "bg-chord-root-vivid text-vivid-fg",
   },
   "chord-tone": {
     white: "bg-chord-tone text-chord-tone-fg",
-    black: "bg-chord-tone text-chord-tone-fg",
+    black: "bg-chord-tone-vivid text-vivid-fg",
   },
   scale: {
     white: "bg-scale-tone text-scale-tone-fg",
-    black: "bg-scale-tone/80 text-scale-tone-fg",
+    black: "bg-scale-tone-vivid text-vivid-fg",
   },
 };
 
@@ -51,7 +51,7 @@ export function PianoKeyboard({
   return (
     <div className="overflow-x-auto pb-1">
       <div
-        className="relative mx-auto"
+        className="relative mx-auto overflow-hidden rounded-lg border border-foreground/15"
         style={{
           width: "100%",
           maxWidth: "48rem",
@@ -118,8 +118,8 @@ function WhiteKey({
   return (
     <div
       className={cn(
-        "relative flex flex-1 flex-col items-center justify-end border-foreground/15 border-r pb-2",
-        "rounded-b-md transition-colors duration-[120ms] ease-out",
+        "relative flex flex-1 flex-col items-center justify-end border-foreground/20 border-r pb-2 last:border-r-0",
+        "transition-colors duration-[120ms] ease-out",
         isAvoid
           ? "bg-avoid-note text-avoid-note-fg"
           : isHighlighted
@@ -156,7 +156,7 @@ function BlackKey({
         "absolute top-0 z-10 flex flex-col items-center justify-end pb-2",
         "rounded-b-md transition-colors duration-[120ms] ease-out",
         isAvoid
-          ? "bg-avoid-note text-avoid-note-fg"
+          ? "bg-avoid-note-vivid text-vivid-fg"
           : isHighlighted
             ? NOTE_ROLE_STYLES[noteInfo.role].black
             : "bg-foreground/85 text-background/60",
