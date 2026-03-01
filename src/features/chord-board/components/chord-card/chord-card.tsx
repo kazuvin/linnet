@@ -11,11 +11,17 @@ export type ChordCardData = {
   source: ChordSource;
 };
 
+export type ChordCardDetailItem = {
+  label: string;
+  value: string;
+};
+
 type ChordCardProps = Omit<ComponentProps<"div">, "children"> & {
   chord: ChordCardData;
   isSelected?: boolean;
   isDragging?: boolean;
   onRemove?: () => void;
+  detailItems?: ChordCardDetailItem[];
 };
 
 const FUNCTION_LABEL: Record<ChordFunction, string> = {
@@ -58,18 +64,21 @@ export function ChordCard({
   isSelected,
   isDragging,
   onRemove,
+  detailItems,
   className,
   ...props
 }: ChordCardProps) {
   const { romanNumeral, symbol, chordFunction, source } = chord;
   const sourceLabel = formatSourceLabel(source);
+  const hasDetails = detailItems && detailItems.length > 0;
 
   return (
     <div
       className={cn(
-        "group relative flex aspect-square flex-col items-center justify-center rounded-sm border shadow-card transition-all duration-150 hover:shadow-card-hover active:scale-90 active:shadow-inner lg:rounded-2xl",
+        "group relative flex flex-col items-center justify-center rounded-sm border shadow-card transition-all duration-150 hover:shadow-card-hover active:scale-90 active:shadow-inner lg:rounded-2xl",
         "cursor-grab select-none gap-0.5 overflow-visible active:cursor-grabbing lg:gap-1",
         "ring-0 ring-foreground ring-offset-0 ring-offset-background",
+        hasDetails ? "py-2 lg:py-3" : "aspect-square",
         CARD_BG_STYLES[chordFunction],
         isSelected && "ring-2 ring-offset-2",
         isDragging && "opacity-0",
@@ -95,6 +104,16 @@ export function ChordCard({
       >
         {FUNCTION_LABEL[chordFunction]}
       </span>
+      {hasDetails && (
+        <div className="mt-1 hidden w-full flex-col gap-0.5 border-current/10 border-t px-1.5 pt-1 lg:flex">
+          {detailItems.map((item) => (
+            <div key={item.label} className="flex flex-col">
+              <span className="text-[8px] text-muted">{item.label}</span>
+              <span className="text-[9px] leading-tight">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {onRemove && (
         <button
           type="button"
