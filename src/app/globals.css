@@ -117,6 +117,9 @@
   --animate-check-bounce: check-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
   --animate-shake: shake 0.4s ease 0.3s both;
   --animate-draw: draw 0.3s ease forwards 0.15s;
+  --animate-note-pop: note-pop 0.2s var(--ease-spring) both;
+  --animate-stagger-fade-in-up: stagger-fade-in-up 0.25s var(--ease-default)
+    calc(var(--stagger-index, 0) * 40ms) both;
 }
 
 /* ============================================
@@ -195,6 +198,32 @@
   }
 }
 
+@keyframes note-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes stagger-fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes draw {
   from {
     stroke-dashoffset: 24;
@@ -202,6 +231,15 @@
   to {
     stroke-dashoffset: 0;
   }
+}
+
+/* Note pop & stagger utilities */
+@utility animate-note-pop {
+  animation: var(--animate-note-pop);
+}
+
+@utility animate-stagger-fade-in-up {
+  animation: var(--animate-stagger-fade-in-up);
 }
 
 /* ============================================

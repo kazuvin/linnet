@@ -32,6 +32,11 @@ export function FretboardGrid({
     return map;
   }, [positions]);
 
+  const positionsKey = useMemo(
+    () => positions.map((p) => `${p.string}-${p.fret}-${p.role}`).join("|"),
+    [positions]
+  );
+
   const frets = Array.from({ length: maxFret + 1 }, (_, i) => i);
   const strings = [1, 2, 3, 4, 5, 6] as const;
 
@@ -83,9 +88,10 @@ export function FretboardGrid({
                   {/* Note dot */}
                   {pos && (
                     <div
+                      key={`${positionsKey}-${stringNum}-${fret}`}
                       className={cn(
                         "relative z-10 flex size-5 items-center justify-center rounded-full font-bold text-[10px]",
-                        "transition-colors duration-[120ms] ease-out",
+                        "animate-note-pop",
                         showAvoidNotes && pos.isAvoid
                           ? "bg-avoid-note text-avoid-note-fg"
                           : NOTE_DOT_STYLES[pos.role],

@@ -53,9 +53,18 @@ export function ChordVoicingPanel() {
 
       {/* ダイアグラム一覧（レスポンシブグリッド） */}
       {filteredVoicings.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {filteredVoicings.map((v) => (
-            <ChordDiagram key={`${v.rootString}-${v.frets.join(",")}`} voicing={v} />
+        <div
+          key={`${selectedChord.symbol}-${rootFilter}`}
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+        >
+          {filteredVoicings.map((v, index) => (
+            <div
+              key={`${v.rootString}-${v.frets.join(",")}`}
+              className="animate-stagger-fade-in-up"
+              style={{ "--stagger-index": Math.min(index, 12) } as React.CSSProperties}
+            >
+              <ChordDiagram voicing={v} />
+            </div>
           ))}
         </div>
       ) : (
