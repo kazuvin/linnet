@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
@@ -8,9 +9,12 @@ import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { replaceSelectedGridCell, selectChordFromPalette } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import { useDrag } from "@/lib/dnd";
-import type { ChordFunction } from "@/lib/music-theory";
+import type { ChordFunction, ChordQuality } from "@/lib/music-theory";
+import { findAvailableScalesForChord, getChordNotes } from "@/lib/music-theory";
+import { useCardDisplayStore } from "../../stores/card-display-store";
+import { CardDisplayFilter } from "../card-display-filter";
 import { ChordCard } from "../chord-card";
-import type { ChordCardData } from "../chord-card/chord-card";
+import type { ChordCardData, ChordCardDetailItem } from "../chord-card/chord-card";
 import { ModeSelector } from "../mode-selector";
 
 export const CHORD_DRAG_TYPE = "chord";
@@ -44,9 +48,16 @@ type DraggableChordCardProps = {
   isSelected: boolean;
   onClick: () => void;
   dragData: PaletteDragData;
+  detailItems?: ChordCardDetailItem[];
 };
 
-function DraggableChordCard({ chord, isSelected, onClick, dragData }: DraggableChordCardProps) {
+function DraggableChordCard({
+  chord,
+  isSelected,
+  onClick,
+  dragData,
+  detailItems,
+}: DraggableChordCardProps) {
   const { dragAttributes, isDragging } = useDrag<PaletteDragData>({
     type: CHORD_DRAG_TYPE,
     data: dragData,
@@ -58,6 +69,7 @@ function DraggableChordCard({ chord, isSelected, onClick, dragData }: DraggableC
       isSelected={isSelected}
       isDragging={isDragging}
       onClick={onClick}
+      detailItems={detailItems}
       {...dragAttributes}
     />
   );
@@ -67,9 +79,89 @@ type ChordPaletteProps = {
   layout?: "row" | "wrap";
 };
 
+function useChordDetailItems(
+  rootName: string,
+  quality: ChordQuality,
+  degree: number,
+  keyRoot: string
+): ChordCardDetailItem[] {
+  const activeOptions = useCardDisplayStore((s) => s.activeOptions);
+
+  return useMemo(() => {
+    const items: ChordCardDetailItem[] = [];
+
+    if (activeOptions.has("tones")) {
+      const notes = getChordNotes(rootName, quality);
+      items.push({ label: "構成音", value: notes.map((n) => n.name).join(" ") });
+    }
+
+    if (activeOptions.has("scale")) {
+      const scales = findAvailableScalesForChord(keyRoot, degree, rootName, quality);
+      if (scales.length > 0) {
+        items.push({
+          label: "スケール",
+          value: scales.map((s) => s.displayName).join(", "),
+        });
+      }
+    }
+
+    return items;
+  }, [rootName, quality, degree, keyRoot, activeOptions]);
+}
+
+function ChordCardWithDetail({
+  chordInfo,
+  source,
+  selected,
+  keyRoot,
+  onClick,
+}: {
+  chordInfo: {
+    chord: { root: { name: string }; quality: ChordQuality; symbol: string };
+    romanNumeral: string;
+    chordFunction: ChordFunction;
+    degree: number;
+  };
+  source: string;
+  selected: boolean;
+  keyRoot: string;
+  onClick: () => void;
+}) {
+  const detailItems = useChordDetailItems(
+    chordInfo.chord.root.name,
+    chordInfo.chord.quality,
+    chordInfo.degree,
+    keyRoot
+  );
+
+  return (
+    <DraggableChordCard
+      chord={{
+        romanNumeral: chordInfo.romanNumeral,
+        symbol: chordInfo.chord.symbol,
+        chordFunction: chordInfo.chordFunction,
+        source: source as ChordCardData["source"],
+      }}
+      isSelected={selected}
+      onClick={onClick}
+      dragData={{
+        rootName: chordInfo.chord.root.name,
+        quality: chordInfo.chord.quality,
+        symbol: chordInfo.chord.symbol,
+        source,
+        chordFunction: chordInfo.chordFunction,
+        romanNumeral: chordInfo.romanNumeral,
+        degree: chordInfo.degree,
+      }}
+      detailItems={detailItems}
+    />
+  );
+}
+
 export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
   const paletteChords = useCurrentModeChords();
   const { selectedMode, chordType, setChordType } = useKeyStore();
+  const rootName = useKeyStore((s) => s.rootName);
   const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
 
   function getEffectiveSource(chordInfo: (typeof paletteChords)[number]) {
@@ -118,6 +210,7 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
           <ModeSelector />
           <ChordTypeSelector value={chordType} onValueChange={setChordType} />
         </div>
+        <CardDisplayFilter className="ml-auto" />
       </div>
       <div
         className={
@@ -135,25 +228,13 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
             source as string
           );
           return (
-            <DraggableChordCard
+            <ChordCardWithDetail
               key={`${chordInfo.degree}-${chordInfo.chord.symbol}-${source}`}
-              chord={{
-                romanNumeral: chordInfo.romanNumeral,
-                symbol: chordInfo.chord.symbol,
-                chordFunction: chordInfo.chordFunction,
-                source,
-              }}
-              isSelected={selected}
+              chordInfo={chordInfo}
+              source={source}
+              selected={selected}
+              keyRoot={rootName}
               onClick={() => handleClick(chordInfo)}
-              dragData={{
-                rootName: chordInfo.chord.root.name,
-                quality: chordInfo.chord.quality,
-                symbol: chordInfo.chord.symbol,
-                source,
-                chordFunction: chordInfo.chordFunction,
-                romanNumeral: chordInfo.romanNumeral,
-                degree: chordInfo.degree,
-              }}
             />
           );
         })}
