@@ -7,14 +7,14 @@ const GOOGLE_FONT_CSS_URL =
 
 async function loadFont(): Promise<ArrayBuffer | null> {
   try {
+    // Use IE11 User-Agent to get woff format (woff2 is not supported by satori in Node.js runtime)
     const css = await fetch(GOOGLE_FONT_CSS_URL, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko",
       },
     }).then((res) => res.text());
 
-    const url = css.match(/src: url\((.+?)\) format\('woff2'\)/)?.[1];
+    const url = css.match(/src: url\((.+?)\) format\('woff'\)/)?.[1];
     if (!url) return null;
 
     return await fetch(url).then((res) => res.arrayBuffer());
