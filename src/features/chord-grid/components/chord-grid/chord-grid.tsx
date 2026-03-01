@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import {
   MinusIcon,
   PlayIcon,
@@ -69,24 +69,36 @@ type GridCellProps = {
   displayChord: GridChord | null;
   label: string;
   isSustain: boolean;
-  isCurrentStep: boolean;
-  isSelected: boolean;
-  onClick: () => void;
 };
 
-function GridCell({
+const GridCell = memo(function GridCell({
   rowIndex,
   col,
   cellChord,
   displayChord,
   label,
   isSustain,
-  isCurrentStep,
-  isSelected,
-  onClick,
 }: GridCellProps) {
+  const isCurrentStep = useChordGridStore(
+    useCallback(
+      (s: { isPlaying: boolean; currentRow: number; currentCol: number }) =>
+        s.isPlaying && s.currentRow === rowIndex && s.currentCol === col,
+      [rowIndex, col]
+    )
+  );
+  const isSelected = useChordGridStore(
+    useCallback(
+      (s: { selectedCell: { row: number; col: number } | null }) =>
+        s.selectedCell?.row === rowIndex && s.selectedCell?.col === col,
+      [rowIndex, col]
+    )
+  );
   const setCell = useChordGridStore((s) => s.setCell);
   const clearSelection = useChordGridStore((s) => s.clearSelection);
+
+  const handleClick = useCallback(() => {
+    selectGridCell(rowIndex, col);
+  }, [rowIndex, col]);
 
   const { dropAttributes, isOver } = useDrop<PaletteDragData>({
     dropZoneId: `cell-${rowIndex}-${col}`,
@@ -130,7 +142,7 @@ function GridCell({
               )
             : cn("border-foreground/10 bg-background", isCurrentStep && "bg-surface-elevated")
       )}
-      onClick={onClick}
+      onClick={handleClick}
       {...dropAttributes}
     >
       {cellChord ? (
@@ -140,14 +152,12 @@ function GridCell({
       ) : null}
     </button>
   );
-}
+});
 
 export function ChordGrid() {
   const rows = useChordGridStore((s) => s.rows);
   const bpm = useChordGridStore((s) => s.bpm);
   const isPlaying = useChordGridStore((s) => s.isPlaying);
-  const currentRow = useChordGridStore((s) => s.currentRow);
-  const currentCol = useChordGridStore((s) => s.currentCol);
   const selectedCell = useChordGridStore((s) => s.selectedCell);
   const setBpm = useChordGridStore((s) => s.setBpm);
   const clearGrid = useChordGridStore((s) => s.clearGrid);
@@ -158,10 +168,6 @@ export function ChordGrid() {
   const hasChords = useChordGridStore((s) => s.getPlayableRowCount()) > 0;
 
   const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
-
-  const handleCellClick = useCallback((rowIndex: number, col: number) => {
-    selectGridCell(rowIndex, col);
-  }, []);
 
   return (
     <div className="flex flex-col gap-4">
@@ -271,8 +277,6 @@ export function ChordGrid() {
                   isSustain,
                 } = getChordDisplayForCell(rows, rowIndex, col);
                 const cellChord = rowCells[col];
-                const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
-                const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
 
                 return (
                   <GridCell
@@ -283,9 +287,6 @@ export function ChordGrid() {
                     displayChord={displayChord}
                     label={label}
                     isSustain={isSustain}
-                    isCurrentStep={isCurrentStep}
-                    isSelected={isSelected}
-                    onClick={() => handleCellClick(rowIndex, col)}
                   />
                 );
               })}

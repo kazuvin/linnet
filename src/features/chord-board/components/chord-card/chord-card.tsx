@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { type ComponentProps, memo } from "react";
 import { XIcon } from "@/components/icons";
 import type { ChordFunction, ChordSource } from "@/lib/music-theory";
 import { MODE_DISPLAY_NAMES } from "@/lib/music-theory";
@@ -53,7 +53,7 @@ function formatSourceLabel(source: ChordSource): string | null {
   return MODE_SHORT_NAMES[source] ?? MODE_DISPLAY_NAMES[source] ?? source;
 }
 
-export function ChordCard({
+export const ChordCard = memo(function ChordCard({
   chord,
   isSelected,
   isDragging,
@@ -112,4 +112,4 @@ export function ChordCard({
       )}
     </div>
   );
-}
+});

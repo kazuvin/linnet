@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { NoteRole, OverlayPosition, PitchClass } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
 import { deriveKeyboardNotes, type KeyboardNoteInfo } from "../../lib/keyboard-notes";
@@ -109,7 +109,7 @@ export function PianoKeyboard({
   );
 }
 
-function WhiteKey({
+const WhiteKey = memo(function WhiteKey({
   noteInfo,
   showCharacteristicNotes,
   showAvoidNotes,
@@ -144,9 +144,9 @@ function WhiteKey({
       )}
     </div>
   );
-}
+});
 
-function BlackKey({
+const BlackKey = memo(function BlackKey({
   left,
   width,
   noteInfo,
@@ -190,4 +190,4 @@ function BlackKey({
       )}
     </div>
   );
-}
+});

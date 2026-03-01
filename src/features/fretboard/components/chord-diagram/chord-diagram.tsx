@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { type ChordVoicing, getNoteAtPosition } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,7 @@ const DISPLAY_FRET_COUNT = 4;
  * 横向きレイアウト: 弦が横線、フレットが縦線
  * 1弦が上、6弦が下（ギターを上から見た配置）
  */
-export function ChordDiagram({ voicing }: ChordDiagramProps) {
+export const ChordDiagram = memo(function ChordDiagram({ voicing }: ChordDiagramProps) {
   const { frets } = voicing;
 
   // 表示するフレット範囲を計算
@@ -133,7 +134,7 @@ export function ChordDiagram({ voicing }: ChordDiagramProps) {
       </span>
     </div>
   );
-}
+});
 
 function getRootStringLabel(rootString: number): string {
   switch (rootString) {

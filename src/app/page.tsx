@@ -1,8 +1,15 @@
+import dynamic from "next/dynamic";
 import { Card } from "@/components";
 import { ChordBoard } from "@/features/chord-board/components";
 import { ChordGrid } from "@/features/chord-grid";
-import { Fretboard, GuitarVoicingCard } from "@/features/fretboard/components";
+import { Fretboard } from "@/features/fretboard/components";
 import { KeySelector } from "@/features/key-selection/components/key-selector";
+
+const GuitarVoicingCard = dynamic(() =>
+  import("@/features/fretboard/components").then((mod) => ({
+    default: mod.GuitarVoicingCard,
+  }))
+);
 
 export default function Home() {
   return (

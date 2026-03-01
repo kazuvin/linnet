@@ -27,6 +27,8 @@ export function useDrag<T>(options: UseDragOptions<T>): UseDragResult {
       const startX = e.clientX;
       const startY = e.clientY;
       let dragging = false;
+      let rafId: number | null = null;
+      let lastPointer = { x: 0, y: 0 };
 
       const handleMove = (moveEvent: PointerEvent) => {
         const dx = moveEvent.clientX - startX;
@@ -40,7 +42,13 @@ export function useDrag<T>(options: UseDragOptions<T>): UseDragResult {
           return;
         }
 
-        useDndStore.getState().updatePointer({ x: moveEvent.clientX, y: moveEvent.clientY });
+        lastPointer = { x: moveEvent.clientX, y: moveEvent.clientY };
+        if (rafId === null) {
+          rafId = requestAnimationFrame(() => {
+            useDndStore.getState().updatePointer(lastPointer);
+            rafId = null;
+          });
+        }
 
         const dropZoneId = findDropZoneAt(moveEvent.clientX, moveEvent.clientY, typeRef.current);
         useDndStore.getState().setActiveDropZone(dropZoneId);
@@ -55,6 +63,10 @@ export function useDrag<T>(options: UseDragOptions<T>): UseDragResult {
       };
 
       const cleanup = () => {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
         document.removeEventListener("pointermove", handleMove);
         document.removeEventListener("pointerup", handleUp);
         cleanupRef.current = null;

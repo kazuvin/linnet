@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
@@ -46,7 +47,12 @@ type DraggableChordCardProps = {
   dragData: PaletteDragData;
 };
 
-function DraggableChordCard({ chord, isSelected, onClick, dragData }: DraggableChordCardProps) {
+const DraggableChordCard = memo(function DraggableChordCard({
+  chord,
+  isSelected,
+  onClick,
+  dragData,
+}: DraggableChordCardProps) {
   const { dragAttributes, isDragging } = useDrag<PaletteDragData>({
     type: CHORD_DRAG_TYPE,
     data: dragData,
@@ -61,7 +67,7 @@ function DraggableChordCard({ chord, isSelected, onClick, dragData }: DraggableC
       {...dragAttributes}
     />
   );
-}
+});
 
 type ChordPaletteProps = {
   layout?: "row" | "wrap";
