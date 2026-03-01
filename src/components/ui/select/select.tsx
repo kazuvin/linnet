@@ -25,7 +25,7 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-background px-4 py-2.5 text-sm md:py-2",
+        "inline-flex select-none items-center gap-2 rounded-full border border-foreground/10 bg-background px-4 py-2.5 text-sm md:py-2",
         "transition-all duration-300 ease-default",
         "hover:bg-foreground/5 focus:outline-none",
         "data-[placeholder]:text-foreground/50",
