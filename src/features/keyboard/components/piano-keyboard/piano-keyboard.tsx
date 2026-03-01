@@ -48,6 +48,11 @@ export function PianoKeyboard({
 }: PianoKeyboardProps) {
   const noteMap = useMemo(() => deriveKeyboardNotes(positions), [positions]);
 
+  const positionsKey = useMemo(
+    () => positions.map((p) => `${p.string}-${p.fret}-${p.role}`).join("|"),
+    [positions]
+  );
+
   return (
     <div className="overflow-x-auto pb-1">
       <div
@@ -72,6 +77,7 @@ export function PianoKeyboard({
                 noteInfo={noteInfo}
                 showCharacteristicNotes={showCharacteristicNotes}
                 showAvoidNotes={showAvoidNotes}
+                positionsKey={positionsKey}
               />
             );
           })}
@@ -93,6 +99,7 @@ export function PianoKeyboard({
                 noteInfo={noteInfo}
                 showCharacteristicNotes={showCharacteristicNotes}
                 showAvoidNotes={showAvoidNotes}
+                positionsKey={positionsKey}
               />
             );
           })
@@ -106,10 +113,12 @@ function WhiteKey({
   noteInfo,
   showCharacteristicNotes,
   showAvoidNotes,
+  positionsKey,
 }: {
   noteInfo: KeyboardNoteInfo | undefined;
   showCharacteristicNotes: boolean;
   showAvoidNotes: boolean;
+  positionsKey: string;
 }) {
   const isHighlighted = !!noteInfo;
   const isAvoid = isHighlighted && showAvoidNotes && noteInfo.isAvoid;
@@ -128,7 +137,11 @@ function WhiteKey({
         isCharacteristic && "ring-2 ring-foreground/40 ring-inset"
       )}
     >
-      {isHighlighted && <span className="font-bold text-[11px]">{noteInfo.noteName}</span>}
+      {isHighlighted && (
+        <span key={positionsKey} className="animate-note-pop font-bold text-[11px]">
+          {noteInfo.noteName}
+        </span>
+      )}
     </div>
   );
 }
@@ -139,12 +152,14 @@ function BlackKey({
   noteInfo,
   showCharacteristicNotes,
   showAvoidNotes,
+  positionsKey,
 }: {
   left: number;
   width: number;
   noteInfo: KeyboardNoteInfo | undefined;
   showCharacteristicNotes: boolean;
   showAvoidNotes: boolean;
+  positionsKey: string;
 }) {
   const isHighlighted = !!noteInfo;
   const isAvoid = isHighlighted && showAvoidNotes && noteInfo.isAvoid;
@@ -168,7 +183,11 @@ function BlackKey({
         height: "62%",
       }}
     >
-      {isHighlighted && <span className="font-bold text-[9px]">{noteInfo.noteName}</span>}
+      {isHighlighted && (
+        <span key={positionsKey} className="animate-note-pop font-bold text-[9px]">
+          {noteInfo.noteName}
+        </span>
+      )}
     </div>
   );
 }
