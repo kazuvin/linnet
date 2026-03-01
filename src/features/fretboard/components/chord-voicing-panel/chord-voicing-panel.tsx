@@ -46,9 +46,9 @@ export function ChordVoicingPanel() {
         className="self-start"
       >
         <TabNavItem value="all">すべて</TabNavItem>
-        <TabNavItem value="6">6弦ルート</TabNavItem>
-        <TabNavItem value="5">5弦ルート</TabNavItem>
-        <TabNavItem value="4">4弦ルート</TabNavItem>
+        <TabNavItem value="6">6弦R</TabNavItem>
+        <TabNavItem value="5">5弦R</TabNavItem>
+        <TabNavItem value="4">4弦R</TabNavItem>
       </TabNav>
 
       {/* ダイアグラム一覧（レスポンシブグリッド） */}

@@ -138,11 +138,11 @@ export function ChordDiagram({ voicing }: ChordDiagramProps) {
 function getRootStringLabel(rootString: number): string {
   switch (rootString) {
     case 6:
-      return "6弦ルート";
+      return "6弦R";
     case 5:
-      return "5弦ルート";
+      return "5弦R";
     case 4:
-      return "4弦ルート";
+      return "4弦R";
     default:
       return "";
   }
