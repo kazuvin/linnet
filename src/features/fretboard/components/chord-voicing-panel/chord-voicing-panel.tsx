@@ -1,18 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { TabNav, TabNavItem } from "@/components/ui/tab-nav";
 import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-selectors";
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
-import { type ChordVoicing, findChordPositions } from "@/lib/music-theory";
+import { findChordPositions } from "@/lib/music-theory";
 import { ChordDiagram } from "../chord-diagram";
 
-type RootStringFilter = "all" | 6 | 5 | 4;
+type RootStringFilter = "all" | "6" | "5" | "4";
 
 export function ChordVoicingPanel() {
   const selectedChord = useSelectedProgressionChord();
   const maxFret = useFretboardStore((s) => s.maxFret);
   const [rootFilter, setRootFilter] = useState<RootStringFilter>("all");
-  const [selectedVoicingIdx, setSelectedVoicingIdx] = useState<number>(0);
 
   const voicings = useMemo(() => {
     if (!selectedChord) return [];
@@ -21,76 +21,46 @@ export function ChordVoicingPanel() {
 
   const filteredVoicings = useMemo(() => {
     if (rootFilter === "all") return voicings;
-    return voicings.filter((v) => v.rootString === rootFilter);
+    const rootString = Number(rootFilter);
+    return voicings.filter((v) => v.rootString === rootString);
   }, [voicings, rootFilter]);
-
-  // フィルタ変更時にインデックスをリセット
-  const handleFilterChange = (filter: RootStringFilter) => {
-    setRootFilter(filter);
-    setSelectedVoicingIdx(0);
-  };
-
-  // コード変更時にインデックスをリセット
-  const safeIdx = selectedVoicingIdx >= filteredVoicings.length ? 0 : selectedVoicingIdx;
 
   if (!selectedChord || voicings.length === 0) {
     return null;
   }
 
-  const selectedVoicing: ChordVoicing | undefined = filteredVoicings[safeIdx];
-
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {/* ヘッダー */}
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-medium text-sm">{selectedChord.symbol} のボイシング</h3>
-        {/* ルート弦フィルター */}
-        <div className="flex gap-1">
-          {(["all", 6, 5, 4] as const).map((filter) => (
-            <button
-              key={filter}
-              type="button"
-              className={`rounded-full px-2.5 py-0.5 text-[11px] transition-colors ${
-                rootFilter === filter
-                  ? "bg-foreground/10 font-medium text-foreground"
-                  : "text-muted hover:bg-foreground/5"
-              }`}
-              onClick={() => handleFilterChange(filter)}
-            >
-              {filter === "all" ? "すべて" : `${filter}弦R`}
-            </button>
-          ))}
-        </div>
-        {/* ボイシング数 */}
         <span className="text-[11px] text-muted">{filteredVoicings.length}件</span>
       </div>
 
-      {/* ダイアグラム一覧（横スクロール） */}
+      {/* ルート弦フィルター（TabNav） */}
+      <TabNav
+        value={rootFilter}
+        onValueChange={(v) => setRootFilter(v as RootStringFilter)}
+        variant="ghost"
+        size="sm"
+        className="self-start"
+      >
+        <TabNavItem value="all">すべて</TabNavItem>
+        <TabNavItem value="6">6弦ルート</TabNavItem>
+        <TabNavItem value="5">5弦ルート</TabNavItem>
+        <TabNavItem value="4">4弦ルート</TabNavItem>
+      </TabNav>
+
+      {/* ダイアグラム一覧（レスポンシブグリッド） */}
       {filteredVoicings.length > 0 ? (
-        <div className="overflow-x-auto pb-2">
-          <div className="flex gap-1.5">
-            {filteredVoicings.map((v, i) => (
-              <ChordDiagram
-                key={`${v.rootString}-${v.frets.join(",")}`}
-                voicing={v}
-                isSelected={i === safeIdx}
-                onClick={() => setSelectedVoicingIdx(i)}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {filteredVoicings.map((v) => (
+            <ChordDiagram key={`${v.rootString}-${v.frets.join(",")}`} voicing={v} />
+          ))}
         </div>
       ) : (
         <p className="text-muted text-xs">このフィルターに該当するボイシングはありません</p>
       )}
-
-      {/* 選択中のボイシング情報 */}
-      {selectedVoicing && (
-        <div className="text-muted text-xs">{formatVoicingFrets(selectedVoicing)}</div>
-      )}
     </div>
   );
-}
-
-function formatVoicingFrets(voicing: ChordVoicing): string {
-  return voicing.frets.map((f) => (f === null ? "x" : String(f))).join(" ");
 }

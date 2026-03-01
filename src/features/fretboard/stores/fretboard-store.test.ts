@@ -116,7 +116,30 @@ describe("fretboard-store", () => {
     expect(result.current.showAvoidNotes).toBe(false);
   });
 
-  // 6. _resetFretboardStoreForTesting で初期状態に戻る
+  // 6. activeInstrument の初期値は "fretboard"
+  it("初期状態は activeInstrument: 'fretboard'", () => {
+    const { result } = renderHook(() => useFretboardStore());
+    expect(result.current.activeInstrument).toBe("fretboard");
+  });
+
+  // 7. setActiveInstrument で値が変更される
+  it("setActiveInstrument で値が変更される", async () => {
+    const { result } = renderHook(() => useFretboardStore());
+
+    await act(async () => {
+      useFretboardStore.getState().setActiveInstrument("keyboard");
+    });
+
+    expect(result.current.activeInstrument).toBe("keyboard");
+
+    await act(async () => {
+      useFretboardStore.getState().setActiveInstrument("fretboard");
+    });
+
+    expect(result.current.activeInstrument).toBe("fretboard");
+  });
+
+  // 8. _resetFretboardStoreForTesting で初期状態に戻る
   it("_resetFretboardStoreForTesting で初期状態に戻る", async () => {
     const { result } = renderHook(() => useFretboardStore());
 

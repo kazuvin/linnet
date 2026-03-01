@@ -1,7 +1,7 @@
 import { Card } from "@/components";
 import { ChordBoard } from "@/features/chord-board/components";
 import { ChordGrid } from "@/features/chord-grid";
-import { Fretboard } from "@/features/fretboard/components";
+import { Fretboard, GuitarVoicingCard } from "@/features/fretboard/components";
 import { KeySelector } from "@/features/key-selection/components/key-selector";
 
 export default function Home() {
@@ -19,6 +19,7 @@ export default function Home() {
       <Card className="min-w-0 overflow-hidden">
         <Fretboard />
       </Card>
+      <GuitarVoicingCard />
     </main>
   );
 }
