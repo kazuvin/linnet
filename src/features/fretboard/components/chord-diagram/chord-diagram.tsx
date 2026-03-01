@@ -3,19 +3,17 @@ import { cn } from "@/lib/utils";
 
 type ChordDiagramProps = {
   voicing: ChordVoicing;
-  isSelected?: boolean;
-  onClick?: () => void;
 };
 
 const DISPLAY_FRET_COUNT = 4;
 
 /**
  * コードダイアグラム（コード譜）表示コンポーネント
- * 横向きレイアウト: 弦が横線、フレットが縦線、弦番号が下
+ * 横向きレイアウト: 弦が横線、フレットが縦線
  * 1弦が上、6弦が下（ギターを上から見た配置）
  */
-export function ChordDiagram({ voicing, isSelected = false, onClick }: ChordDiagramProps) {
-  const { frets, barreInfo } = voicing;
+export function ChordDiagram({ voicing }: ChordDiagramProps) {
+  const { frets } = voicing;
 
   // 表示するフレット範囲を計算
   const frettedPositions = frets.filter((f): f is number => f !== null && f > 0);
@@ -29,27 +27,25 @@ export function ChordDiagram({ voicing, isSelected = false, onClick }: ChordDiag
 
   // 弦: 1弦(上) → 6弦(下)
   const strings = [1, 2, 3, 4, 5, 6] as const;
+  const nutSpacerClass = isOpenPosition ? "w-[3px] shrink-0" : "w-px shrink-0";
 
   return (
-    <button
-      type="button"
-      className={cn(
-        "flex shrink-0 flex-col items-center gap-1 rounded-lg p-2 transition-colors",
-        isSelected ? "bg-primary/10 ring-1 ring-primary" : "bg-surface hover:bg-surface-elevated",
-        onClick && "cursor-pointer"
-      )}
-      onClick={onClick}
-      disabled={!onClick}
-    >
-      <div className="relative">
-        {/* フレット番号（オープンでない場合） */}
-        {!isOpenPosition && (
-          <div className="mb-0.5 text-center text-[9px] text-muted">{startFret}f</div>
-        )}
+    <div className="flex shrink-0 flex-col items-center gap-1 rounded-lg bg-surface p-2">
+      <div className="flex flex-col">
+        {/* フレット番号（上部） */}
+        <div className="flex h-4 items-center">
+          <div className={nutSpacerClass} />
+          {displayFrets.map((fret, i) => (
+            <div key={fret} className="w-6 text-center text-[9px] text-muted leading-4">
+              {i === 0 && !isOpenPosition ? `${startFret}f` : ""}
+            </div>
+          ))}
+        </div>
 
-        <div className="flex">
-          {/* ミュート・開放弦インジケーター（左側） */}
-          <div className="flex flex-col justify-around pr-1">
+        {/* メインダイアグラム */}
+        <div className="relative flex">
+          {/* ミュート・開放弦インジケーター（絶対配置で左外側） */}
+          <div className="absolute right-full flex flex-col justify-around pr-1">
             {strings.map((s) => {
               const idx = 6 - s;
               const fret = frets[idx];
@@ -74,7 +70,7 @@ export function ChordDiagram({ voicing, isSelected = false, onClick }: ChordDiag
           </div>
 
           {/* フレットグリッド: 弦=行、フレット=列 */}
-          <div className="relative flex flex-col">
+          <div className="flex flex-col">
             {strings.map((s) => {
               const idx = 6 - s;
               return (
@@ -116,19 +112,15 @@ export function ChordDiagram({ voicing, isSelected = false, onClick }: ChordDiag
                 </div>
               );
             })}
-
-            {/* バレー表示（縦線） */}
-            {barreInfo && <BarreLine barreInfo={barreInfo} startFret={startFret} />}
           </div>
         </div>
 
-        {/* 弦番号（下部） */}
-        <div className="mt-0.5 flex items-center gap-0">
-          <div className="w-3 shrink-0 pr-1" />
-          <div className={isOpenPosition ? "w-[3px] shrink-0" : "w-px shrink-0"} />
-          {strings.map((s) => (
-            <div key={s} className="w-6 text-center text-[8px] text-muted">
-              {s}
+        {/* フレット番号（下部） */}
+        <div className="flex">
+          <div className={nutSpacerClass} />
+          {displayFrets.map((fret) => (
+            <div key={fret} className="w-6 text-center text-[8px] text-muted">
+              {fret}
             </div>
           ))}
         </div>
@@ -139,38 +131,7 @@ export function ChordDiagram({ voicing, isSelected = false, onClick }: ChordDiag
         {getRootStringLabel(voicing.rootString)}
         {isOpenPosition ? "" : ` ${startFret}f`}
       </span>
-    </button>
-  );
-}
-
-function BarreLine({
-  barreInfo,
-  startFret,
-}: {
-  barreInfo: { fret: number; fromString: number; toString: number };
-  startFret: number;
-}) {
-  // バレーの行範囲を計算（1弦=row0, 6弦=row5）
-  const startRow = barreInfo.fromString - 1; // 1弦=0
-  const endRow = barreInfo.toString - 1; // 6弦=5
-  // バレーのフレット列位置
-  const fretCol = barreInfo.fret - startFret;
-
-  if (fretCol < 0 || fretCol >= DISPLAY_FRET_COUNT) return null;
-
-  // 各行の高さ: h-4 = 16px, 幅: w-6 = 24px
-  const rowHeight = 16;
-  const colWidth = 24;
-
-  return (
-    <div
-      className="pointer-events-none absolute z-20 w-2 rounded-full bg-foreground/60"
-      style={{
-        left: `${fretCol * colWidth + colWidth / 2 - 4}px`,
-        top: `${startRow * rowHeight + 4}px`,
-        height: `${(endRow - startRow) * rowHeight + 8}px`,
-      }}
-    />
+    </div>
   );
 }
 
