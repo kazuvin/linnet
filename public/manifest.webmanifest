@@ -1,0 +1,19 @@
+{
+  "name": "Linnet - ギターコード進行リファレンス",
+  "short_name": "Linnet",
+  "description": "ダイアトニックコードの一覧表示とコード進行の組み立て、ギター指板でのスケール確認",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f3ee",
+  "theme_color": "#6b3fa0",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -14,7 +14,25 @@ export const metadata: Metadata = {
     default: "Linnet",
     template: "%s | Linnet",
   },
-  description: "Linnet application",
+  description:
+    "キーを選んでダイアトニックコードを一覧表示。ドラッグ&ドロップでコード進行を組み立て、ギター指板上で構成音やスケールを確認できるリファレンスツール。",
+  openGraph: {
+    title: "Linnet",
+    description: "ギターコード進行リファレンスツール",
+    siteName: "Linnet",
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Linnet",
+    description: "ギターコード進行リファレンスツール",
+  },
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({
@@ -23,13 +41,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={notoSerif.variable}>
+    <html lang="ja" className={notoSerif.variable}>
       <head>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content"
         />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml"></link>
       </head>
       <body className="antialiased">
         <Providers>
