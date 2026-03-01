@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ToastVariant } from "./use-toast";
 import { dismissToast, useToasts } from "./use-toast";
@@ -16,8 +17,13 @@ const variantIndicator: Record<ToastVariant, string> = {
 
 export function Toaster() {
   const toasts = useToasts();
+  const [mounted, setMounted] = useState(false);
 
-  if (typeof window === "undefined") return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return createPortal(
     <div
