@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { PlayIcon, StopIcon } from "@/components/icons";
+import { AnimatedText } from "@/components/ui/animated-text";
 import { IconButton } from "@/components/ui/button";
 import {
   Select,
@@ -106,7 +107,11 @@ export function ChordSelector() {
 
   return (
     <section className="flex flex-col gap-3">
-      <h1 className="font-bold text-5xl tracking-tight lg:text-6xl">{chordSymbol}</h1>
+      <AnimatedText
+        as="h1"
+        text={chordSymbol}
+        className="font-bold text-5xl tracking-tight lg:text-6xl"
+      />
       <div className="flex flex-wrap items-center gap-3">
         <span className="shrink-0 font-medium text-muted text-sm">コード</span>
         <RootNoteSelector value={rootName} onValueChange={setRootName} />
