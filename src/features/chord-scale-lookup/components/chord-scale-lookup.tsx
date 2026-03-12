@@ -105,22 +105,24 @@ export function ChordSelector() {
   const { rootName, quality, chordSymbol, setRootName, setQuality } = useChordScaleData();
 
   return (
-    <section className="flex flex-wrap items-center gap-3">
-      <span className="shrink-0 font-medium text-muted text-sm">コード</span>
-      <RootNoteSelector value={rootName} onValueChange={setRootName} />
-      <Select value={quality} onValueChange={(v) => setQuality(v as ChordQuality)}>
-        <SelectTrigger>
-          <SelectValue>{QUALITY_OPTIONS.find((o) => o.value === quality)?.label}</SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {QUALITY_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <span className="font-bold text-lg">{chordSymbol}</span>
+    <section className="flex flex-col gap-3">
+      <h1 className="font-bold text-5xl tracking-tight lg:text-6xl">{chordSymbol}</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="shrink-0 font-medium text-muted text-sm">コード</span>
+        <RootNoteSelector value={rootName} onValueChange={setRootName} />
+        <Select value={quality} onValueChange={(v) => setQuality(v as ChordQuality)}>
+          <SelectTrigger>
+            <SelectValue>{QUALITY_OPTIONS.find((o) => o.value === quality)?.label}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {QUALITY_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </section>
   );
 }
