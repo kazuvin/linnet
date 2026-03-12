@@ -81,30 +81,33 @@ export function AnimatedText({
       }
     }
 
-    // リフロー強制
-    document.body.offsetHeight;
-
-    // Phase 3: トランジション開始
-    const fadeDuration = Math.round(duration * 0.6);
-    requestAnimationFrame(() => {
-      const enterT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease`;
-      const exitT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease ${duration - fadeDuration}ms`;
-
-      for (const dc of displayChars) {
-        const wrapper = wrapperRefs.current.get(dc.id);
-        if (!wrapper) continue;
-
-        if (dc.state === "entering") {
-          wrapper.style.transition = enterT;
-          wrapper.style.width = `${naturalWidths.get(dc.id) ?? 0}px`;
-          wrapper.style.opacity = "1";
-        } else if (dc.state === "exiting") {
-          wrapper.style.transition = exitT;
-          wrapper.style.width = "0px";
-          wrapper.style.opacity = "0";
-        }
+    // リフロー強制（初期状態を確定させる）
+    for (const dc of displayChars) {
+      const wrapper = wrapperRefs.current.get(dc.id);
+      if (wrapper && dc.state !== "stable") {
+        wrapper.offsetHeight;
       }
-    });
+    }
+
+    // Phase 3: トランジション開始（reflow 直後に同期適用）
+    const fadeDuration = Math.round(duration * 0.6);
+    const enterT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease`;
+    const exitT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease ${duration - fadeDuration}ms`;
+
+    for (const dc of displayChars) {
+      const wrapper = wrapperRefs.current.get(dc.id);
+      if (!wrapper) continue;
+
+      if (dc.state === "entering") {
+        wrapper.style.transition = enterT;
+        wrapper.style.width = `${naturalWidths.get(dc.id) ?? 0}px`;
+        wrapper.style.opacity = "1";
+      } else if (dc.state === "exiting") {
+        wrapper.style.transition = exitT;
+        wrapper.style.width = "0px";
+        wrapper.style.opacity = "0";
+      }
+    }
 
     // アニメーション完了後にクリーンアップ
     cleanupTimer.current = setTimeout(() => {
