@@ -82,12 +82,17 @@ export function HeaderNavList({ className, children, ...props }: HeaderNavListPr
 
 export type HeaderNavItemProps = ComponentProps<typeof Link>;
 
-export function HeaderNavItem({ className, children, ...props }: HeaderNavItemProps) {
+export function HeaderNavItem({ className, children, href, ...props }: HeaderNavItemProps) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
   return (
     <li>
       <Link
+        href={href}
         className={cn(
-          "font-medium text-foreground/60 text-sm transition-colors hover:text-foreground",
+          "font-medium text-sm transition-colors hover:text-foreground",
+          isActive ? "text-foreground" : "text-foreground/60",
           className
         )}
         {...props}

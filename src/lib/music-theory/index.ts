@@ -27,6 +27,8 @@ export {
   type CategoryId,
   getCategoryChords,
 } from "./category-codes";
+// Chord-Scale Lookup
+export { type ChordScaleMatch, findScalesForChord } from "./chord-scale-lookup";
 // Note
 
 // Chord
