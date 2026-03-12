@@ -52,8 +52,57 @@ describe("chord", () => {
       expect(CHORD_INTERVAL_PATTERNS.augmented7).toEqual([0, 4, 8, 10]);
     });
 
-    it("全10種類のコードクオリティが定義されている", () => {
-      expect(Object.keys(CHORD_INTERVAL_PATTERNS)).toHaveLength(10);
+    it("全22種類のコードクオリティが定義されている", () => {
+      expect(Object.keys(CHORD_INTERVAL_PATTERNS)).toHaveLength(22);
+    });
+
+    // テンションコード・拡張コード
+    it("sus2は [0, 2, 7]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.sus2).toEqual([0, 2, 7]);
+    });
+
+    it("sus4は [0, 5, 7]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.sus4).toEqual([0, 5, 7]);
+    });
+
+    it("6は [0, 4, 7, 9]", () => {
+      expect(CHORD_INTERVAL_PATTERNS["6"]).toEqual([0, 4, 7, 9]);
+    });
+
+    it("minor6は [0, 3, 7, 9]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.minor6).toEqual([0, 3, 7, 9]);
+    });
+
+    it("minorMajor7は [0, 3, 7, 11]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.minorMajor7).toEqual([0, 3, 7, 11]);
+    });
+
+    it("7sus4は [0, 5, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS["7sus4"]).toEqual([0, 5, 7, 10]);
+    });
+
+    it("add9は [0, 2, 4, 7]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.add9).toEqual([0, 2, 4, 7]);
+    });
+
+    it("dominant9は [0, 2, 4, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.dominant9).toEqual([0, 2, 4, 7, 10]);
+    });
+
+    it("major9は [0, 2, 4, 7, 11]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.major9).toEqual([0, 2, 4, 7, 11]);
+    });
+
+    it("minor9は [0, 2, 3, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.minor9).toEqual([0, 2, 3, 7, 10]);
+    });
+
+    it("dominant7sharp9は [0, 3, 4, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.dominant7sharp9).toEqual([0, 3, 4, 7, 10]);
+    });
+
+    it("dominant7flat9は [0, 1, 4, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.dominant7flat9).toEqual([0, 1, 4, 7, 10]);
     });
   });
 
@@ -132,6 +181,67 @@ describe("chord", () => {
       const notes = getChordNotes("C", "major");
       expect(notes.map((n) => n.pitchClass)).toEqual([0, 4, 7]);
     });
+
+    // テンションコード構成音
+    it("Csus2の構成音は C, D, G", () => {
+      const notes = getChordNotes("C", "sus2");
+      expect(notes.map((n) => n.name)).toEqual(["C", "D", "G"]);
+    });
+
+    it("Csus4の構成音は C, F, G", () => {
+      const notes = getChordNotes("C", "sus4");
+      expect(notes.map((n) => n.name)).toEqual(["C", "F", "G"]);
+    });
+
+    it("C6の構成音は C, E, G, A", () => {
+      const notes = getChordNotes("C", "6");
+      expect(notes.map((n) => n.name)).toEqual(["C", "E", "G", "A"]);
+    });
+
+    it("Cm6の構成音は C, Eb, G, A", () => {
+      const notes = getChordNotes("C", "minor6", true);
+      expect(notes.map((n) => n.name)).toEqual(["C", "Eb", "G", "A"]);
+    });
+
+    it("CmM7の構成音は C, Eb, G, B", () => {
+      const notes = getChordNotes("C", "minorMajor7", true);
+      expect(notes.map((n) => n.name)).toEqual(["C", "Eb", "G", "B"]);
+    });
+
+    it("C7sus4の構成音は C, F, G, Bb", () => {
+      const notes = getChordNotes("C", "7sus4", true);
+      expect(notes.map((n) => n.name)).toEqual(["C", "F", "G", "Bb"]);
+    });
+
+    it("Cadd9の構成音は C, D, E, G", () => {
+      const notes = getChordNotes("C", "add9");
+      expect(notes.map((n) => n.name)).toEqual(["C", "D", "E", "G"]);
+    });
+
+    it("C9の構成音は C, D, E, G, A#", () => {
+      const notes = getChordNotes("C", "dominant9");
+      expect(notes.map((n) => n.name)).toEqual(["C", "D", "E", "G", "A#"]);
+    });
+
+    it("CM9の構成音は C, D, E, G, B", () => {
+      const notes = getChordNotes("C", "major9");
+      expect(notes.map((n) => n.name)).toEqual(["C", "D", "E", "G", "B"]);
+    });
+
+    it("Cm9の構成音は C, D, Eb, G, Bb", () => {
+      const notes = getChordNotes("C", "minor9", true);
+      expect(notes.map((n) => n.name)).toEqual(["C", "D", "Eb", "G", "Bb"]);
+    });
+
+    it("C7(#9)の構成音は C, D#, E, G, A#", () => {
+      const notes = getChordNotes("C", "dominant7sharp9");
+      expect(notes.map((n) => n.name)).toEqual(["C", "D#", "E", "G", "A#"]);
+    });
+
+    it("C7(b9)の構成音は C, Db, E, G, Bb", () => {
+      const notes = getChordNotes("C", "dominant7flat9", true);
+      expect(notes.map((n) => n.name)).toEqual(["C", "Db", "E", "G", "Bb"]);
+    });
   });
 
   describe("createChord", () => {
@@ -179,6 +289,18 @@ describe("chord", () => {
         "minor7b5",
         "diminished7",
         "augmented7",
+        "sus2",
+        "sus4",
+        "6",
+        "minor6",
+        "minorMajor7",
+        "7sus4",
+        "add9",
+        "dominant9",
+        "major9",
+        "minor9",
+        "dominant7sharp9",
+        "dominant7flat9",
       ];
       for (const quality of qualities) {
         const chord = createChord("C", quality);
@@ -261,6 +383,55 @@ describe("chord", () => {
 
     it("Ebルートでminor7のシンボルは 'Ebm7'", () => {
       expect(formatChordSymbol("Eb", "minor7")).toBe("Ebm7");
+    });
+
+    // テンションコードシンボル
+    it("sus2のシンボルは 'Csus2'", () => {
+      expect(formatChordSymbol("C", "sus2")).toBe("Csus2");
+    });
+
+    it("sus4のシンボルは 'Csus4'", () => {
+      expect(formatChordSymbol("C", "sus4")).toBe("Csus4");
+    });
+
+    it("6のシンボルは 'C6'", () => {
+      expect(formatChordSymbol("C", "6")).toBe("C6");
+    });
+
+    it("minor6のシンボルは 'Cm6'", () => {
+      expect(formatChordSymbol("C", "minor6")).toBe("Cm6");
+    });
+
+    it("minorMajor7のシンボルは 'CmM7'", () => {
+      expect(formatChordSymbol("C", "minorMajor7")).toBe("CmM7");
+    });
+
+    it("7sus4のシンボルは 'C7sus4'", () => {
+      expect(formatChordSymbol("C", "7sus4")).toBe("C7sus4");
+    });
+
+    it("add9のシンボルは 'Cadd9'", () => {
+      expect(formatChordSymbol("C", "add9")).toBe("Cadd9");
+    });
+
+    it("dominant9のシンボルは 'C9'", () => {
+      expect(formatChordSymbol("C", "dominant9")).toBe("C9");
+    });
+
+    it("major9のシンボルは 'CM9'", () => {
+      expect(formatChordSymbol("C", "major9")).toBe("CM9");
+    });
+
+    it("minor9のシンボルは 'Cm9'", () => {
+      expect(formatChordSymbol("C", "minor9")).toBe("Cm9");
+    });
+
+    it("dominant7sharp9のシンボルは 'C7(#9)'", () => {
+      expect(formatChordSymbol("C", "dominant7sharp9")).toBe("C7(#9)");
+    });
+
+    it("dominant7flat9のシンボルは 'C7(b9)'", () => {
+      expect(formatChordSymbol("C", "dominant7flat9")).toBe("C7(b9)");
     });
   });
 
@@ -350,6 +521,12 @@ describe("chord", () => {
     it("minor7を渡した場合もそのまま返す", () => {
       const chord = extendToSeventh("C", "minor7", true);
       expect(chord.quality).toBe("minor7");
+    });
+
+    it("sus4を7sus4に拡張する", () => {
+      const chord = extendToSeventh("C", "sus4", true);
+      expect(chord.quality).toBe("7sus4");
+      expect(chord.notes.map((n) => n.name)).toEqual(["C", "F", "G", "Bb"]);
     });
   });
 });
