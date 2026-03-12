@@ -1,7 +1,7 @@
 "use client";
 
-import { type ElementType, useCallback, useLayoutEffect, useRef } from "react";
-import { computeCharDiff } from "./compute-char-diff";
+import { type ElementType, useLayoutEffect, useRef, useState } from "react";
+import { computeCharDiff, type DisplayChar, mergeDisplayChars } from "./compute-char-diff";
 
 type AnimatedTextProps = {
   text: string;
@@ -10,9 +10,15 @@ type AnimatedTextProps = {
   duration?: number;
 };
 
+let nextId = 0;
+function genId() {
+  return `ac-${nextId++}`;
+}
+
 /**
  * 文字単位でアニメーションするテキストコンポーネント。
- * テキスト変更時に共通文字は移動し、新規文字はフェードイン、削除文字はフェードアウトする。
+ * テキスト変更時に共通文字は自然にスライドし、
+ * 新規文字は幅が広がりながらフェードイン、削除文字は幅が縮みながらフェードアウトする。
  */
 export function AnimatedText({
   text,
@@ -20,140 +26,127 @@ export function AnimatedText({
   as: Tag = "span",
   duration = 300,
 }: AnimatedTextProps) {
-  const containerRef = useRef<HTMLElement>(null);
-  const charEls = useRef<(HTMLSpanElement | null)[]>([]);
-  const savedPositions = useRef<{ left: number }[]>([]);
-  const prevText = useRef(text);
-  const isInitial = useRef(true);
+  const [displayChars, setDisplayChars] = useState<DisplayChar[]>(() =>
+    text.split("").map((char) => ({ id: genId(), char, state: "stable" as const }))
+  );
+  const prevTextRef = useRef(text);
+  const wrapperRefs = useRef(new Map<string, HTMLSpanElement>());
+  const innerRefs = useRef(new Map<string, HTMLSpanElement>());
+  const cleanupTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  charEls.current.length = text.length;
-
-  const measure = useCallback(() => {
-    const c = containerRef.current;
-    if (!c) return [];
-    const cl = c.getBoundingClientRect().left;
-    return charEls.current.map((el) =>
-      el ? { left: el.getBoundingClientRect().left - cl } : { left: 0 }
-    );
-  }, []);
-
-  // 安定レンダー後に位置を保存する
+  // テキスト変更を検知して displayChars を更新
   useLayoutEffect(() => {
-    if (isInitial.current) {
-      isInitial.current = false;
-      savedPositions.current = measure();
-      return;
-    }
-    if (text === prevText.current) {
-      savedPositions.current = measure();
-    }
-  });
+    if (text === prevTextRef.current) return;
+    const oldText = prevTextRef.current;
+    prevTextRef.current = text;
 
-  // テキスト変更時の FLIP アニメーション
+    if (cleanupTimer.current) {
+      clearTimeout(cleanupTimer.current);
+    }
+
+    setDisplayChars((prev) => {
+      const stableOld = prev.filter((c) => c.state !== "exiting");
+      const diff = computeCharDiff(oldText, text);
+      return mergeDisplayChars(stableOld, diff, genId);
+    });
+  }, [text]);
+
+  // 表示文字が変わったらアニメーションを適用
   useLayoutEffect(() => {
-    const old = prevText.current;
-    if (text === old) return;
+    const hasAnimation = displayChars.some((c) => c.state !== "stable");
+    if (!hasAnimation) return;
 
-    const diff = computeCharDiff(old, text);
-    const oldPos = savedPositions.current;
-    prevText.current = text;
-
-    const newPos = measure();
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Invert: 共通文字を旧位置に配置、新規文字を透明に
-    for (let ni = 0; ni < diff.items.length; ni++) {
-      const item = diff.items[ni];
-      const el = charEls.current[ni];
-      if (!el) continue;
-      if (item.type === "stay") {
-        const op = oldPos[item.oldIndex];
-        const np = newPos[ni];
-        if (op && np) {
-          const dx = op.left - np.left;
-          el.style.transition = "none";
-          el.style.transform = `translateX(${dx}px)`;
-        }
-      } else {
-        el.style.transition = "none";
-        el.style.opacity = "0";
+    // Phase 1: 自然幅を計測
+    const naturalWidths = new Map<string, number>();
+    for (const dc of displayChars) {
+      const inner = innerRefs.current.get(dc.id);
+      if (inner) {
+        naturalWidths.set(dc.id, inner.getBoundingClientRect().width);
       }
     }
 
-    // 削除文字を absolute で旧位置に配置
-    const exits: HTMLSpanElement[] = [];
-    for (const exit of diff.exits) {
-      const op = oldPos[exit.oldIndex];
-      if (!op) continue;
-      const span = document.createElement("span");
-      span.textContent = exit.char;
-      span.style.position = "absolute";
-      span.style.left = `${op.left}px`;
-      span.style.top = "0";
-      span.style.display = "inline-block";
-      span.style.pointerEvents = "none";
-      span.style.opacity = "1";
-      span.style.transition = "none";
-      container.appendChild(span);
-      exits.push(span);
+    // Phase 2: 初期状態を設定（ペイント前）
+    for (const dc of displayChars) {
+      const wrapper = wrapperRefs.current.get(dc.id);
+      if (!wrapper) continue;
+
+      if (dc.state === "entering") {
+        wrapper.style.transition = "none";
+        wrapper.style.width = "0px";
+        wrapper.style.opacity = "0";
+      } else if (dc.state === "exiting") {
+        wrapper.style.transition = "none";
+        wrapper.style.width = `${naturalWidths.get(dc.id) ?? wrapper.offsetWidth}px`;
+        wrapper.style.opacity = "1";
+      }
     }
 
     // リフロー強制
-    container.offsetHeight;
+    document.body.offsetHeight;
 
-    // Play: トランジション開始
+    // Phase 3: トランジション開始
     requestAnimationFrame(() => {
-      const t = `transform ${duration}ms var(--ease-default), opacity ${duration}ms ease`;
-      for (let ni = 0; ni < diff.items.length; ni++) {
-        const item = diff.items[ni];
-        const el = charEls.current[ni];
-        if (!el) continue;
-        el.style.transition = t;
-        el.style.transform = "";
-        if (item.type === "enter") el.style.opacity = "1";
-      }
-      for (const span of exits) {
-        span.style.transition = `opacity ${duration}ms ease`;
-        span.style.opacity = "0";
+      const t = `width ${duration}ms var(--ease-default), opacity ${duration}ms ease`;
+
+      for (const dc of displayChars) {
+        const wrapper = wrapperRefs.current.get(dc.id);
+        if (!wrapper) continue;
+
+        if (dc.state === "entering") {
+          wrapper.style.transition = t;
+          wrapper.style.width = `${naturalWidths.get(dc.id) ?? 0}px`;
+          wrapper.style.opacity = "1";
+        } else if (dc.state === "exiting") {
+          wrapper.style.transition = t;
+          wrapper.style.width = "0px";
+          wrapper.style.opacity = "0";
+        }
       }
     });
 
-    const cleanup = () => {
-      for (const s of exits) s.remove();
-      for (const el of charEls.current) {
-        if (el) {
-          el.style.transition = "";
-          el.style.transform = "";
-          el.style.opacity = "";
-        }
+    // アニメーション完了後にクリーンアップ
+    cleanupTimer.current = setTimeout(() => {
+      setDisplayChars((prev) => {
+        const cleaned = prev.filter((c) => c.state !== "exiting");
+        return cleaned.map((c) => ({ ...c, state: "stable" as const }));
+      });
+      // インラインスタイルをリセット
+      for (const wrapper of wrapperRefs.current.values()) {
+        wrapper.style.transition = "";
+        wrapper.style.width = "";
+        wrapper.style.opacity = "";
       }
-      savedPositions.current = measure();
-    };
-
-    const timer = setTimeout(cleanup, duration + 50);
+    }, duration + 50);
 
     return () => {
-      clearTimeout(timer);
-      cleanup();
+      if (cleanupTimer.current) clearTimeout(cleanupTimer.current);
     };
-  }, [text, duration, measure]);
+  }, [displayChars, duration]);
 
   return (
-    <Tag
-      ref={containerRef}
-      className={className}
-      style={{ position: "relative", display: "inline-block" }}
-    >
-      {text.split("").map((char, i) => (
+    <Tag className={className} style={{ display: "inline-flex" }}>
+      {displayChars.map((dc) => (
         <span
-          key={`${i}:${char}`}
+          key={dc.id}
           ref={(el: HTMLSpanElement | null) => {
-            charEls.current[i] = el;
+            if (el) wrapperRefs.current.set(dc.id, el);
+            else wrapperRefs.current.delete(dc.id);
           }}
-          style={{ display: "inline-block" }}
+          style={{
+            display: "inline-block",
+            overflow: "hidden",
+            whiteSpace: "pre",
+          }}
         >
-          {char}
+          <span
+            ref={(el: HTMLSpanElement | null) => {
+              if (el) innerRefs.current.set(dc.id, el);
+              else innerRefs.current.delete(dc.id);
+            }}
+            style={{ display: "inline-block" }}
+          >
+            {dc.char}
+          </span>
         </span>
       ))}
     </Tag>

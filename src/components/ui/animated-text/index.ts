@@ -4,4 +4,6 @@ export {
   type CharExit,
   type CharItem,
   computeCharDiff,
+  type DisplayChar,
+  mergeDisplayChars,
 } from "./compute-char-diff";
