@@ -15,10 +15,40 @@ function genId() {
   return `ac-${nextId++}`;
 }
 
+/** exit 文字を旧位置に absolute 配置してフェードアウトする */
+function ExitOverlay({ char, left, duration }: { char: string; left: number; duration: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transition = "none";
+    el.style.opacity = "1";
+    el.offsetHeight;
+    el.style.transition = `opacity ${duration}ms ease`;
+    el.style.opacity = "0";
+  }, [duration]);
+
+  return (
+    <span
+      ref={ref}
+      style={{
+        position: "absolute",
+        left: `${left}px`,
+        top: 0,
+        display: "inline-block",
+        pointerEvents: "none",
+      }}
+    >
+      {char}
+    </span>
+  );
+}
+
 /**
  * 文字単位でアニメーションするテキストコンポーネント。
- * テキスト変更時に共通文字は自然にスライドし、
- * 新規文字は幅が広がりながらフェードイン、削除文字は幅が縮みながらフェードアウトする。
+ * テキスト変更時に共通文字は FLIP でスライドし、
+ * 新規文字はその場でフェードイン、削除文字は旧位置でフェードアウトする。
  */
 export function AnimatedText({
   text,
@@ -26,13 +56,36 @@ export function AnimatedText({
   as: Tag = "span",
   duration = 300,
 }: AnimatedTextProps) {
+  const containerRef = useRef<HTMLElement>(null);
+  const charRefs = useRef(new Map<string, HTMLSpanElement>());
+  const savedPositions = useRef(new Map<string, { left: number }>());
+  const prevTextRef = useRef(text);
+  const cleanupTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   const [displayChars, setDisplayChars] = useState<DisplayChar[]>(() =>
     text.split("").map((char) => ({ id: genId(), char, state: "stable" as const }))
   );
-  const prevTextRef = useRef(text);
-  const wrapperRefs = useRef(new Map<string, HTMLSpanElement>());
-  const innerRefs = useRef(new Map<string, HTMLSpanElement>());
-  const cleanupTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // レンダーごとの派生値
+  const flowChars = displayChars.filter((c) => c.state !== "exiting");
+  const exitChars = displayChars.filter((c) => c.state === "exiting");
+
+  // 安定レンダー後に各文字の位置を保存
+  useLayoutEffect(() => {
+    if (displayChars.some((c) => c.state !== "stable")) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const cLeft = container.getBoundingClientRect().left;
+    savedPositions.current.clear();
+    for (const dc of displayChars) {
+      const el = charRefs.current.get(dc.id);
+      if (el) {
+        savedPositions.current.set(dc.id, {
+          left: el.getBoundingClientRect().left - cLeft,
+        });
+      }
+    }
+  });
 
   // テキスト変更を検知して displayChars を更新
   useLayoutEffect(() => {
@@ -40,9 +93,7 @@ export function AnimatedText({
     const oldText = prevTextRef.current;
     prevTextRef.current = text;
 
-    if (cleanupTimer.current) {
-      clearTimeout(cleanupTimer.current);
-    }
+    if (cleanupTimer.current) clearTimeout(cleanupTimer.current);
 
     setDisplayChars((prev) => {
       const stableOld = prev.filter((c) => c.state !== "exiting");
@@ -51,75 +102,55 @@ export function AnimatedText({
     });
   }, [text]);
 
-  // 表示文字が変わったらアニメーションを適用
+  // アニメーション適用（FLIP + フェード）
   useLayoutEffect(() => {
     const hasAnimation = displayChars.some((c) => c.state !== "stable");
     if (!hasAnimation) return;
 
-    // Phase 1: 自然幅を計測
-    const naturalWidths = new Map<string, number>();
-    for (const dc of displayChars) {
-      const inner = innerRefs.current.get(dc.id);
-      if (inner) {
-        naturalWidths.set(dc.id, inner.getBoundingClientRect().width);
+    const container = containerRef.current;
+    if (!container) return;
+    const cLeft = container.getBoundingClientRect().left;
+
+    const flow = displayChars.filter((c) => c.state !== "exiting");
+    for (const dc of flow) {
+      const el = charRefs.current.get(dc.id);
+      if (!el) continue;
+
+      if (dc.state === "stable") {
+        // stay 文字: FLIP で旧位置→新位置にスライド
+        const oldPos = savedPositions.current.get(dc.id);
+        if (oldPos) {
+          const newLeft = el.getBoundingClientRect().left - cLeft;
+          const dx = oldPos.left - newLeft;
+          if (Math.abs(dx) > 0.5) {
+            el.style.transition = "none";
+            el.style.transform = `translateX(${dx}px)`;
+            el.offsetHeight;
+            el.style.transition = `transform ${duration}ms var(--ease-default)`;
+            el.style.transform = "";
+          }
+        }
+      } else if (dc.state === "entering") {
+        // enter 文字: その場でフェードイン
+        el.style.transition = "none";
+        el.style.opacity = "0";
+        el.offsetHeight;
+        el.style.transition = `opacity ${duration}ms ease`;
+        el.style.opacity = "1";
       }
     }
 
-    // Phase 2: 初期状態を設定（ペイント前）
-    for (const dc of displayChars) {
-      const wrapper = wrapperRefs.current.get(dc.id);
-      if (!wrapper) continue;
+    // exit 文字のフェードアウトは ExitOverlay コンポーネントが処理
 
-      if (dc.state === "entering") {
-        wrapper.style.transition = "none";
-        wrapper.style.width = "0px";
-        wrapper.style.opacity = "0";
-      } else if (dc.state === "exiting") {
-        wrapper.style.transition = "none";
-        wrapper.style.width = `${naturalWidths.get(dc.id) ?? wrapper.offsetWidth}px`;
-        wrapper.style.opacity = "1";
-      }
-    }
-
-    // リフロー強制（初期状態を確定させる）
-    for (const dc of displayChars) {
-      const wrapper = wrapperRefs.current.get(dc.id);
-      if (wrapper && dc.state !== "stable") {
-        wrapper.offsetHeight;
-      }
-    }
-
-    // Phase 3: トランジション開始（reflow 直後に同期適用）
-    const fadeDuration = Math.round(duration * 0.6);
-    const enterT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease`;
-    const exitT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease ${duration - fadeDuration}ms`;
-
-    for (const dc of displayChars) {
-      const wrapper = wrapperRefs.current.get(dc.id);
-      if (!wrapper) continue;
-
-      if (dc.state === "entering") {
-        wrapper.style.transition = enterT;
-        wrapper.style.width = `${naturalWidths.get(dc.id) ?? 0}px`;
-        wrapper.style.opacity = "1";
-      } else if (dc.state === "exiting") {
-        wrapper.style.transition = exitT;
-        wrapper.style.width = "0px";
-        wrapper.style.opacity = "0";
-      }
-    }
-
-    // アニメーション完了後にクリーンアップ
     cleanupTimer.current = setTimeout(() => {
       setDisplayChars((prev) => {
         const cleaned = prev.filter((c) => c.state !== "exiting");
         return cleaned.map((c) => ({ ...c, state: "stable" as const }));
       });
-      // インラインスタイルをリセット
-      for (const wrapper of wrapperRefs.current.values()) {
-        wrapper.style.transition = "";
-        wrapper.style.width = "";
-        wrapper.style.opacity = "";
+      for (const el of charRefs.current.values()) {
+        el.style.transition = "";
+        el.style.transform = "";
+        el.style.opacity = "";
       }
     }, duration + 50);
 
@@ -129,31 +160,30 @@ export function AnimatedText({
   }, [displayChars, duration]);
 
   return (
-    <Tag className={className} style={{ display: "inline-flex" }}>
-      {displayChars.map((dc) => (
+    <Tag
+      ref={containerRef}
+      className={className}
+      style={{ position: "relative", display: "inline-block" }}
+    >
+      {flowChars.map((dc) => (
         <span
           key={dc.id}
           ref={(el: HTMLSpanElement | null) => {
-            if (el) wrapperRefs.current.set(dc.id, el);
-            else wrapperRefs.current.delete(dc.id);
+            if (el) charRefs.current.set(dc.id, el);
+            else charRefs.current.delete(dc.id);
           }}
-          style={{
-            display: "inline-block",
-            overflowX: dc.state === "exiting" ? "clip" : "visible",
-            overflowY: "visible",
-            whiteSpace: "pre",
-          }}
+          style={{ display: "inline-block" }}
         >
-          <span
-            ref={(el: HTMLSpanElement | null) => {
-              if (el) innerRefs.current.set(dc.id, el);
-              else innerRefs.current.delete(dc.id);
-            }}
-            style={{ display: "inline-block" }}
-          >
-            {dc.char}
-          </span>
+          {dc.char}
         </span>
+      ))}
+      {exitChars.map((dc) => (
+        <ExitOverlay
+          key={dc.id}
+          char={dc.char}
+          left={savedPositions.current.get(dc.id)?.left ?? 0}
+          duration={duration}
+        />
       ))}
     </Tag>
   );
