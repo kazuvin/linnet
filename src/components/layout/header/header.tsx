@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentProps, ReactNode } from "react";
-import { GitHubIcon } from "@/components/icons";
+import { GitHubIcon, MenuIcon } from "@/components/icons";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useIsScrolled } from "@/lib/animation";
 import { cn } from "@/lib/utils";
 
@@ -140,5 +147,64 @@ export function HeaderGitHubLink({ url, className, ...props }: HeaderGitHubLinkP
     >
       <GitHubIcon className="h-5 w-5" />
     </a>
+  );
+}
+
+export type HeaderMobileMenuProps = {
+  items: { href: string; label: string }[];
+  gitHubUrl?: string;
+};
+
+export function HeaderMobileMenu({ items, gitHubUrl }: HeaderMobileMenuProps) {
+  const pathname = usePathname();
+
+  return (
+    <div className="md:hidden">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-foreground/60 transition-colors hover:text-foreground"
+            aria-label="メニューを開く"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={8} className="min-w-[200px]">
+          {items.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <DropdownMenuItem key={item.href} asChild>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "w-full font-medium",
+                    isActive ? "text-foreground" : "text-foreground/60"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              </DropdownMenuItem>
+            );
+          })}
+          {gitHubUrl && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <a
+                  href={gitHubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center gap-2 text-foreground/60"
+                >
+                  <GitHubIcon className="h-4 w-4" />
+                  GitHub
+                </a>
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

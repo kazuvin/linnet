@@ -6,6 +6,7 @@ export { EllipsisVerticalIcon } from "./ellipsis-vertical-icon";
 export { FolderIcon } from "./folder-icon";
 export { GitHubIcon } from "./github-icon";
 export { LoadingSpinnerIcon } from "./loading-spinner-icon";
+export { MenuIcon } from "./menu-icon";
 export { MinusIcon } from "./minus-icon";
 export { PlayIcon } from "./play-icon";
 export { PlusIcon } from "./plus-icon";
