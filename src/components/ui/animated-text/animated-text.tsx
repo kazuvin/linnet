@@ -85,19 +85,21 @@ export function AnimatedText({
     document.body.offsetHeight;
 
     // Phase 3: トランジション開始
+    const fadeDuration = Math.round(duration * 0.6);
     requestAnimationFrame(() => {
-      const t = `width ${duration}ms var(--ease-default), opacity ${duration}ms ease`;
+      const enterT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease`;
+      const exitT = `width ${duration}ms var(--ease-default), opacity ${fadeDuration}ms ease ${duration - fadeDuration}ms`;
 
       for (const dc of displayChars) {
         const wrapper = wrapperRefs.current.get(dc.id);
         if (!wrapper) continue;
 
         if (dc.state === "entering") {
-          wrapper.style.transition = t;
+          wrapper.style.transition = enterT;
           wrapper.style.width = `${naturalWidths.get(dc.id) ?? 0}px`;
           wrapper.style.opacity = "1";
         } else if (dc.state === "exiting") {
-          wrapper.style.transition = t;
+          wrapper.style.transition = exitT;
           wrapper.style.width = "0px";
           wrapper.style.opacity = "0";
         }
@@ -134,7 +136,7 @@ export function AnimatedText({
           }}
           style={{
             display: "inline-block",
-            overflowX: "clip",
+            overflowX: dc.state === "exiting" ? "clip" : "visible",
             overflowY: "visible",
             whiteSpace: "pre",
           }}
