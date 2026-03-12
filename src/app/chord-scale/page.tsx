@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Card } from "@/components";
-import { ChordScaleLookup } from "@/features/chord-scale-lookup/components";
+import { ChordSelector, ScaleCard, VoicingCard } from "@/features/chord-scale-lookup/components";
 
 export const metadata: Metadata = {
   title: "コード・スケール検索",
@@ -10,8 +10,12 @@ export const metadata: Metadata = {
 export default function ChordScalePage() {
   return (
     <main className="container mx-auto grid gap-[var(--grid-gap)] overflow-x-hidden px-4 pt-24 pb-12 max-lg:gap-[var(--grid-gap-sm)]">
+      <ChordSelector />
       <Card>
-        <ChordScaleLookup />
+        <ScaleCard />
+      </Card>
+      <Card>
+        <VoicingCard />
       </Card>
     </main>
   );
