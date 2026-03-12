@@ -134,7 +134,8 @@ export function AnimatedText({
           }}
           style={{
             display: "inline-block",
-            overflow: "hidden",
+            overflowX: "clip",
+            overflowY: "visible",
             whiteSpace: "pre",
           }}
         >
