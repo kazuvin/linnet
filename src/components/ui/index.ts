@@ -1,3 +1,4 @@
+export * from "./animated-text";
 export * from "./badge";
 export * from "./button";
 export * from "./card";
