@@ -1,0 +1,18 @@
+import type { Metadata } from "next";
+import { Card } from "@/components";
+import { ChordScaleLookup } from "@/features/chord-scale-lookup/components";
+
+export const metadata: Metadata = {
+  title: "コード・スケール検索",
+  description: "コードを選択して使えるスケールとボイシングを確認できます。",
+};
+
+export default function ChordScalePage() {
+  return (
+    <main className="container mx-auto grid gap-[var(--grid-gap)] overflow-x-hidden px-4 pt-24 pb-12 max-lg:gap-[var(--grid-gap-sm)]">
+      <Card>
+        <ChordScaleLookup />
+      </Card>
+    </main>
+  );
+}
