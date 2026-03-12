@@ -4,6 +4,7 @@ import {
   Header,
   HeaderGitHubLink,
   HeaderLogo,
+  HeaderMobileMenu,
   HeaderNav,
   HeaderNavItem,
   HeaderNavList,
@@ -59,13 +60,20 @@ export default function RootLayout({
         <Providers>
           <Header>
             <HeaderLogo />
-            <HeaderNav>
+            <HeaderNav className="max-md:hidden">
               <HeaderNavList>
                 <HeaderNavItem href="/">コード進行</HeaderNavItem>
                 <HeaderNavItem href="/chord-scale">コード・スケール検索</HeaderNavItem>
               </HeaderNavList>
               <HeaderGitHubLink url="https://github.com" />
             </HeaderNav>
+            <HeaderMobileMenu
+              items={[
+                { href: "/", label: "コード進行" },
+                { href: "/chord-scale", label: "コード・スケール検索" },
+              ]}
+              gitHubUrl="https://github.com"
+            />
           </Header>
           {children}
         </Providers>
