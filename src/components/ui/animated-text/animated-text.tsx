@@ -10,9 +10,9 @@ type AnimatedTextProps = {
   duration?: number;
 };
 
-let nextId = 0;
-function genId() {
-  return `ac-${nextId++}`;
+function createIdGenerator() {
+  let id = 0;
+  return () => `ac-${id++}`;
 }
 
 /** exit 文字を旧位置に absolute 配置してフェードアウトする */
@@ -58,17 +58,14 @@ export function AnimatedText({
 }: AnimatedTextProps) {
   const containerRef = useRef<HTMLElement>(null);
   const charRefs = useRef(new Map<string, HTMLSpanElement>());
-  const savedPositions = useRef(new Map<string, { left: number }>());
+  const savedPositions = useRef(new Map<string, number>());
   const prevTextRef = useRef(text);
   const cleanupTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const genId = useRef(createIdGenerator()).current;
 
   const [displayChars, setDisplayChars] = useState<DisplayChar[]>(() =>
     text.split("").map((char) => ({ id: genId(), char, state: "stable" as const }))
   );
-
-  // レンダーごとの派生値
-  const flowChars = displayChars.filter((c) => c.state !== "exiting");
-  const exitChars = displayChars.filter((c) => c.state === "exiting");
 
   // 安定レンダー後に各文字の位置を保存
   useLayoutEffect(() => {
@@ -80,9 +77,7 @@ export function AnimatedText({
     for (const dc of displayChars) {
       const el = charRefs.current.get(dc.id);
       if (el) {
-        savedPositions.current.set(dc.id, {
-          left: el.getBoundingClientRect().left - cLeft,
-        });
+        savedPositions.current.set(dc.id, el.getBoundingClientRect().left - cLeft);
       }
     }
   });
@@ -100,7 +95,7 @@ export function AnimatedText({
       const diff = computeCharDiff(oldText, text);
       return mergeDisplayChars(stableOld, diff, genId);
     });
-  }, [text]);
+  }, [text, genId]);
 
   // アニメーション適用（FLIP + フェード）
   useLayoutEffect(() => {
@@ -110,38 +105,51 @@ export function AnimatedText({
     const container = containerRef.current;
     if (!container) return;
     const cLeft = container.getBoundingClientRect().left;
+    const transT = `transform ${duration}ms var(--ease-default)`;
+    const fadeT = `opacity ${duration}ms ease`;
 
-    const flow = displayChars.filter((c) => c.state !== "exiting");
-    for (const dc of flow) {
+    // Phase 1: 初期状態を一括設定（reflow なし）
+    for (const dc of displayChars) {
+      if (dc.state === "exiting") continue;
       const el = charRefs.current.get(dc.id);
       if (!el) continue;
 
       if (dc.state === "stable") {
-        // stay 文字: FLIP で旧位置→新位置にスライド
-        const oldPos = savedPositions.current.get(dc.id);
-        if (oldPos) {
-          const newLeft = el.getBoundingClientRect().left - cLeft;
-          const dx = oldPos.left - newLeft;
+        const oldLeft = savedPositions.current.get(dc.id);
+        if (oldLeft !== undefined) {
+          const dx = oldLeft - (el.getBoundingClientRect().left - cLeft);
           if (Math.abs(dx) > 0.5) {
             el.style.transition = "none";
             el.style.transform = `translateX(${dx}px)`;
-            el.offsetHeight;
-            el.style.transition = `transform ${duration}ms var(--ease-default)`;
-            el.style.transform = "";
           }
         }
-      } else if (dc.state === "entering") {
-        // enter 文字: その場でフェードイン
+      } else {
         el.style.transition = "none";
         el.style.opacity = "0";
-        el.offsetHeight;
-        el.style.transition = `opacity ${duration}ms ease`;
+      }
+    }
+
+    // Phase 2: reflow 1 回で全要素の初期状態を確定
+    container.offsetHeight;
+
+    // Phase 3: トランジション開始（一括設定）
+    for (const dc of displayChars) {
+      if (dc.state === "exiting") continue;
+      const el = charRefs.current.get(dc.id);
+      if (!el) continue;
+
+      if (dc.state === "stable") {
+        if (el.style.transform) {
+          el.style.transition = transT;
+          el.style.transform = "";
+        }
+      } else {
+        el.style.transition = fadeT;
         el.style.opacity = "1";
       }
     }
 
-    // exit 文字のフェードアウトは ExitOverlay コンポーネントが処理
-
+    // アニメーション完了後にクリーンアップ
     cleanupTimer.current = setTimeout(() => {
       setDisplayChars((prev) => {
         const cleaned = prev.filter((c) => c.state !== "exiting");
@@ -158,6 +166,14 @@ export function AnimatedText({
       if (cleanupTimer.current) clearTimeout(cleanupTimer.current);
     };
   }, [displayChars, duration]);
+
+  // 派生値: flow (stable + entering) / exit を分離
+  const flowChars: DisplayChar[] = [];
+  const exitChars: DisplayChar[] = [];
+  for (const dc of displayChars) {
+    if (dc.state === "exiting") exitChars.push(dc);
+    else flowChars.push(dc);
+  }
 
   return (
     <Tag
@@ -181,7 +197,7 @@ export function AnimatedText({
         <ExitOverlay
           key={dc.id}
           char={dc.char}
-          left={savedPositions.current.get(dc.id)?.left ?? 0}
+          left={savedPositions.current.get(dc.id) ?? 0}
           duration={duration}
         />
       ))}
