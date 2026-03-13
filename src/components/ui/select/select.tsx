@@ -83,7 +83,10 @@ export function SelectContent({ className, children, ...props }: SelectContentPr
         <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center py-1">
           <ChevronDownIcon className="h-4 w-4 rotate-180 opacity-50" />
         </SelectPrimitive.ScrollUpButton>
-        <SelectPrimitive.Viewport className="max-h-[--radix-select-content-available-height] p-1">
+        <SelectPrimitive.Viewport
+          className="p-1"
+          style={{ maxHeight: "var(--radix-select-content-available-height)" }}
+        >
           {children}
         </SelectPrimitive.Viewport>
         <SelectPrimitive.ScrollDownButton className="flex cursor-default items-center justify-center py-1">
