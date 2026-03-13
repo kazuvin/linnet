@@ -121,10 +121,10 @@ describe("fretboard", () => {
       }
     });
 
-    it("デフォルトのmaxFretは12", () => {
+    it("デフォルトのmaxFretは24", () => {
       const positions = findNotePositions("E");
       for (const pos of positions) {
-        expect(pos.fret).toBeLessThanOrEqual(12);
+        expect(pos.fret).toBeLessThanOrEqual(24);
       }
     });
 
@@ -195,8 +195,8 @@ describe("fretboard", () => {
 
     it("ポジション数はスケール構成音の数に6弦を掛けた数以下", () => {
       const positions = findScalePositions("C", "major");
-      // 7音 x 6弦 = 42 以下（12フレットまで、各弦で各音は最大2回出現）
-      expect(positions.length).toBeLessThanOrEqual(7 * 6 * 2);
+      // 7音 x 6弦 x 最大出現回数（24フレットでは各弦で各音は最大4回出現しうる）
+      expect(positions.length).toBeLessThanOrEqual(7 * 6 * 4);
       expect(positions.length).toBeGreaterThan(0);
     });
   });

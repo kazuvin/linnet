@@ -59,7 +59,7 @@ describe("findChordPositions（ボイシング算出）", () => {
     it("各ボイシングに rootString プロパティがある", () => {
       const voicings = findChordPositions("C", "major");
       for (const v of voicings) {
-        expect([6, 5, 4]).toContain(v.rootString);
+        expect([6, 5, 4, 3]).toContain(v.rootString);
       }
     });
 
@@ -145,7 +145,7 @@ describe("findChordPositions（ボイシング算出）", () => {
   });
 
   describe("演奏可能性", () => {
-    it("フレットスパンが4フレット以内（開放弦除く）", () => {
+    it("フレットスパンが5フレット以内（開放弦除く）", () => {
       const chords = [
         ["C", "major"],
         ["G", "major"],
@@ -161,7 +161,7 @@ describe("findChordPositions（ボイシング算出）", () => {
           const fretted = v.frets.filter((f): f is number => f !== null && f > 0);
           if (fretted.length > 0) {
             const span = Math.max(...fretted) - Math.min(...fretted);
-            expect(span).toBeLessThanOrEqual(3);
+            expect(span).toBeLessThanOrEqual(4);
           }
         }
       }
@@ -275,7 +275,7 @@ describe("findChordPositions（ボイシング算出）", () => {
 
     it("maxFret が小さいと返されるボイシング数が少なくなる", () => {
       const voicingsSmall = findChordPositions("C", "major", 5);
-      const voicingsFull = findChordPositions("C", "major", 12);
+      const voicingsFull = findChordPositions("C", "major");
       expect(voicingsFull.length).toBeGreaterThanOrEqual(voicingsSmall.length);
     });
   });
@@ -350,6 +350,172 @@ describe("findChordPositions（ボイシング算出）", () => {
     it("トライアドでも十分な数のボイシングが返る", () => {
       const voicings = findChordPositions("C", "major");
       expect(voicings.length).toBeGreaterThanOrEqual(5);
+    });
+  });
+
+  describe("5フレットスパン（フレット幅5）のボイシング", () => {
+    it("フレットスパン4（5フレット幅）のボイシングが含まれる", () => {
+      // 12フレットまで探索すれば、スパン4のボイシングが見つかるはず
+      const voicings = findChordPositions("C", "major");
+      const span4Voicings = voicings.filter((v) => {
+        const fretted = v.frets.filter((f): f is number => f !== null && f > 0);
+        if (fretted.length === 0) return false;
+        const span = Math.max(...fretted) - Math.min(...fretted);
+        return span === 4;
+      });
+      expect(span4Voicings.length).toBeGreaterThan(0);
+    });
+
+    it("フレットスパン5以上のボイシングは含まれない", () => {
+      const voicings = findChordPositions("C", "major");
+      for (const v of voicings) {
+        const fretted = v.frets.filter((f): f is number => f !== null && f > 0);
+        if (fretted.length > 0) {
+          const span = Math.max(...fretted) - Math.min(...fretted);
+          expect(span).toBeLessThanOrEqual(4);
+        }
+      }
+    });
+
+    it("5フレットスパンでも指の本数が4本以内", () => {
+      const voicings = findChordPositions("C", "major");
+      const span4Voicings = voicings.filter((v) => {
+        const fretted = v.frets.filter((f): f is number => f !== null && f > 0);
+        if (fretted.length === 0) return false;
+        return Math.max(...fretted) - Math.min(...fretted) === 4;
+      });
+      // 5フレットスパンのボイシングが存在するなら、全て指4本以内のはず
+      for (const v of span4Voicings) {
+        const fretted = v.frets.filter((f): f is number => f !== null && f > 0);
+        // バレー考慮: 最小フレットに2本以上あれば1本カウント
+        const minFret = Math.min(...fretted);
+        const atMin = fretted.filter((f) => f === minFret);
+        const fingerCount =
+          atMin.length >= 2 ? 1 + fretted.filter((f) => f !== minFret).length : fretted.length;
+        expect(fingerCount).toBeLessThanOrEqual(4);
+      }
+    });
+  });
+
+  describe("コードトーン重複制限", () => {
+    it("非ルート音が3回以上含まれるボイシングは除外される", () => {
+      const voicings = findChordPositions("C", "major");
+      for (const v of voicings) {
+        const pcCount = new Map<number, number>();
+        for (let i = 0; i < v.frets.length; i++) {
+          const fret = v.frets[i];
+          if (fret !== null) {
+            const stringNum = 6 - i;
+            const pc = getNoteAtPosition(stringNum, fret).pitchClass;
+            pcCount.set(pc, (pcCount.get(pc) ?? 0) + 1);
+          }
+        }
+        const rootPC = v.chord.root.pitchClass;
+        for (const [pc, count] of pcCount) {
+          if (pc === rootPC) {
+            expect(count).toBeLessThanOrEqual(3);
+          } else {
+            expect(count).toBeLessThanOrEqual(2);
+          }
+        }
+      }
+    });
+
+    it("同一ピッチクラスが2回含まれるボイシングは許容される", () => {
+      // E major: 022100 → E×2(6弦0f, 1弦0f), B×1(5弦2f), E×skip, G#×1(3弦1f)
+      const voicings = findChordPositions("E", "major");
+      const hasDuplicate = voicings.some((v) => {
+        const pcCount = new Map<number, number>();
+        for (let i = 0; i < v.frets.length; i++) {
+          const fret = v.frets[i];
+          if (fret !== null) {
+            const stringNum = 6 - i;
+            const pc = getNoteAtPosition(stringNum, fret).pitchClass;
+            pcCount.set(pc, (pcCount.get(pc) ?? 0) + 1);
+          }
+        }
+        return [...pcCount.values()].some((c) => c === 2);
+      });
+      expect(hasDuplicate).toBe(true);
+    });
+
+    it("重複制限でも全コードタイプでボイシングが返る", () => {
+      const chords = [
+        ["C", "major"],
+        ["A", "minor"],
+        ["G", "dominant7"],
+        ["D", "major7"],
+        ["E", "minor7"],
+      ] as const;
+      for (const [root, quality] of chords) {
+        const voicings = findChordPositions(root, quality);
+        expect(voicings.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe("3弦ルートのボイシング", () => {
+    it("3弦ルートのボイシングが含まれる", () => {
+      const voicings = findChordPositions("G", "major");
+      const has3rdRoot = voicings.some((v) => v.rootString === 3);
+      expect(has3rdRoot).toBe(true);
+    });
+
+    it("3弦ルートでもルート弦にルート音がある", () => {
+      const voicings = findChordPositions("G", "major");
+      const thirdStringVoicings = voicings.filter((v) => v.rootString === 3);
+      for (const v of thirdStringVoicings) {
+        const idx = 6 - v.rootString; // 3弦 → index 3
+        const fret = v.frets[idx];
+        expect(fret).not.toBeNull();
+        if (fret === null) continue;
+        const note = getNoteAtPosition(v.rootString, fret);
+        expect(note.pitchClass).toBe(v.chord.root.pitchClass);
+      }
+    });
+
+    it("3弦ルートではベース弦（4-6弦）がミュートされている", () => {
+      const voicings = findChordPositions("G", "major");
+      const thirdStringVoicings = voicings.filter((v) => v.rootString === 3);
+      for (const v of thirdStringVoicings) {
+        // 6弦(idx 0), 5弦(idx 1), 4弦(idx 2) はミュート
+        expect(v.frets[0]).toBeNull();
+        expect(v.frets[1]).toBeNull();
+        expect(v.frets[2]).toBeNull();
+      }
+    });
+
+    it("3弦ルートでも全コードトーンが含まれる", () => {
+      const voicings = findChordPositions("G", "major");
+      const thirdStringVoicings = voicings.filter((v) => v.rootString === 3);
+      for (const v of thirdStringVoicings) {
+        const pcs = getPitchClasses(v);
+        expect(pcs.has(7)).toBe(true); // G
+        expect(pcs.has(11)).toBe(true); // B
+        expect(pcs.has(2)).toBe(true); // D
+      }
+    });
+
+    it("3弦ルートで内側ミュート弦がない", () => {
+      const voicings = findChordPositions("G", "major");
+      const thirdStringVoicings = voicings.filter((v) => v.rootString === 3);
+      for (const v of thirdStringVoicings) {
+        // 3弦〜1弦の間にミュートがないこと
+        const playedPart = v.frets.slice(3); // index 3,4,5 = 3弦,2弦,1弦
+        let firstPlayed = -1;
+        let lastPlayed = -1;
+        for (let i = 0; i < playedPart.length; i++) {
+          if (playedPart[i] !== null) {
+            if (firstPlayed === -1) firstPlayed = i;
+            lastPlayed = i;
+          }
+        }
+        if (firstPlayed >= 0) {
+          for (let i = firstPlayed; i <= lastPlayed; i++) {
+            expect(playedPart[i]).not.toBeNull();
+          }
+        }
+      }
     });
   });
 

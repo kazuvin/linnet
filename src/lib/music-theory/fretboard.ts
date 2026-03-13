@@ -57,7 +57,7 @@ function findPositionsByPitchClasses(
  */
 export function findNotePositions(
   noteName: string,
-  maxFret = 12,
+  maxFret = 24,
   tuning: readonly string[] = STANDARD_TUNING
 ): readonly FretPosition[] {
   const targetNote = createNote(noteName);
@@ -70,7 +70,7 @@ export function findNotePositions(
 export function findScalePositions(
   rootName: string,
   scaleType: ScaleType,
-  maxFret = 12,
+  maxFret = 24,
   tuning: readonly string[] = STANDARD_TUNING
 ): readonly FretPosition[] {
   const scale = createScale(rootName, scaleType);
@@ -95,7 +95,7 @@ export function findOverlayPositions(
   scaleType: ScaleType,
   chordRootName: string,
   chordQuality: ChordQuality,
-  maxFret = 12,
+  maxFret = 24,
   tuning: readonly string[] = STANDARD_TUNING
 ): readonly OverlayPosition[] {
   const chord = createChord(chordRootName, chordQuality);

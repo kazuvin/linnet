@@ -16,7 +16,7 @@ import {
 import { TabNav, TabNavItem } from "@/components/ui/tab-nav";
 import { ChordDiagram, FretboardGrid, FretboardLegend } from "@/features/fretboard/components";
 import type { InstrumentTab } from "@/features/fretboard/stores/fretboard-store";
-import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
+import { MAX_FRET, useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { RootNoteSelector } from "@/features/key-selection/components/root-note-selector";
 import { PianoKeyboard } from "@/features/keyboard/components";
 import { playScale, stopScale } from "@/lib/audio/scale-player";
@@ -82,21 +82,13 @@ const QUALITY_GROUPS: readonly QualityGroup[] = [
 
 const ALL_QUALITY_OPTIONS = QUALITY_GROUPS.flatMap((g) => g.options);
 
-const MAX_FRET_OPTIONS = [12, 15, 19, 22, 24] as const;
-
-type RootStringFilter = "all" | "6" | "5" | "4";
+type RootStringFilter = "all" | "6" | "5" | "4" | "3";
 
 function useChordScaleData() {
   const { rootName, quality, selectedScaleType, setRootName, setQuality, setSelectedScaleType } =
     useChordScaleLookupStore();
-  const {
-    maxFret,
-    showCharacteristicNotes,
-    showAvoidNotes,
-    activeInstrument,
-    setActiveInstrument,
-  } = useFretboardStore();
-  const setMaxFret = useFretboardStore((s) => s.setMaxFret);
+  const { showCharacteristicNotes, showAvoidNotes, activeInstrument, setActiveInstrument } =
+    useFretboardStore();
 
   const chordSymbol = formatChordSymbol(rootName, quality);
 
@@ -113,13 +105,10 @@ function useChordScaleData() {
 
   const positions = useMemo(() => {
     if (!activeScaleType) return [];
-    return findOverlayPositions(rootName, activeScaleType, rootName, quality, maxFret);
-  }, [rootName, quality, activeScaleType, maxFret]);
+    return findOverlayPositions(rootName, activeScaleType, rootName, quality);
+  }, [rootName, quality, activeScaleType]);
 
-  const voicings = useMemo(
-    () => findChordPositions(rootName, quality, maxFret),
-    [rootName, quality, maxFret]
-  );
+  const voicings = useMemo(() => findChordPositions(rootName, quality), [rootName, quality]);
 
   return {
     rootName,
@@ -128,8 +117,6 @@ function useChordScaleData() {
     setRootName,
     setQuality,
     setSelectedScaleType,
-    maxFret,
-    setMaxFret,
     showCharacteristicNotes,
     showAvoidNotes,
     activeInstrument,
@@ -186,8 +173,6 @@ export function ScaleCard() {
     availableScales,
     activeScaleType,
     positions,
-    maxFret,
-    setMaxFret,
     showCharacteristicNotes,
     showAvoidNotes,
     activeInstrument,
@@ -228,20 +213,6 @@ export function ScaleCard() {
           <TabNavItem value="fretboard">フレットボード</TabNavItem>
           <TabNavItem value="keyboard">鍵盤</TabNavItem>
         </TabNav>
-        {activeInstrument === "fretboard" && (
-          <Select value={String(maxFret)} onValueChange={(v) => setMaxFret(Number(v))}>
-            <SelectTrigger>
-              <SelectValue>{maxFret} フレット</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {MAX_FRET_OPTIONS.map((fret) => (
-                <SelectItem key={fret} value={String(fret)}>
-                  {fret} フレット
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
         {/* スケール選択 */}
         <div className="flex items-center gap-2">
           <span className="shrink-0 text-muted text-sm">
@@ -286,7 +257,7 @@ export function ScaleCard() {
       {activeInstrument === "fretboard" ? (
         <FretboardGrid
           positions={positions}
-          maxFret={maxFret}
+          maxFret={MAX_FRET}
           showCharacteristicNotes={showCharacteristicNotes}
           showAvoidNotes={showAvoidNotes}
         />
@@ -338,6 +309,7 @@ export function VoicingCard() {
         <TabNavItem value="6">6弦R</TabNavItem>
         <TabNavItem value="5">5弦R</TabNavItem>
         <TabNavItem value="4">4弦R</TabNavItem>
+        <TabNavItem value="3">3弦R</TabNavItem>
       </TabNav>
       {filteredVoicings.length > 0 ? (
         <div
