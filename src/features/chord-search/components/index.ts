@@ -1,1 +1,1 @@
-export { ChordSearchPanel } from "./chord-search-panel";
+export { ChordSearchFretboard, ChordSearchResultsPanel } from "./chord-search-panel";
