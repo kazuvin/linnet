@@ -6,6 +6,7 @@ import { MAX_FRET } from "@/features/fretboard/stores/fretboard-store";
 import { getNoteAtPosition, type PitchClass } from "@/lib/music-theory";
 import { useChordSearchStore } from "../stores/chord-search-store";
 import { ChordSearchResults } from "./chord-search-results";
+import { ChordSearchVoicings } from "./chord-search-voicings";
 
 export function ChordSearchFretboard() {
   const { selectedPositions, togglePosition, clearAll } = useChordSearchStore();
@@ -41,7 +42,7 @@ export function ChordSearchFretboard() {
 }
 
 export function ChordSearchResultsPanel() {
-  const { selectedPositions } = useChordSearchStore();
+  const { selectedPositions, selectedChord, selectChord } = useChordSearchStore();
 
   const selectedPitchClasses = useMemo(() => {
     const seen = new Set<number>();
@@ -56,5 +57,19 @@ export function ChordSearchResultsPanel() {
     return result;
   }, [selectedPositions]);
 
-  return <ChordSearchResults selectedPitchClasses={selectedPitchClasses} />;
+  return (
+    <ChordSearchResults
+      selectedPitchClasses={selectedPitchClasses}
+      selectedChord={selectedChord}
+      onSelectChord={selectChord}
+    />
+  );
+}
+
+export function ChordSearchVoicingsPanel() {
+  const { selectedChord } = useChordSearchStore();
+
+  if (!selectedChord) return null;
+
+  return <ChordSearchVoicings rootName={selectedChord.rootName} quality={selectedChord.quality} />;
 }

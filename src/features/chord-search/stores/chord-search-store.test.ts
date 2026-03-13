@@ -37,4 +37,35 @@ describe("useChordSearchStore", () => {
     useChordSearchStore.getState().clearAll();
     expect(useChordSearchStore.getState().selectedPositions).toEqual([]);
   });
+
+  it("初期状態: 選択コードは null", () => {
+    expect(useChordSearchStore.getState().selectedChord).toBeNull();
+  });
+
+  it("selectChord でコードを選択できる", () => {
+    useChordSearchStore.getState().selectChord("C", "major");
+    const state = useChordSearchStore.getState();
+    expect(state.selectedChord).toEqual({ rootName: "C", quality: "major" });
+  });
+
+  it("selectChord で同じコードを再選択すると解除される", () => {
+    useChordSearchStore.getState().selectChord("C", "major");
+    useChordSearchStore.getState().selectChord("C", "major");
+    expect(useChordSearchStore.getState().selectedChord).toBeNull();
+  });
+
+  it("selectChord で別のコードを選択すると切り替わる", () => {
+    useChordSearchStore.getState().selectChord("C", "major");
+    useChordSearchStore.getState().selectChord("D", "minor7");
+    expect(useChordSearchStore.getState().selectedChord).toEqual({
+      rootName: "D",
+      quality: "minor7",
+    });
+  });
+
+  it("clearAll で選択コードもクリアされる", () => {
+    useChordSearchStore.getState().selectChord("C", "major");
+    useChordSearchStore.getState().clearAll();
+    expect(useChordSearchStore.getState().selectedChord).toBeNull();
+  });
 });

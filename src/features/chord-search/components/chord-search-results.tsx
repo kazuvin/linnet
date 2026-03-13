@@ -2,13 +2,17 @@
 
 import { useMemo } from "react";
 import {
+  type ChordQuality,
   type ChordSearchResult,
   findChordsContainingNotes,
   type PitchClass,
 } from "@/lib/music-theory";
+import { cn } from "@/lib/utils";
 
 type ChordSearchResultsProps = {
   selectedPitchClasses: readonly PitchClass[];
+  selectedChord: { rootName: string; quality: ChordQuality } | null;
+  onSelectChord: (rootName: string, quality: ChordQuality) => void;
 };
 
 type GroupedResults = {
@@ -53,7 +57,11 @@ function groupResults(results: ChordSearchResult[]): GroupedResults[] {
   return groups;
 }
 
-export function ChordSearchResults({ selectedPitchClasses }: ChordSearchResultsProps) {
+export function ChordSearchResults({
+  selectedPitchClasses,
+  selectedChord,
+  onSelectChord,
+}: ChordSearchResultsProps) {
   const results = useMemo(
     () => findChordsContainingNotes(selectedPitchClasses),
     [selectedPitchClasses]
@@ -79,14 +87,26 @@ export function ChordSearchResults({ selectedPitchClasses }: ChordSearchResultsP
         <div key={group.label} className="flex flex-col gap-2">
           <h3 className="text-muted text-xs">{group.label}</h3>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-            {group.results.map((result) => (
-              <div
-                key={`${result.rootName}-${result.quality}`}
-                className="flex h-10 items-center justify-center rounded-lg border border-foreground/10 bg-background font-medium text-sm transition-colors hover:border-foreground/20"
-              >
-                {result.symbol}
-              </div>
-            ))}
+            {group.results.map((result) => {
+              const isActive =
+                selectedChord?.rootName === result.rootName &&
+                selectedChord?.quality === result.quality;
+              return (
+                <button
+                  type="button"
+                  key={`${result.rootName}-${result.quality}`}
+                  className={cn(
+                    "flex h-10 items-center justify-center rounded-lg border font-medium text-sm transition-colors",
+                    isActive
+                      ? "border-chord-root bg-chord-root/10 text-foreground"
+                      : "border-foreground/10 bg-background text-foreground/80 hover:border-foreground/20"
+                  )}
+                  onClick={() => onSelectChord(result.rootName, result.quality)}
+                >
+                  {result.symbol}
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}

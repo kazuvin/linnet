@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Card, PageTransition } from "@/components";
-import { ChordSearchFretboard, ChordSearchResultsPanel } from "@/features/chord-search/components";
+import {
+  ChordSearchFretboard,
+  ChordSearchResultsPanel,
+  ChordSearchVoicingsPanel,
+} from "@/features/chord-search/components";
 
 export const metadata: Metadata = {
   title: "コード検索",
@@ -17,6 +21,9 @@ export default function ChordSearchPage() {
         </Card>
         <Card className="min-w-0 overflow-hidden">
           <ChordSearchResultsPanel />
+        </Card>
+        <Card className="min-w-0 overflow-hidden">
+          <ChordSearchVoicingsPanel />
         </Card>
       </main>
     </PageTransition>

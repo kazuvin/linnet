@@ -1,21 +1,30 @@
 import { create } from "zustand";
+import type { ChordQuality } from "@/lib/music-theory";
 
 export type FretPosition = {
   readonly string: number;
   readonly fret: number;
 };
 
+export type SelectedChord = {
+  readonly rootName: string;
+  readonly quality: ChordQuality;
+};
+
 export type ChordSearchState = {
   selectedPositions: FretPosition[];
+  selectedChord: SelectedChord | null;
 };
 
 type ChordSearchActions = {
   togglePosition: (string: number, fret: number) => void;
+  selectChord: (rootName: string, quality: ChordQuality) => void;
   clearAll: () => void;
 };
 
 const INITIAL_STATE: ChordSearchState = {
   selectedPositions: [],
+  selectedChord: null,
 };
 
 export const useChordSearchStore = create<ChordSearchState & ChordSearchActions>()((set) => ({
@@ -29,7 +38,13 @@ export const useChordSearchStore = create<ChordSearchState & ChordSearchActions>
           : [...state.selectedPositions, { string, fret }],
       };
     }),
-  clearAll: () => set({ selectedPositions: [] }),
+  selectChord: (rootName, quality) =>
+    set((state) => {
+      const isSame =
+        state.selectedChord?.rootName === rootName && state.selectedChord?.quality === quality;
+      return { selectedChord: isSame ? null : { rootName, quality } };
+    }),
+  clearAll: () => set({ selectedPositions: [], selectedChord: null }),
 }));
 
 export function _resetChordSearchStoreForTesting(): void {
