@@ -397,6 +397,63 @@ describe("findChordPositions（ボイシング算出）", () => {
     });
   });
 
+  describe("コードトーン重複制限", () => {
+    it("非ルート音が3回以上含まれるボイシングは除外される", () => {
+      const voicings = findChordPositions("C", "major");
+      for (const v of voicings) {
+        const pcCount = new Map<number, number>();
+        for (let i = 0; i < v.frets.length; i++) {
+          const fret = v.frets[i];
+          if (fret !== null) {
+            const stringNum = 6 - i;
+            const pc = getNoteAtPosition(stringNum, fret).pitchClass;
+            pcCount.set(pc, (pcCount.get(pc) ?? 0) + 1);
+          }
+        }
+        const rootPC = v.chord.root.pitchClass;
+        for (const [pc, count] of pcCount) {
+          if (pc === rootPC) {
+            expect(count).toBeLessThanOrEqual(3);
+          } else {
+            expect(count).toBeLessThanOrEqual(2);
+          }
+        }
+      }
+    });
+
+    it("同一ピッチクラスが2回含まれるボイシングは許容される", () => {
+      // E major: 022100 → E×2(6弦0f, 1弦0f), B×1(5弦2f), E×skip, G#×1(3弦1f)
+      const voicings = findChordPositions("E", "major");
+      const hasDuplicate = voicings.some((v) => {
+        const pcCount = new Map<number, number>();
+        for (let i = 0; i < v.frets.length; i++) {
+          const fret = v.frets[i];
+          if (fret !== null) {
+            const stringNum = 6 - i;
+            const pc = getNoteAtPosition(stringNum, fret).pitchClass;
+            pcCount.set(pc, (pcCount.get(pc) ?? 0) + 1);
+          }
+        }
+        return [...pcCount.values()].some((c) => c === 2);
+      });
+      expect(hasDuplicate).toBe(true);
+    });
+
+    it("重複制限でも全コードタイプでボイシングが返る", () => {
+      const chords = [
+        ["C", "major"],
+        ["A", "minor"],
+        ["G", "dominant7"],
+        ["D", "major7"],
+        ["E", "minor7"],
+      ] as const;
+      for (const [root, quality] of chords) {
+        const voicings = findChordPositions(root, quality);
+        expect(voicings.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
   describe("3弦ルートのボイシング", () => {
     it("3弦ルートのボイシングが含まれる", () => {
       const voicings = findChordPositions("G", "major");

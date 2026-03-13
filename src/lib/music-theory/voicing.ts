@@ -162,17 +162,26 @@ function buildAllVoicings(
       // 内側ミュート弦チェック
       if (hasInnerMutedStrings(current)) return;
 
-      // 全コードトーンが含まれるかチェック
+      // 全コードトーンが含まれるか＆同一音3回以上の重複チェック
       const presentPCs = new Set<number>();
+      const pcCount = new Map<number, number>();
       for (let i = 0; i < current.length; i++) {
         const fret = current[i];
         if (fret !== null) {
-          const note = getNoteAtPosition(stringNumbers[i], fret, tuning);
-          presentPCs.add(note.pitchClass);
+          const pc = getNoteAtPosition(stringNumbers[i], fret, tuning).pitchClass;
+          presentPCs.add(pc);
+          pcCount.set(pc, (pcCount.get(pc) ?? 0) + 1);
         }
       }
       const hasAllTones = chord.notes.every((n) => presentPCs.has(n.pitchClass));
       if (!hasAllTones) return;
+
+      // 同一ピッチクラスが3回以上出現するボイシングを除外（ルート音は3回まで許容）
+      const rootPC = chord.root.pitchClass;
+      for (const [pc, count] of pcCount) {
+        const limit = pc === rootPC ? 3 : 2;
+        if (count > limit) return;
+      }
 
       // frets配列を6要素に変換
       const fullFrets: (number | null)[] = Array(6).fill(null);
