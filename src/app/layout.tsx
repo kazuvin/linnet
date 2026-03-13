@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Serif } from "next/font/google";
 import {
+  GITHUB_URL,
   Header,
   HeaderGitHubLink,
   HeaderLogo,
@@ -8,6 +9,7 @@ import {
   HeaderNav,
   HeaderNavItem,
   HeaderNavList,
+  NAV_ITEMS,
 } from "@/components";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -62,18 +64,15 @@ export default function RootLayout({
             <HeaderLogo />
             <HeaderNav className="max-md:hidden">
               <HeaderNavList>
-                <HeaderNavItem href="/">コード進行</HeaderNavItem>
-                <HeaderNavItem href="/chord-scale">コード・スケール検索</HeaderNavItem>
+                {NAV_ITEMS.map((item) => (
+                  <HeaderNavItem key={item.href} href={item.href}>
+                    {item.label}
+                  </HeaderNavItem>
+                ))}
               </HeaderNavList>
-              <HeaderGitHubLink url="https://github.com" />
+              <HeaderGitHubLink url={GITHUB_URL} />
             </HeaderNav>
-            <HeaderMobileMenu
-              items={[
-                { href: "/", label: "コード進行" },
-                { href: "/chord-scale", label: "コード・スケール検索" },
-              ]}
-              gitHubUrl="https://github.com"
-            />
+            <HeaderMobileMenu items={[...NAV_ITEMS]} gitHubUrl={GITHUB_URL} />
           </Header>
           {children}
         </Providers>

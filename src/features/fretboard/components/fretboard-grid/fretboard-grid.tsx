@@ -1,5 +1,10 @@
-import { Fragment, useMemo } from "react";
-import { type NoteRole, type OverlayPosition, STANDARD_TUNING } from "@/lib/music-theory";
+import { Fragment, useCallback, useMemo } from "react";
+import {
+  getNoteAtPosition,
+  type NoteRole,
+  type OverlayPosition,
+  STANDARD_TUNING,
+} from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
 
 const SINGLE_DOT_FRETS = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
@@ -11,19 +16,97 @@ const NOTE_DOT_STYLES: Record<NoteRole, string> = {
   scale: "bg-scale-tone text-scale-tone-fg",
 };
 
+type SearchPosition = {
+  readonly string: number;
+  readonly fret: number;
+};
+
 type FretboardGridProps = {
   positions: readonly OverlayPosition[];
   maxFret: number;
   showCharacteristicNotes: boolean;
   showAvoidNotes: boolean;
+  /** コード検索モード: クリックでポジションをトグル */
+  searchMode?: {
+    selectedPositions: readonly SearchPosition[];
+    onTogglePosition: (string: number, fret: number) => void;
+  };
 };
+
+function SearchCell({
+  stringNum,
+  fret,
+  role,
+  noteName,
+  onClick,
+}: {
+  stringNum: number;
+  fret: number;
+  role: "root" | "chord-tone" | null;
+  noteName: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        "relative flex h-9 cursor-pointer items-center justify-center",
+        fret === 0 ? "border-r-[3px] border-r-foreground/50" : "border-r border-r-foreground/10"
+      )}
+      onClick={onClick}
+    >
+      {/* String line */}
+      <div
+        className={cn(
+          "absolute inset-x-0 top-1/2 -translate-y-1/2 bg-foreground/20",
+          stringNum <= 2 ? "h-px" : stringNum <= 4 ? "h-[1.5px]" : "h-[2px]"
+        )}
+      />
+      {role !== null && (
+        <div
+          className={cn(
+            "relative z-10 flex size-5 animate-note-pop items-center justify-center rounded-full font-bold text-[10px]",
+            role === "root"
+              ? "bg-chord-root text-chord-root-fg"
+              : "bg-chord-tone text-chord-tone-fg"
+          )}
+        >
+          {noteName}
+        </div>
+      )}
+    </button>
+  );
+}
 
 export function FretboardGrid({
   positions,
   maxFret,
   showCharacteristicNotes,
   showAvoidNotes,
+  searchMode,
 }: FretboardGridProps) {
+  const isSearchMode = searchMode !== undefined;
+
+  // 検索モード: 選択済みポジションのSet + ルートのピッチクラスを算出
+  const { selectedPosSet, rootPitchClass } = useMemo(() => {
+    if (!searchMode || searchMode.selectedPositions.length === 0) {
+      return { selectedPosSet: new Set<string>(), rootPitchClass: null as number | null };
+    }
+    const set = new Set<string>();
+    for (const p of searchMode.selectedPositions) {
+      set.add(`${p.string}-${p.fret}`);
+    }
+    // 最低音（string番号が最大 = 6弦に最も近い）をルートとする
+    const lowest = searchMode.selectedPositions.reduce((a, b) => {
+      if (a.string > b.string) return a;
+      if (a.string < b.string) return b;
+      // 同じ弦ならフレットが低い方（より低い音）
+      return a.fret <= b.fret ? a : b;
+    });
+    const rootNote = getNoteAtPosition(lowest.string, lowest.fret);
+    return { selectedPosSet: set, rootPitchClass: rootNote.pitchClass };
+  }, [searchMode]);
+
   const positionMap = useMemo(() => {
     const map = new Map<string, OverlayPosition>();
     for (const pos of positions) {
@@ -35,6 +118,14 @@ export function FretboardGrid({
   const positionsKey = useMemo(
     () => positions.map((p) => `${p.string}-${p.fret}-${p.role}`).join("|"),
     [positions]
+  );
+
+  const handleCellClick = useCallback(
+    (stringNum: number, fret: number) => {
+      if (!searchMode) return;
+      searchMode.onTogglePosition(stringNum, fret);
+    },
+    [searchMode]
   );
 
   const frets = Array.from({ length: maxFret + 1 }, (_, i) => i);
@@ -66,8 +157,26 @@ export function FretboardGrid({
               {STANDARD_TUNING[6 - stringNum]}
             </div>
             {frets.map((fret) => {
-              const pos = positionMap.get(`${stringNum}-${fret}`);
+              if (isSearchMode) {
+                const cellNote = getNoteAtPosition(stringNum, fret);
+                const isSelected = selectedPosSet.has(`${stringNum}-${fret}`);
+                let role: "root" | "chord-tone" | null = null;
+                if (isSelected) {
+                  role = cellNote.pitchClass === rootPitchClass ? "root" : "chord-tone";
+                }
+                return (
+                  <SearchCell
+                    key={`c-${stringNum}-${fret}`}
+                    stringNum={stringNum}
+                    fret={fret}
+                    role={role}
+                    noteName={cellNote.name}
+                    onClick={() => handleCellClick(stringNum, fret)}
+                  />
+                );
+              }
 
+              const pos = positionMap.get(`${stringNum}-${fret}`);
               return (
                 <div
                   key={`c-${stringNum}-${fret}`}

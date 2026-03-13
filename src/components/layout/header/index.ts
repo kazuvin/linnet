@@ -1,3 +1,4 @@
+export { GITHUB_URL, NAV_ITEMS, type NavItem } from "./constants";
 export type {
   HeaderActionProps,
   HeaderGitHubLinkProps,
