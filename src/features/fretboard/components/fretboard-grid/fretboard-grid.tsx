@@ -3,7 +3,6 @@ import {
   getNoteAtPosition,
   type NoteRole,
   type OverlayPosition,
-  type PitchClass,
   STANDARD_TUNING,
 } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
@@ -17,35 +16,39 @@ const NOTE_DOT_STYLES: Record<NoteRole, string> = {
   scale: "bg-scale-tone text-scale-tone-fg",
 };
 
+type SearchPosition = {
+  readonly string: number;
+  readonly fret: number;
+};
+
 type FretboardGridProps = {
   positions: readonly OverlayPosition[];
   maxFret: number;
   showCharacteristicNotes: boolean;
   showAvoidNotes: boolean;
-  /** コード検索モード: クリックでピッチクラスをトグル */
+  /** コード検索モード: クリックでポジションをトグル */
   searchMode?: {
-    selectedPitchClasses: readonly PitchClass[];
-    onTogglePitchClass: (pc: PitchClass) => void;
+    selectedPositions: readonly SearchPosition[];
+    onTogglePosition: (string: number, fret: number) => void;
   };
 };
 
 function SearchCell({
   stringNum,
   fret,
-  isSelected,
+  role,
   noteName,
   onClick,
 }: {
   stringNum: number;
   fret: number;
-  isSelected: boolean;
+  role: "root" | "chord-tone" | null;
   noteName: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
-      key={`c-${stringNum}-${fret}`}
       className={cn(
         "relative flex h-9 cursor-pointer items-center justify-center",
         fret === 0 ? "border-r-[3px] border-r-foreground/50" : "border-r border-r-foreground/10"
@@ -59,8 +62,15 @@ function SearchCell({
           stringNum <= 2 ? "h-px" : stringNum <= 4 ? "h-[1.5px]" : "h-[2px]"
         )}
       />
-      {isSelected && (
-        <div className="relative z-10 flex size-5 animate-note-pop items-center justify-center rounded-full bg-chord-root font-bold text-[10px] text-chord-root-fg">
+      {role !== null && (
+        <div
+          className={cn(
+            "relative z-10 flex size-5 animate-note-pop items-center justify-center rounded-full font-bold text-[10px]",
+            role === "root"
+              ? "bg-chord-root text-chord-root-fg"
+              : "bg-chord-tone text-chord-tone-fg"
+          )}
+        >
           {noteName}
         </div>
       )}
@@ -76,10 +86,26 @@ export function FretboardGrid({
   searchMode,
 }: FretboardGridProps) {
   const isSearchMode = searchMode !== undefined;
-  const selectedPcSet = useMemo(
-    () => new Set(searchMode?.selectedPitchClasses ?? []),
-    [searchMode?.selectedPitchClasses]
-  );
+
+  // 検索モード: 選択済みポジションのSet + ルートのピッチクラスを算出
+  const { selectedPosSet, rootPitchClass } = useMemo(() => {
+    if (!searchMode || searchMode.selectedPositions.length === 0) {
+      return { selectedPosSet: new Set<string>(), rootPitchClass: null as number | null };
+    }
+    const set = new Set<string>();
+    for (const p of searchMode.selectedPositions) {
+      set.add(`${p.string}-${p.fret}`);
+    }
+    // 最低音（string番号が最大 = 6弦に最も近い）をルートとする
+    const lowest = searchMode.selectedPositions.reduce((a, b) => {
+      if (a.string > b.string) return a;
+      if (a.string < b.string) return b;
+      // 同じ弦ならフレットが低い方（より低い音）
+      return a.fret <= b.fret ? a : b;
+    });
+    const rootNote = getNoteAtPosition(lowest.string, lowest.fret);
+    return { selectedPosSet: set, rootPitchClass: rootNote.pitchClass };
+  }, [searchMode]);
 
   const positionMap = useMemo(() => {
     const map = new Map<string, OverlayPosition>();
@@ -97,8 +123,7 @@ export function FretboardGrid({
   const handleCellClick = useCallback(
     (stringNum: number, fret: number) => {
       if (!searchMode) return;
-      const note = getNoteAtPosition(stringNum, fret);
-      searchMode.onTogglePitchClass(note.pitchClass);
+      searchMode.onTogglePosition(stringNum, fret);
     },
     [searchMode]
   );
@@ -134,13 +159,17 @@ export function FretboardGrid({
             {frets.map((fret) => {
               if (isSearchMode) {
                 const cellNote = getNoteAtPosition(stringNum, fret);
-                const isSelected = selectedPcSet.has(cellNote.pitchClass);
+                const isSelected = selectedPosSet.has(`${stringNum}-${fret}`);
+                let role: "root" | "chord-tone" | null = null;
+                if (isSelected) {
+                  role = cellNote.pitchClass === rootPitchClass ? "root" : "chord-tone";
+                }
                 return (
                   <SearchCell
                     key={`c-${stringNum}-${fret}`}
                     stringNum={stringNum}
                     fret={fret}
-                    isSelected={isSelected}
+                    role={role}
                     noteName={cellNote.name}
                     onClick={() => handleCellClick(stringNum, fret)}
                   />

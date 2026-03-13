@@ -1,31 +1,35 @@
 import { create } from "zustand";
-import type { PitchClass } from "@/lib/music-theory";
+
+export type FretPosition = {
+  readonly string: number;
+  readonly fret: number;
+};
 
 export type ChordSearchState = {
-  selectedPitchClasses: PitchClass[];
+  selectedPositions: FretPosition[];
 };
 
 type ChordSearchActions = {
-  togglePitchClass: (pc: PitchClass) => void;
+  togglePosition: (string: number, fret: number) => void;
   clearAll: () => void;
 };
 
 const INITIAL_STATE: ChordSearchState = {
-  selectedPitchClasses: [],
+  selectedPositions: [],
 };
 
 export const useChordSearchStore = create<ChordSearchState & ChordSearchActions>()((set) => ({
   ...INITIAL_STATE,
-  togglePitchClass: (pc) =>
+  togglePosition: (string, fret) =>
     set((state) => {
-      const exists = state.selectedPitchClasses.includes(pc);
+      const exists = state.selectedPositions.some((p) => p.string === string && p.fret === fret);
       return {
-        selectedPitchClasses: exists
-          ? state.selectedPitchClasses.filter((p) => p !== pc)
-          : [...state.selectedPitchClasses, pc],
+        selectedPositions: exists
+          ? state.selectedPositions.filter((p) => !(p.string === string && p.fret === fret))
+          : [...state.selectedPositions, { string, fret }],
       };
     }),
-  clearAll: () => set({ selectedPitchClasses: [] }),
+  clearAll: () => set({ selectedPositions: [] }),
 }));
 
 export function _resetChordSearchStoreForTesting(): void {

@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { PitchClass } from "@/lib/music-theory";
 import { _resetChordSearchStoreForTesting, useChordSearchStore } from "./chord-search-store";
 
 describe("useChordSearchStore", () => {
@@ -7,35 +6,35 @@ describe("useChordSearchStore", () => {
     _resetChordSearchStoreForTesting();
   });
 
-  it("初期状態: 選択ノートは空", () => {
+  it("初期状態: 選択ポジションは空", () => {
     const state = useChordSearchStore.getState();
-    expect(state.selectedPitchClasses).toEqual([]);
+    expect(state.selectedPositions).toEqual([]);
   });
 
-  it("togglePitchClass でピッチクラスを追加できる", () => {
-    useChordSearchStore.getState().togglePitchClass(0 as PitchClass);
-    expect(useChordSearchStore.getState().selectedPitchClasses).toEqual([0]);
+  it("togglePosition でポジションを追加できる", () => {
+    useChordSearchStore.getState().togglePosition(6, 0);
+    expect(useChordSearchStore.getState().selectedPositions).toEqual([{ string: 6, fret: 0 }]);
   });
 
-  it("togglePitchClass で既存のピッチクラスを削除できる", () => {
-    useChordSearchStore.getState().togglePitchClass(0 as PitchClass);
-    useChordSearchStore.getState().togglePitchClass(0 as PitchClass);
-    expect(useChordSearchStore.getState().selectedPitchClasses).toEqual([]);
+  it("togglePosition で同じポジションを削除できる", () => {
+    useChordSearchStore.getState().togglePosition(6, 0);
+    useChordSearchStore.getState().togglePosition(6, 0);
+    expect(useChordSearchStore.getState().selectedPositions).toEqual([]);
   });
 
-  it("複数のピッチクラスをトグルできる", () => {
-    const { togglePitchClass } = useChordSearchStore.getState();
-    togglePitchClass(0 as PitchClass);
-    togglePitchClass(4 as PitchClass);
-    togglePitchClass(7 as PitchClass);
-    expect(useChordSearchStore.getState().selectedPitchClasses).toEqual([0, 4, 7]);
+  it("複数のポジションをトグルできる", () => {
+    const { togglePosition } = useChordSearchStore.getState();
+    togglePosition(6, 0); // E
+    togglePosition(5, 2); // B
+    togglePosition(4, 2); // E
+    expect(useChordSearchStore.getState().selectedPositions).toHaveLength(3);
   });
 
   it("clearAll で全選択をクリアできる", () => {
-    const { togglePitchClass } = useChordSearchStore.getState();
-    togglePitchClass(0 as PitchClass);
-    togglePitchClass(4 as PitchClass);
+    const { togglePosition } = useChordSearchStore.getState();
+    togglePosition(6, 0);
+    togglePosition(5, 2);
     useChordSearchStore.getState().clearAll();
-    expect(useChordSearchStore.getState().selectedPitchClasses).toEqual([]);
+    expect(useChordSearchStore.getState().selectedPositions).toEqual([]);
   });
 });
