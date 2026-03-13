@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Card } from "@/components";
 import { FretboardGrid } from "@/features/fretboard/components";
 import { MAX_FRET } from "@/features/fretboard/stores/fretboard-store";
 import { getNoteAtPosition, type PitchClass } from "@/lib/music-theory";
@@ -71,5 +72,9 @@ export function ChordSearchVoicingsPanel() {
 
   if (!selectedChord) return null;
 
-  return <ChordSearchVoicings rootName={selectedChord.rootName} quality={selectedChord.quality} />;
+  return (
+    <Card className="min-w-0 overflow-hidden">
+      <ChordSearchVoicings rootName={selectedChord.rootName} quality={selectedChord.quality} />
+    </Card>
+  );
 }

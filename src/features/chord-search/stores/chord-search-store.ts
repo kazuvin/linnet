@@ -32,10 +32,17 @@ export const useChordSearchStore = create<ChordSearchState & ChordSearchActions>
   togglePosition: (string, fret) =>
     set((state) => {
       const exists = state.selectedPositions.some((p) => p.string === string && p.fret === fret);
+      if (exists) {
+        return {
+          selectedPositions: state.selectedPositions.filter(
+            (p) => !(p.string === string && p.fret === fret)
+          ),
+        };
+      }
+      // 同じ弦の既存選択を除去してから追加（各弦一音のみ）
+      const withoutSameString = state.selectedPositions.filter((p) => p.string !== string);
       return {
-        selectedPositions: exists
-          ? state.selectedPositions.filter((p) => !(p.string === string && p.fret === fret))
-          : [...state.selectedPositions, { string, fret }],
+        selectedPositions: [...withoutSameString, { string, fret }],
       };
     }),
   selectChord: (rootName, quality) =>
