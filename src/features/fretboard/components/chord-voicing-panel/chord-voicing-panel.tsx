@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { TabNav, TabNavItem } from "@/components/ui/tab-nav";
 import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-selectors";
-import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { findChordPositions } from "@/lib/music-theory";
 import { ChordDiagram } from "../chord-diagram";
 
@@ -11,13 +10,12 @@ type RootStringFilter = "all" | "6" | "5" | "4" | "3";
 
 export function ChordVoicingPanel() {
   const selectedChord = useSelectedProgressionChord();
-  const maxFret = useFretboardStore((s) => s.maxFret);
   const [rootFilter, setRootFilter] = useState<RootStringFilter>("all");
 
   const voicings = useMemo(() => {
     if (!selectedChord) return [];
-    return findChordPositions(selectedChord.rootName, selectedChord.quality, maxFret);
-  }, [selectedChord, maxFret]);
+    return findChordPositions(selectedChord.rootName, selectedChord.quality);
+  }, [selectedChord]);
 
   const filteredVoicings = useMemo(() => {
     if (rootFilter === "all") return voicings;

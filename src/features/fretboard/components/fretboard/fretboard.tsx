@@ -5,21 +5,15 @@ import { useSelectedProgressionChord } from "@/features/chord-progression/stores
 import { useAvailableScales } from "@/features/fretboard/hooks/use-available-scales";
 import { useFretboardPositions } from "@/features/fretboard/hooks/use-fretboard-positions";
 import type { InstrumentTab } from "@/features/fretboard/stores/fretboard-store";
-import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
+import { MAX_FRET, useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { PianoKeyboard } from "@/features/keyboard/components";
-import { FretboardControls } from "../fretboard-controls";
 import { FretboardGrid } from "../fretboard-grid";
 import { FretboardLegend } from "../fretboard-legend";
 import { ScaleChecker } from "../scale-checker";
 
 export function Fretboard() {
-  const {
-    maxFret,
-    showCharacteristicNotes,
-    showAvoidNotes,
-    activeInstrument,
-    setActiveInstrument,
-  } = useFretboardStore();
+  const { showCharacteristicNotes, showAvoidNotes, activeInstrument, setActiveInstrument } =
+    useFretboardStore();
   const { availableScales, activeScaleType, scaleRoot } = useAvailableScales();
   const positions = useFretboardPositions(activeScaleType);
   const selectedChord = useSelectedProgressionChord();
@@ -34,7 +28,6 @@ export function Fretboard() {
           <TabNavItem value="fretboard">フレットボード</TabNavItem>
           <TabNavItem value="keyboard">鍵盤</TabNavItem>
         </TabNav>
-        {activeInstrument === "fretboard" && <FretboardControls maxFret={maxFret} />}
         <ScaleChecker
           availableScales={availableScales}
           activeScaleType={activeScaleType}
@@ -46,7 +39,7 @@ export function Fretboard() {
         <>
           <FretboardGrid
             positions={positions}
-            maxFret={maxFret}
+            maxFret={MAX_FRET}
             showCharacteristicNotes={showCharacteristicNotes}
             showAvoidNotes={showAvoidNotes}
           />

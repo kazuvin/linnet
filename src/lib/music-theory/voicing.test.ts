@@ -275,7 +275,7 @@ describe("findChordPositions（ボイシング算出）", () => {
 
     it("maxFret が小さいと返されるボイシング数が少なくなる", () => {
       const voicingsSmall = findChordPositions("C", "major", 5);
-      const voicingsFull = findChordPositions("C", "major", 12);
+      const voicingsFull = findChordPositions("C", "major");
       expect(voicingsFull.length).toBeGreaterThanOrEqual(voicingsSmall.length);
     });
   });

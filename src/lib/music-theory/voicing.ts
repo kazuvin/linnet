@@ -28,7 +28,7 @@ const ROOT_STRINGS = [6, 5, 4, 3] as const;
 export function findChordPositions(
   rootName: string,
   quality: ChordQuality,
-  maxFret = 12,
+  maxFret = 24,
   tuning: readonly string[] = STANDARD_TUNING
 ): readonly ChordVoicing[] {
   const chord = createChord(rootName, quality);

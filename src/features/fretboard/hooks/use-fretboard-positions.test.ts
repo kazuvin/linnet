@@ -3,10 +3,7 @@ import {
   _resetChordProgressionForTesting,
   useChordProgressionStore,
 } from "@/features/chord-progression/stores/chord-progression-store";
-import {
-  _resetFretboardStoreForTesting,
-  useFretboardStore,
-} from "@/features/fretboard/stores/fretboard-store";
+import { _resetFretboardStoreForTesting } from "@/features/fretboard/stores/fretboard-store";
 import { _resetKeyStoreForTesting } from "@/features/key-selection/stores/key-store";
 import { useFretboardPositions } from "./use-fretboard-positions";
 
@@ -107,39 +104,7 @@ describe("useFretboardPositions", () => {
     expect(scalePCs.has(8)).toBe(true); // Ab
   });
 
-  // 4. maxFret の変更がポジション数に影響する
-  it("maxFret の変更がポジション数に影響する", async () => {
-    await act(async () => {
-      useChordProgressionStore.getState().setActiveChordOverride({
-        id: "test-c-major",
-        rootName: "C",
-        quality: "major",
-        symbol: "C",
-        source: "diatonic",
-        chordFunction: "tonic",
-        romanNumeral: "I",
-        degree: 1,
-      });
-    });
-
-    await act(async () => {
-      useFretboardStore.getState().setMaxFret(3);
-    });
-
-    const { result: result3 } = renderHook(() => useFretboardPositions());
-    const countAt3 = result3.current.length;
-
-    await act(async () => {
-      useFretboardStore.getState().setMaxFret(12);
-    });
-
-    const { result: result12 } = renderHook(() => useFretboardPositions());
-    const countAt12 = result12.current.length;
-
-    expect(countAt12).toBeGreaterThan(countAt3);
-  });
-
-  // 5. activeChordOverride を変更すると結果が変わる
+  // 4. activeChordOverride を変更すると結果が変わる
   it("activeChordOverride 変更後の結果が変わる", async () => {
     await act(async () => {
       useChordProgressionStore.getState().setActiveChordOverride({
