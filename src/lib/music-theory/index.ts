@@ -29,6 +29,8 @@ export {
 } from "./category-codes";
 // Chord-Scale Lookup
 export { type ChordScaleMatch, findScalesForChord } from "./chord-scale-lookup";
+// Chord Search
+export { type ChordSearchResult, findChordsContainingNotes } from "./chord-search";
 // Note
 
 // Chord
