@@ -79,10 +79,41 @@ describe("findScalesForChord", () => {
       "minor7b5",
       "diminished7",
       "augmented7",
+      "sus2",
+      "sus4",
+      "6",
+      "minor6",
+      "minorMajor7",
+      "7sus4",
+      "add9",
+      "dominant9",
+      "major9",
+      "minor9",
+      "dominant7sharp9",
+      "dominant7flat9",
     ];
     for (const quality of qualities) {
       const results = findScalesForChord("C", quality);
       expect(results.length, `${quality} should have results`).toBeGreaterThan(0);
     }
+  });
+
+  // テンションコード向けスケール検索テスト
+  it("C minorMajor7 に対して Harmonic Minor を含む結果を返す", () => {
+    const results = findScalesForChord("C", "minorMajor7");
+    const scaleTypes = results.map((r) => r.scaleType);
+    expect(scaleTypes).toContain("harmonic-minor");
+    expect(scaleTypes).toContain("melodic-minor");
+  });
+
+  it("C sus4 に対して結果を返す", () => {
+    const results = findScalesForChord("C", "sus4");
+    expect(results.length).toBeGreaterThan(0);
+  });
+
+  it("C dominant9 に対して Mixolydian を含む結果を返す", () => {
+    const results = findScalesForChord("C", "dominant9");
+    const scaleTypes = results.map((r) => r.scaleType);
+    expect(scaleTypes).toContain("mixolydian");
   });
 });

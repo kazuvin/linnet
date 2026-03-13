@@ -80,9 +80,39 @@ export function SelectContent({ className, children, ...props }: SelectContentPr
         sideOffset={4}
         {...props}
       >
-        <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
+        <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center py-1">
+          <ChevronDownIcon className="h-4 w-4 rotate-180 opacity-50" />
+        </SelectPrimitive.ScrollUpButton>
+        <SelectPrimitive.Viewport
+          className="p-1"
+          style={{
+            maxHeight: "min(var(--radix-select-content-available-height, 100dvh), 50dvh)",
+          }}
+        >
+          {children}
+        </SelectPrimitive.Viewport>
+        <SelectPrimitive.ScrollDownButton className="flex cursor-default items-center justify-center py-1">
+          <ChevronDownIcon className="h-4 w-4 opacity-50" />
+        </SelectPrimitive.ScrollDownButton>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
+  );
+}
+
+// ============================================================================
+// SelectGroup / SelectLabel
+// ============================================================================
+
+export const SelectGroup = SelectPrimitive.Group;
+
+export type SelectLabelProps = ComponentProps<typeof SelectPrimitive.Label>;
+
+export function SelectLabel({ className, ...props }: SelectLabelProps) {
+  return (
+    <SelectPrimitive.Label
+      className={cn("px-3 pt-2.5 pb-1 font-medium text-[11px] text-muted md:px-2", className)}
+      {...props}
+    />
   );
 }
 

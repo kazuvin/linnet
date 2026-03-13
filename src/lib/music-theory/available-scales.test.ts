@@ -36,10 +36,10 @@ describe("computeChordQualityFromScale", () => {
     expect(computeChordQualityFromScale(scale, 2, true)).toBe("dominant7");
   });
 
-  it("Harmonic Minor I度のセブンスは既存タイプに一致しない（minorMajor7）", () => {
+  it("Harmonic Minor I度のセブンスはminorMajor7", () => {
     // C Harmonic Minor: C D Eb F G Ab B → I = C Eb G B → [0,3,7,11]
     const scale = createScale("C", "harmonic-minor");
-    expect(computeChordQualityFromScale(scale, 1, true)).toBeNull();
+    expect(computeChordQualityFromScale(scale, 1, true)).toBe("minorMajor7");
   });
 
   it("トライアドも正しく判定できる", () => {

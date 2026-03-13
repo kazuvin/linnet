@@ -3,10 +3,9 @@
 import { useMemo } from "react";
 import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-selectors";
 import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
-import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import {
   type AvailableScaleInfo,
-  findAvailableScalesForChord,
+  findScalesForChord,
   getDefaultScaleForSource,
   type ScaleType,
   SECONDARY_DOMINANT_SCALES,
@@ -18,7 +17,6 @@ export function useAvailableScales(): {
   activeScaleType: ScaleType | null;
   scaleRoot: string | null;
 } {
-  const rootName = useKeyStore((s) => s.rootName);
   const selectedChord = useSelectedProgressionChord();
   const selectedScaleType = useFretboardStore((s) => s.selectedScaleType);
 
@@ -37,18 +35,14 @@ export function useAvailableScales(): {
     if (isDominantSource) {
       return SECONDARY_DOMINANT_SCALES;
     }
-    const scales = findAvailableScalesForChord(
-      rootName,
-      selectedChord.degree,
-      selectedChord.rootName,
-      selectedChord.quality
-    );
+    // コード・スケール検索と同じロジック（findScalesForChord）を使用
+    const scales = findScalesForChord(selectedChord.rootName, selectedChord.quality);
     // ソースモードに対応するスケールを先頭に配置
     if (sourceDefaultScaleType) {
       return sortScalesWithDefault(scales, sourceDefaultScaleType);
     }
     return scales;
-  }, [selectedChord, rootName, isDominantSource, sourceDefaultScaleType]);
+  }, [selectedChord, isDominantSource, sourceDefaultScaleType]);
 
   // activeScaleType: ユーザーが明示的に選択したスケール、またはコードのソースのデフォルト
   const activeScaleType = useMemo(() => {

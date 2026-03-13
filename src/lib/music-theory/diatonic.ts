@@ -82,6 +82,42 @@ export function formatRomanNumeral(degree: number, quality: ChordQuality): strin
       return `${base}+`;
     case "augmented7":
       return `${base}+7`;
+
+    // サスペンデッド系
+    case "sus2":
+      return `${base}sus2`;
+    case "sus4":
+      return `${base}sus4`;
+    case "7sus4":
+      return `${base}7sus4`;
+
+    // 6thコード
+    case "6":
+      return `${base}6`;
+    case "minor6":
+      return `${base.toLowerCase()}m6`;
+
+    // マイナーメジャー7
+    case "minorMajor7":
+      return `${base.toLowerCase()}mM7`;
+
+    // アドナインス
+    case "add9":
+      return `${base}add9`;
+
+    // 9thコード
+    case "dominant9":
+      return `${base}9`;
+    case "major9":
+      return `${base}M9`;
+    case "minor9":
+      return `${base.toLowerCase()}m9`;
+
+    // オルタード系テンション
+    case "dominant7sharp9":
+      return `${base}7(#9)`;
+    case "dominant7flat9":
+      return `${base}7(b9)`;
   }
 }
 
