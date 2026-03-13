@@ -1,5 +1,11 @@
-import { Fragment, useMemo } from "react";
-import { type NoteRole, type OverlayPosition, STANDARD_TUNING } from "@/lib/music-theory";
+import { Fragment, useCallback, useMemo } from "react";
+import {
+  getNoteAtPosition,
+  type NoteRole,
+  type OverlayPosition,
+  type PitchClass,
+  STANDARD_TUNING,
+} from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
 
 const SINGLE_DOT_FRETS = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
@@ -16,14 +22,65 @@ type FretboardGridProps = {
   maxFret: number;
   showCharacteristicNotes: boolean;
   showAvoidNotes: boolean;
+  /** コード検索モード: クリックでピッチクラスをトグル */
+  searchMode?: {
+    selectedPitchClasses: readonly PitchClass[];
+    onTogglePitchClass: (pc: PitchClass) => void;
+  };
 };
+
+function SearchCell({
+  stringNum,
+  fret,
+  isSelected,
+  noteName,
+  onClick,
+}: {
+  stringNum: number;
+  fret: number;
+  isSelected: boolean;
+  noteName: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      key={`c-${stringNum}-${fret}`}
+      className={cn(
+        "relative flex h-9 cursor-pointer items-center justify-center",
+        fret === 0 ? "border-r-[3px] border-r-foreground/50" : "border-r border-r-foreground/10"
+      )}
+      onClick={onClick}
+    >
+      {/* String line */}
+      <div
+        className={cn(
+          "absolute inset-x-0 top-1/2 -translate-y-1/2 bg-foreground/20",
+          stringNum <= 2 ? "h-px" : stringNum <= 4 ? "h-[1.5px]" : "h-[2px]"
+        )}
+      />
+      {isSelected && (
+        <div className="relative z-10 flex size-5 animate-note-pop items-center justify-center rounded-full bg-chord-root font-bold text-[10px] text-chord-root-fg">
+          {noteName}
+        </div>
+      )}
+    </button>
+  );
+}
 
 export function FretboardGrid({
   positions,
   maxFret,
   showCharacteristicNotes,
   showAvoidNotes,
+  searchMode,
 }: FretboardGridProps) {
+  const isSearchMode = searchMode !== undefined;
+  const selectedPcSet = useMemo(
+    () => new Set(searchMode?.selectedPitchClasses ?? []),
+    [searchMode?.selectedPitchClasses]
+  );
+
   const positionMap = useMemo(() => {
     const map = new Map<string, OverlayPosition>();
     for (const pos of positions) {
@@ -35,6 +92,15 @@ export function FretboardGrid({
   const positionsKey = useMemo(
     () => positions.map((p) => `${p.string}-${p.fret}-${p.role}`).join("|"),
     [positions]
+  );
+
+  const handleCellClick = useCallback(
+    (stringNum: number, fret: number) => {
+      if (!searchMode) return;
+      const note = getNoteAtPosition(stringNum, fret);
+      searchMode.onTogglePitchClass(note.pitchClass);
+    },
+    [searchMode]
   );
 
   const frets = Array.from({ length: maxFret + 1 }, (_, i) => i);
@@ -66,8 +132,22 @@ export function FretboardGrid({
               {STANDARD_TUNING[6 - stringNum]}
             </div>
             {frets.map((fret) => {
-              const pos = positionMap.get(`${stringNum}-${fret}`);
+              if (isSearchMode) {
+                const cellNote = getNoteAtPosition(stringNum, fret);
+                const isSelected = selectedPcSet.has(cellNote.pitchClass);
+                return (
+                  <SearchCell
+                    key={`c-${stringNum}-${fret}`}
+                    stringNum={stringNum}
+                    fret={fret}
+                    isSelected={isSelected}
+                    noteName={cellNote.name}
+                    onClick={() => handleCellClick(stringNum, fret)}
+                  />
+                );
+              }
 
+              const pos = positionMap.get(`${stringNum}-${fret}`);
               return (
                 <div
                   key={`c-${stringNum}-${fret}`}
