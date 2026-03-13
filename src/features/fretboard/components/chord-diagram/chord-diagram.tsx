@@ -5,7 +5,7 @@ type ChordDiagramProps = {
   voicing: ChordVoicing;
 };
 
-const DISPLAY_FRET_COUNT = 4;
+const MIN_DISPLAY_FRETS = 4;
 
 /**
  * コードダイアグラム（コード譜）表示コンポーネント
@@ -19,11 +19,13 @@ export function ChordDiagram({ voicing }: ChordDiagramProps) {
   const frettedPositions = frets.filter((f): f is number => f !== null && f > 0);
   const minFret = frettedPositions.length > 0 ? Math.min(...frettedPositions) : 0;
   const maxFret = frettedPositions.length > 0 ? Math.max(...frettedPositions) : 0;
+  const fretSpan = frettedPositions.length > 0 ? maxFret - minFret + 1 : 0;
+  const displayFretCount = Math.max(MIN_DISPLAY_FRETS, fretSpan);
 
   // ナットを表示するか（オープンポジション）
-  const isOpenPosition = minFret <= DISPLAY_FRET_COUNT && maxFret <= DISPLAY_FRET_COUNT;
+  const isOpenPosition = minFret <= displayFretCount && maxFret <= displayFretCount;
   const startFret = isOpenPosition ? 1 : minFret;
-  const displayFrets = Array.from({ length: DISPLAY_FRET_COUNT }, (_, i) => startFret + i);
+  const displayFrets = Array.from({ length: displayFretCount }, (_, i) => startFret + i);
 
   // 弦: 1弦(上) → 6弦(下)
   const strings = [1, 2, 3, 4, 5, 6] as const;
@@ -143,6 +145,8 @@ function getRootStringLabel(rootString: number): string {
       return "5弦R";
     case 4:
       return "4弦R";
+    case 3:
+      return "3弦R";
     default:
       return "";
   }

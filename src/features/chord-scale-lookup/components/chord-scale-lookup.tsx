@@ -84,7 +84,7 @@ const ALL_QUALITY_OPTIONS = QUALITY_GROUPS.flatMap((g) => g.options);
 
 const MAX_FRET_OPTIONS = [12, 15, 19, 22, 24] as const;
 
-type RootStringFilter = "all" | "6" | "5" | "4";
+type RootStringFilter = "all" | "6" | "5" | "4" | "3";
 
 function useChordScaleData() {
   const { rootName, quality, selectedScaleType, setRootName, setQuality, setSelectedScaleType } =
@@ -338,6 +338,7 @@ export function VoicingCard() {
         <TabNavItem value="6">6弦R</TabNavItem>
         <TabNavItem value="5">5弦R</TabNavItem>
         <TabNavItem value="4">4弦R</TabNavItem>
+        <TabNavItem value="3">3弦R</TabNavItem>
       </TabNav>
       {filteredVoicings.length > 0 ? (
         <div

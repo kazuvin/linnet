@@ -9,7 +9,7 @@ import { getNoteAtPosition, STANDARD_TUNING } from "./fretboard";
 export type ChordVoicing = {
   readonly chord: Chord;
   readonly frets: readonly (number | null)[];
-  readonly rootString: number; // ルート弦番号 (6, 5, or 4)
+  readonly rootString: number; // ルート弦番号 (6, 5, 4, or 3)
   readonly barreInfo?: {
     readonly fret: number;
     readonly fromString: number;
@@ -17,12 +17,12 @@ export type ChordVoicing = {
   };
 };
 
-const MAX_FRET_SPAN = 3; // フレットスパン最大3（4フレット幅）
+const MAX_FRET_SPAN = 4; // フレットスパン最大4（5フレット幅）
 const MAX_FINGERS = 4;
-const BASS_STRINGS = [6, 5, 4] as const;
+const ROOT_STRINGS = [6, 5, 4, 3] as const;
 
 /**
- * 6弦・5弦・4弦ルートで人間が押さえられるコードボイシングを算出する
+ * 6弦・5弦・4弦・3弦ルートで人間が押さえられるコードボイシングを算出する
  * フレットスパンが短い順、弦の間隔が短い順にソートして返す
  */
 export function findChordPositions(
@@ -36,7 +36,7 @@ export function findChordPositions(
   const chordPCs = new Set(chord.notes.map((n) => n.pitchClass));
   const allVoicings: ChordVoicing[] = [];
 
-  for (const bassString of BASS_STRINGS) {
+  for (const bassString of ROOT_STRINGS) {
     for (let rootFret = 0; rootFret <= maxFret; rootFret++) {
       const rootNote = getNoteAtPosition(bassString, rootFret, tuning);
       if (rootNote.pitchClass !== rootPC) continue;
@@ -128,8 +128,8 @@ function buildAllVoicings(
       }
 
       // フレット範囲内のコードトーンを探索
-      const searchLow = Math.max(1, rootFret - 2);
-      const searchHigh = Math.min(maxFret, rootFret + 4);
+      const searchLow = Math.max(1, rootFret - 3);
+      const searchHigh = Math.min(maxFret, rootFret + 5);
       for (let f = searchLow; f <= searchHigh; f++) {
         const note = getNoteAtPosition(s, f, tuning);
         if (chordPCs.has(note.pitchClass)) {
