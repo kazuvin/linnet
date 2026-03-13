@@ -7,7 +7,9 @@ import { IconButton } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -28,34 +30,57 @@ import {
 } from "@/lib/music-theory";
 import { useChordScaleLookupStore } from "../stores/chord-scale-lookup-store";
 
-const QUALITY_OPTIONS: { value: ChordQuality; label: string }[] = [
-  // 基本トライアド
-  { value: "major", label: "Major" },
-  { value: "minor", label: "Minor" },
-  { value: "diminished", label: "dim" },
-  { value: "augmented", label: "aug" },
-  { value: "sus2", label: "sus2" },
-  { value: "sus4", label: "sus4" },
-  // 7thコード
-  { value: "dominant7", label: "7" },
-  { value: "major7", label: "M7" },
-  { value: "minor7", label: "m7" },
-  { value: "minor7b5", label: "m7(b5)" },
-  { value: "diminished7", label: "dim7" },
-  { value: "augmented7", label: "aug7" },
-  { value: "minorMajor7", label: "mM7" },
-  { value: "7sus4", label: "7sus4" },
-  // 6thコード
-  { value: "6", label: "6" },
-  { value: "minor6", label: "m6" },
-  // 9th・テンション系
-  { value: "add9", label: "add9" },
-  { value: "dominant9", label: "9" },
-  { value: "major9", label: "M9" },
-  { value: "minor9", label: "m9" },
-  { value: "dominant7sharp9", label: "7(#9)" },
-  { value: "dominant7flat9", label: "7(b9)" },
+type QualityGroup = {
+  readonly label: string;
+  readonly options: readonly { value: ChordQuality; label: string }[];
+};
+
+const QUALITY_GROUPS: readonly QualityGroup[] = [
+  {
+    label: "トライアド",
+    options: [
+      { value: "major", label: "Major" },
+      { value: "minor", label: "Minor" },
+      { value: "diminished", label: "dim" },
+      { value: "augmented", label: "aug" },
+      { value: "sus2", label: "sus2" },
+      { value: "sus4", label: "sus4" },
+    ],
+  },
+  {
+    label: "7th",
+    options: [
+      { value: "dominant7", label: "7" },
+      { value: "major7", label: "M7" },
+      { value: "minor7", label: "m7" },
+      { value: "minor7b5", label: "m7(b5)" },
+      { value: "diminished7", label: "dim7" },
+      { value: "augmented7", label: "aug7" },
+      { value: "minorMajor7", label: "mM7" },
+      { value: "7sus4", label: "7sus4" },
+    ],
+  },
+  {
+    label: "6th",
+    options: [
+      { value: "6", label: "6" },
+      { value: "minor6", label: "m6" },
+    ],
+  },
+  {
+    label: "テンション",
+    options: [
+      { value: "add9", label: "add9" },
+      { value: "dominant9", label: "9" },
+      { value: "major9", label: "M9" },
+      { value: "minor9", label: "m9" },
+      { value: "dominant7sharp9", label: "7(#9)" },
+      { value: "dominant7flat9", label: "7(b9)" },
+    ],
+  },
 ];
+
+const ALL_QUALITY_OPTIONS = QUALITY_GROUPS.flatMap((g) => g.options);
 
 const MAX_FRET_OPTIONS = [12, 15, 19, 22, 24] as const;
 
@@ -133,13 +158,18 @@ export function ChordSelector() {
         <RootNoteSelector value={rootName} onValueChange={setRootName} />
         <Select value={quality} onValueChange={(v) => setQuality(v as ChordQuality)}>
           <SelectTrigger>
-            <SelectValue>{QUALITY_OPTIONS.find((o) => o.value === quality)?.label}</SelectValue>
+            <SelectValue>{ALL_QUALITY_OPTIONS.find((o) => o.value === quality)?.label}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {QUALITY_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
+            {QUALITY_GROUPS.map((group) => (
+              <SelectGroup key={group.label}>
+                <SelectLabel>{group.label}</SelectLabel>
+                {group.options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
