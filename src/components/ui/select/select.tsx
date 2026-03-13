@@ -85,7 +85,9 @@ export function SelectContent({ className, children, ...props }: SelectContentPr
         </SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport
           className="p-1"
-          style={{ maxHeight: "var(--radix-select-content-available-height)" }}
+          style={{
+            maxHeight: "min(var(--radix-select-content-available-height, 100dvh), 50dvh)",
+          }}
         >
           {children}
         </SelectPrimitive.Viewport>
