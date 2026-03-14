@@ -40,6 +40,7 @@ type ChordGridActions = {
   addChordToNextBeat: (chord: GridChord) => void;
   selectCell: (row: number, col: number) => void;
   clearSelection: () => void;
+  moveSelection: (direction: "up" | "down" | "left" | "right") => void;
 };
 
 const createEmptyRow = (): (GridChord | null)[] => Array.from({ length: COLUMNS }, () => null);
@@ -114,11 +115,9 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   getChordAtPosition: (row, col) => {
     const { rows } = get();
     if (row < 0 || row >= rows.length) return null;
-    // 現在位置から最大15セル前まで遡り、コードを探す（16セル固定持続）
+    // 現在位置から先頭まで遡り、最も近いコードを探す（次のコードまで無制限持続）
     const totalPos = row * COLUMNS + col;
-    for (let offset = 0; offset < COLUMNS; offset++) {
-      const pos = totalPos - offset;
-      if (pos < 0) break;
+    for (let pos = totalPos; pos >= 0; pos--) {
       const r = Math.floor(pos / COLUMNS);
       const c = pos % COLUMNS;
       if (r < rows.length && rows[r][c] !== null) return rows[r][c];
@@ -165,6 +164,45 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   },
 
   clearSelection: () => set({ selectedCell: null }),
+
+  moveSelection: (direction) => {
+    const { selectedCell, rows } = get();
+    if (!selectedCell) return;
+
+    const { row, col } = selectedCell;
+    const maxRow = rows.length - 1;
+
+    switch (direction) {
+      case "left": {
+        if (col > 0) {
+          set({ selectedCell: { row, col: col - 1 } });
+        } else if (row > 0) {
+          set({ selectedCell: { row: row - 1, col: COLUMNS - 1 } });
+        }
+        break;
+      }
+      case "right": {
+        if (col < COLUMNS - 1) {
+          set({ selectedCell: { row, col: col + 1 } });
+        } else if (row < maxRow) {
+          set({ selectedCell: { row: row + 1, col: 0 } });
+        }
+        break;
+      }
+      case "up": {
+        if (row > 0) {
+          set({ selectedCell: { row: row - 1, col } });
+        }
+        break;
+      }
+      case "down": {
+        if (row < maxRow) {
+          set({ selectedCell: { row: row + 1, col } });
+        }
+        break;
+      }
+    }
+  },
 }));
 
 export function _resetChordGridForTesting(): void {

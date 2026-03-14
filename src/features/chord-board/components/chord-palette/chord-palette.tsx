@@ -5,7 +5,7 @@ import { useChordProgressionStore } from "@/features/chord-progression/stores/ch
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
-import { replaceSelectedGridCell, selectChordFromPalette } from "@/features/store-coordination";
+import { addChordToGrid, replaceSelectedGridCell } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import { useDrag } from "@/lib/dnd";
 import type { ChordFunction } from "@/lib/music-theory";
@@ -23,6 +23,8 @@ export type PaletteDragData = {
   chordFunction: ChordFunction;
   romanNumeral: string;
   degree: number;
+  /** グリッドセルからのドラッグ時のみセット */
+  gridPosition?: { row: number; col: number };
 };
 
 function isSelectedChord(
@@ -104,7 +106,7 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
       }
     }
 
-    selectChordFromPalette(gridChord);
+    addChordToGrid(gridChord);
     if (!useChordPlaybackStore.getState().isMuted) {
       playChord(gridChord.rootName, gridChord.quality);
     }
