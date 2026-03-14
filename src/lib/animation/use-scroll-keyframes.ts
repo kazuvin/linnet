@@ -194,12 +194,7 @@ function toCSSStyle(interpolatedStyle: KeyframeStyle): CSSProperties {
   // Copy non-transform properties
   for (const [key, value] of Object.entries(interpolatedStyle)) {
     if (!transformProperties.has(key) && value !== undefined) {
-      // Handle CSS custom properties
-      if (isCustomProperty(key)) {
-        (resultStyle as Record<string, unknown>)[key] = value;
-      } else {
-        (resultStyle as Record<string, unknown>)[key] = value;
-      }
+      (resultStyle as Record<string, unknown>)[key] = value;
     }
   }
 
