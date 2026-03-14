@@ -58,9 +58,19 @@ export function ChordSearchResultsPanel() {
     return result;
   }, [selectedPositions]);
 
+  // 最低音弦（弦番号が最大）のポジションからベース音を取得
+  const bassPitchClass = useMemo(() => {
+    if (selectedPositions.length === 0) return undefined;
+    const bassPosition = selectedPositions.reduce((lowest, pos) =>
+      pos.string > lowest.string ? pos : lowest
+    );
+    return getNoteAtPosition(bassPosition.string, bassPosition.fret).pitchClass;
+  }, [selectedPositions]);
+
   return (
     <ChordSearchResults
       selectedPitchClasses={selectedPitchClasses}
+      bassPitchClass={bassPitchClass}
       selectedChord={selectedChord}
       onSelectChord={selectChord}
     />

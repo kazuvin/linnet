@@ -71,3 +71,48 @@ export function findChordsContainingNotes(
 
   return results;
 }
+
+export type ClassifiedChordSearchResult = ChordSearchResult & {
+  readonly bassNoteName?: string;
+};
+
+export type ClassifiedResults = {
+  readonly rootPosition: ClassifiedChordSearchResult[];
+  readonly inversions: ClassifiedChordSearchResult[];
+};
+
+/**
+ * 検索結果をベース音でルートポジションと転回形に分類する。
+ * ベース音がコードのルートと一致すればルートポジション、
+ * 一致しなければ転回形としてスラッシュコード表記（例: C/E）を付与する。
+ */
+export function classifyChordSearchResults(
+  results: readonly ChordSearchResult[],
+  bassPitchClass: PitchClass | undefined
+): ClassifiedResults {
+  if (bassPitchClass === undefined) {
+    return { rootPosition: [...results], inversions: [] };
+  }
+
+  const bassName = FLAT_KEYS.has(FLAT_NOTE_NAMES[bassPitchClass])
+    ? FLAT_NOTE_NAMES[bassPitchClass]
+    : NOTE_NAMES[bassPitchClass];
+
+  const rootPosition: ClassifiedChordSearchResult[] = [];
+  const inversions: ClassifiedChordSearchResult[] = [];
+
+  for (const result of results) {
+    const rootPc = result.pitchClasses[0];
+    if (rootPc === bassPitchClass) {
+      rootPosition.push(result);
+    } else {
+      inversions.push({
+        ...result,
+        symbol: `${result.symbol}/${bassName}`,
+        bassNoteName: bassName,
+      });
+    }
+  }
+
+  return { rootPosition, inversions };
+}
