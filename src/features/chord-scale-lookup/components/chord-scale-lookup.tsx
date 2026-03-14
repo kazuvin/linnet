@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TabNav, TabNavItem } from "@/components/ui/tab-nav";
-import { ChordDiagram, FretboardGrid, FretboardLegend } from "@/features/fretboard/components";
+import { FretboardGrid, FretboardLegend, VoicingGrid } from "@/features/fretboard/components";
 import type { InstrumentTab } from "@/features/fretboard/stores/fretboard-store";
 import { MAX_FRET, useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { RootNoteSelector } from "@/features/key-selection/components/root-note-selector";
@@ -82,9 +82,8 @@ const QUALITY_GROUPS: readonly QualityGroup[] = [
 
 const ALL_QUALITY_OPTIONS = QUALITY_GROUPS.flatMap((g) => g.options);
 
-type RootStringFilter = "all" | "6" | "5" | "4" | "3";
-
-function useChordScaleData() {
+/** ストアから読み取り、重い計算を1回だけ実行するフック */
+export function useChordScaleData() {
   const { rootName, quality, selectedScaleType, setRootName, setQuality, setSelectedScaleType } =
     useChordScaleLookupStore();
   const { showCharacteristicNotes, showAvoidNotes, activeInstrument, setActiveInstrument } =
@@ -129,9 +128,15 @@ function useChordScaleData() {
   };
 }
 
-/** コードセレクター（カード外に配置） */
-export function ChordSelector() {
-  const { rootName, quality, chordSymbol, setRootName, setQuality } = useChordScaleData();
+type ChordScaleData = ReturnType<typeof useChordScaleData>;
+
+/** コードセレクター */
+export function ChordSelector({
+  data,
+}: {
+  data: Pick<ChordScaleData, "rootName" | "quality" | "chordSymbol" | "setRootName" | "setQuality">;
+}) {
+  const { rootName, quality, chordSymbol, setRootName, setQuality } = data;
 
   return (
     <section className="flex flex-col gap-3">
@@ -166,7 +171,23 @@ export function ChordSelector() {
 }
 
 /** スケール＋フレットボード/鍵盤カード */
-export function ScaleCard() {
+export function ScaleCard({
+  data,
+}: {
+  data: Pick<
+    ChordScaleData,
+    | "rootName"
+    | "chordSymbol"
+    | "availableScales"
+    | "activeScaleType"
+    | "positions"
+    | "showCharacteristicNotes"
+    | "showAvoidNotes"
+    | "activeInstrument"
+    | "setActiveInstrument"
+    | "setSelectedScaleType"
+  >;
+}) {
   const {
     rootName,
     chordSymbol,
@@ -178,7 +199,7 @@ export function ScaleCard() {
     activeInstrument,
     setActiveInstrument,
     setSelectedScaleType,
-  } = useChordScaleData();
+  } = data;
 
   const [playingScaleType, setPlayingScaleType] = useState<ScaleType | null>(null);
 
@@ -280,66 +301,27 @@ export function ScaleCard() {
 }
 
 /** ボイシングカード */
-export function VoicingCard() {
-  const { chordSymbol, voicings, activeInstrument } = useChordScaleData();
-  const [rootFilter, setRootFilter] = useState<RootStringFilter>("all");
-
-  const filteredVoicings = useMemo(() => {
-    if (rootFilter === "all") return voicings;
-    const rootString = Number(rootFilter);
-    return voicings.filter((v) => v.rootString === rootString);
-  }, [voicings, rootFilter]);
+export function VoicingCard({
+  data,
+}: {
+  data: Pick<ChordScaleData, "chordSymbol" | "voicings" | "activeInstrument">;
+}) {
+  const { chordSymbol, voicings, activeInstrument } = data;
 
   if (activeInstrument !== "fretboard" || voicings.length === 0) return null;
 
-  return (
-    <section className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 className="font-medium text-sm">{chordSymbol} のボイシング</h3>
-        <span className="text-[11px] text-muted">{filteredVoicings.length}件</span>
-      </div>
-      <TabNav
-        value={rootFilter}
-        onValueChange={(v) => setRootFilter(v as RootStringFilter)}
-        variant="ghost"
-        size="sm"
-        className="self-start"
-      >
-        <TabNavItem value="all">すべて</TabNavItem>
-        <TabNavItem value="6">6弦R</TabNavItem>
-        <TabNavItem value="5">5弦R</TabNavItem>
-        <TabNavItem value="4">4弦R</TabNavItem>
-        <TabNavItem value="3">3弦R</TabNavItem>
-      </TabNav>
-      {filteredVoicings.length > 0 ? (
-        <div
-          key={`${chordSymbol}-${rootFilter}`}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-        >
-          {filteredVoicings.map((v, index) => (
-            <div
-              key={`${v.rootString}-${v.frets.join(",")}`}
-              className="animate-stagger-fade-in-up"
-              style={{ "--stagger-index": Math.min(index, 12) } as React.CSSProperties}
-            >
-              <ChordDiagram voicing={v} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-muted text-xs">このフィルターに該当するボイシングはありません</p>
-      )}
-    </section>
-  );
+  return <VoicingGrid voicings={voicings} chordSymbol={chordSymbol} />;
 }
 
-/** 後方互換性のためのデフォルトエクスポート（非推奨） */
+/** 全体をまとめるコンポーネント（1回だけ計算して子に渡す） */
 export function ChordScaleLookup() {
+  const data = useChordScaleData();
+
   return (
     <div className="flex flex-col gap-6">
-      <ChordSelector />
-      <ScaleCard />
-      <VoicingCard />
+      <ChordSelector data={data} />
+      <ScaleCard data={data} />
+      <VoicingCard data={data} />
     </div>
   );
 }
