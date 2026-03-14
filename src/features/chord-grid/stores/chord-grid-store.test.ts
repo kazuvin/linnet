@@ -248,24 +248,40 @@ describe("chord-grid-store", () => {
       expect(useChordGridStore.getState().getChordAtPosition(0, 5)).toEqual(sampleChord);
     });
 
-    it("コードは16セル固定で持続する（行をまたぐ）", async () => {
+    it("コードは次のコードが現れるまで無制限に持続する（行をまたぐ）", async () => {
       await act(async () => {
         useChordGridStore.getState().setCell(0, 4, sampleChord);
       });
-      // col4 から 15セル先の col3（次の行）まで持続する
+      // 同一行の末尾まで持続
       expect(useChordGridStore.getState().getChordAtPosition(0, 15)).toEqual(sampleChord);
+      // 行をまたいでも持続する
       expect(useChordGridStore.getState().getChordAtPosition(1, 3)).toEqual(sampleChord);
-      // 16セル目（col4 の次の行）は持続しない
-      expect(useChordGridStore.getState().getChordAtPosition(1, 4)).toBeNull();
+      expect(useChordGridStore.getState().getChordAtPosition(1, 4)).toEqual(sampleChord);
+      // 複数行またいでも持続する
+      expect(useChordGridStore.getState().getChordAtPosition(2, 0)).toEqual(sampleChord);
+      expect(useChordGridStore.getState().getChordAtPosition(3, 15)).toEqual(sampleChord);
     });
 
-    it("行の先頭に置いたコードは同一行内で持続する", async () => {
+    it("行の先頭に置いたコードは次のコードまで持続する", async () => {
       await act(async () => {
         useChordGridStore.getState().setCell(0, 0, sampleChord);
       });
       expect(useChordGridStore.getState().getChordAtPosition(0, 15)).toEqual(sampleChord);
-      // 次の行には持続しない（ちょうど16セルで切れる）
-      expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toBeNull();
+      // 次の行にも持続する
+      expect(useChordGridStore.getState().getChordAtPosition(1, 0)).toEqual(sampleChord);
+      expect(useChordGridStore.getState().getChordAtPosition(3, 15)).toEqual(sampleChord);
+    });
+
+    it("次のコードがあればそこで持続が切れる", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(2, 4, sampleChord2);
+      });
+      // sampleChord は 2行目col3 まで持続
+      expect(useChordGridStore.getState().getChordAtPosition(2, 3)).toEqual(sampleChord);
+      // 2行目col4 からは sampleChord2
+      expect(useChordGridStore.getState().getChordAtPosition(2, 4)).toEqual(sampleChord2);
+      expect(useChordGridStore.getState().getChordAtPosition(3, 0)).toEqual(sampleChord2);
     });
   });
 
@@ -518,6 +534,128 @@ describe("chord-grid-store", () => {
         useChordGridStore.getState().removeRow(1);
       });
       expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+    });
+  });
+
+  describe("moveSelection", () => {
+    it("選択がない場合は何もしない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("right");
+      });
+      expect(result.current.selectedCell).toBeNull();
+    });
+
+    it("右に移動できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("right");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 1 });
+    });
+
+    it("左に移動できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 4);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("left");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 3 });
+    });
+
+    it("下に移動できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("down");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 1, col: 0 });
+    });
+
+    it("上に移動できる", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(1, 0);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("up");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+    });
+
+    it("右端で右に移動すると次の行の先頭に移る", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, COLUMNS - 1);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("right");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 1, col: 0 });
+    });
+
+    it("左端で左に移動すると前の行の末尾に移る", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(1, 0);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("left");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: COLUMNS - 1 });
+    });
+
+    it("最後の行の右端ではそれ以上移動しない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      const lastRow = INITIAL_ROWS - 1;
+      await act(async () => {
+        useChordGridStore.getState().selectCell(lastRow, COLUMNS - 1);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("right");
+      });
+      expect(result.current.selectedCell).toEqual({ row: lastRow, col: COLUMNS - 1 });
+    });
+
+    it("先頭行の左端ではそれ以上移動しない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 0);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("left");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 0 });
+    });
+
+    it("最上行で上に移動しても動かない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().selectCell(0, 4);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("up");
+      });
+      expect(result.current.selectedCell).toEqual({ row: 0, col: 4 });
+    });
+
+    it("最下行で下に移動しても動かない", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      const lastRow = INITIAL_ROWS - 1;
+      await act(async () => {
+        useChordGridStore.getState().selectCell(lastRow, 4);
+      });
+      await act(async () => {
+        useChordGridStore.getState().moveSelection("down");
+      });
+      expect(result.current.selectedCell).toEqual({ row: lastRow, col: 4 });
     });
   });
 

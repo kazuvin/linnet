@@ -52,6 +52,14 @@ export function selectChordFromPalette(chord: GridChord): void {
     useChordProgressionStore.getState().setActiveChordOverride(toProgressionChord(chord, id));
   }
   useFretboardStore.getState().resetSelectedScaleType();
+
+  // フレットボードセクションまでスクロール
+  if (typeof window !== "undefined") {
+    const el = document.getElementById("fretboard-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
 }
 
 /**
@@ -61,6 +69,14 @@ export function selectChordFromPalette(chord: GridChord): void {
 export function addChordToGrid(chord: GridChord): void {
   useChordGridStore.getState().addChordToNextBeat(chord);
   setActiveChordAndResetScale(chord, `grid-${chord.rootName}-${chord.quality}`);
+
+  // フレットボードセクションまでスクロール
+  if (typeof window !== "undefined") {
+    const el = document.getElementById("fretboard-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
 }
 
 /**

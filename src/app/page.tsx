@@ -17,7 +17,7 @@ export default function Home() {
             <ChordGrid />
           </Card>
         </div>
-        <Card className="min-w-0 overflow-hidden">
+        <Card id="fretboard-section" className="min-w-0 overflow-hidden">
           <Fretboard />
         </Card>
         <GuitarVoicingCard />

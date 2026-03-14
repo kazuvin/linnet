@@ -10,9 +10,9 @@ type LegendItem = {
 };
 
 const BASE_ITEMS: readonly LegendItem[] = [
-  { label: "Root", dotClass: "bg-chord-root text-chord-root-fg" },
-  { label: "Chord Tone", dotClass: "bg-chord-tone text-chord-tone-fg" },
-  { label: "Scale Tone", dotClass: "bg-scale-tone text-scale-tone-fg" },
+  { label: "ルート", dotClass: "bg-chord-root text-chord-root-fg" },
+  { label: "コードトーン", dotClass: "bg-chord-tone text-chord-tone-fg" },
+  { label: "スケールトーン", dotClass: "bg-scale-tone text-scale-tone-fg" },
 ];
 
 const CHARACTERISTIC_ITEM: LegendItem = {
@@ -22,7 +22,7 @@ const CHARACTERISTIC_ITEM: LegendItem = {
 };
 
 const AVOID_ITEM: LegendItem = {
-  label: "Avoid",
+  label: "アヴォイド",
   dotClass: "bg-avoid-note text-avoid-note-fg",
 };
 

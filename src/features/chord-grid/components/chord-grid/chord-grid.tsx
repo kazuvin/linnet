@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import {
   MinusIcon,
   PlayIcon,
@@ -16,9 +16,10 @@ import {
   type PaletteDragData,
 } from "@/features/chord-board/components/chord-palette/chord-palette";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
+import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { deleteSelectedGridCell, selectGridCell } from "@/features/store-coordination";
 import type { DragItem } from "@/lib/dnd";
-import { useDrop } from "@/lib/dnd";
+import { useDrag, useDrop } from "@/lib/dnd";
 import { cn } from "@/lib/utils";
 import { useGridPlayback } from "../../hooks/use-grid-playback";
 import type { GridChord } from "../../stores/chord-grid-store";
@@ -48,11 +49,9 @@ function getChordDisplayForCell(
   if (cell !== null) {
     return { label: cell.symbol, chord: cell, isSustain: false };
   }
-  // 最大15セル前まで遡る（16セル固定持続、行またぎ対応）
+  // 先頭まで遡り、最も近いコードを探す（次のコードまで無制限持続）
   const totalPos = rowIndex * COLUMNS + colIndex;
-  for (let offset = 1; offset < COLUMNS; offset++) {
-    const pos = totalPos - offset;
-    if (pos < 0) break;
+  for (let pos = totalPos - 1; pos >= 0; pos--) {
     const r = Math.floor(pos / COLUMNS);
     const c = pos % COLUMNS;
     if (rows[r][c] !== null) {
@@ -72,6 +71,7 @@ type GridCellProps = {
   isCurrentStep: boolean;
   isSelected: boolean;
   onClick: () => void;
+  onDoubleClick?: () => void;
 };
 
 function GridCell({
@@ -84,8 +84,10 @@ function GridCell({
   isCurrentStep,
   isSelected,
   onClick,
+  onDoubleClick,
 }: GridCellProps) {
   const setCell = useChordGridStore((s) => s.setCell);
+  const clearCell = useChordGridStore((s) => s.clearCell);
   const clearSelection = useChordGridStore((s) => s.clearSelection);
 
   const { dropAttributes, isOver } = useDrop<PaletteDragData>({
@@ -102,9 +104,47 @@ function GridCell({
         romanNumeral: data.romanNumeral,
         degree: data.degree,
       };
-      setCell(rowIndex, col, chord);
+
+      if (data.gridPosition) {
+        // グリッド内ドラッグ: 入れ替え or 移動
+        const src = data.gridPosition;
+        const isSameCell = src.row === rowIndex && src.col === col;
+        if (isSameCell) return;
+
+        const targetChord = useChordGridStore.getState().rows[rowIndex]?.[col];
+        if (targetChord) {
+          // 入れ替え: ドロップ先のコードをドラッグ元に移す
+          setCell(src.row, src.col, targetChord);
+        } else {
+          // 移動: ドラッグ元をクリア
+          clearCell(src.row, src.col);
+        }
+        setCell(rowIndex, col, chord);
+      } else {
+        // パレットからのドラッグ
+        setCell(rowIndex, col, chord);
+      }
       clearSelection();
     },
+  });
+
+  // コードがあるセルはドラッグ可能
+  const dragData: PaletteDragData | null = cellChord
+    ? {
+        rootName: cellChord.rootName,
+        quality: cellChord.quality,
+        symbol: cellChord.symbol,
+        source: cellChord.source,
+        chordFunction: cellChord.chordFunction,
+        romanNumeral: cellChord.romanNumeral,
+        degree: cellChord.degree,
+        gridPosition: { row: rowIndex, col },
+      }
+    : null;
+
+  const { dragAttributes, isDragging } = useDrag<PaletteDragData>({
+    type: CHORD_DRAG_TYPE,
+    data: dragData as PaletteDragData,
   });
 
   return (
@@ -112,11 +152,12 @@ function GridCell({
       key={`cell-${String(rowIndex)}-${String(col)}`}
       type="button"
       className={cn(
-        "relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-sm border transition-all duration-150 md:w-7 lg:aspect-square lg:h-auto lg:w-auto lg:flex-1",
+        "relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border transition-all duration-150 md:w-7 lg:aspect-square lg:h-auto lg:w-auto lg:flex-1",
         "ring-0 ring-foreground ring-offset-0 ring-offset-background",
         isCurrentStep && "ring-2 ring-offset-2",
         isOver && "z-10 ring-2 ring-primary ring-offset-2",
-        isSelected && "z-10 ring-2 ring-offset-2",
+        isSelected && "z-10 ring-2 ring-primary ring-offset-2",
+        isDragging && "opacity-30",
         cellChord
           ? cn(
               FUNCTION_CELL_STYLES[cellChord.chordFunction] ?? "border-foreground/10 bg-background",
@@ -131,10 +172,14 @@ function GridCell({
             : cn("border-foreground/10 bg-background", isCurrentStep && "bg-surface-elevated")
       )}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
       {...dropAttributes}
+      {...(cellChord ? dragAttributes : {})}
     >
       {cellChord ? (
-        <span className="font-bold text-[8px] leading-none">{label}</span>
+        <span className="max-w-full truncate px-0.5 font-bold text-[8px] leading-none">
+          {label}
+        </span>
       ) : isSustain ? (
         <span className="text-[8px] text-muted/30">-</span>
       ) : null}
@@ -155,13 +200,54 @@ export function ChordGrid() {
   const isMuted = useChordPlaybackStore((s) => s.isMuted);
   const toggleMute = useChordPlaybackStore((s) => s.toggleMute);
   const { togglePlayback } = useGridPlayback();
-  const hasChords = useChordGridStore((s) => s.getPlayableRowCount()) > 0;
+  const playableRowCount = useChordGridStore((s) => s.getPlayableRowCount());
+  const hasChords = playableRowCount > 0;
 
   const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
 
   const handleCellClick = useCallback((rowIndex: number, col: number) => {
     selectGridCell(rowIndex, col);
   }, []);
+
+  const clearSelection = useChordGridStore((s) => s.clearSelection);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Ignore if user is typing in an input
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      // Arrow keys - work with moveSelection (no-ops if no selection)
+      if (
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight" ||
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown"
+      ) {
+        e.preventDefault();
+        const directionMap: Record<string, "left" | "right" | "up" | "down"> = {
+          ArrowLeft: "left",
+          ArrowRight: "right",
+          ArrowUp: "up",
+          ArrowDown: "down",
+        };
+        useChordGridStore.getState().moveSelection(directionMap[e.key]);
+        return;
+      }
+
+      if (!selectedCell) return;
+
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        deleteSelectedGridCell();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        clearSelection();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedCell, clearSelection]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -179,7 +265,7 @@ export function ChordGrid() {
                   "border-border bg-surface-elevated"
               )}
             >
-              <span className="font-bold text-[8px] leading-none">{selectedChord.symbol}</span>
+              <span className="font-bold text-sm leading-none">{selectedChord.symbol}</span>
               <button
                 type="button"
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
@@ -230,7 +316,11 @@ export function ChordGrid() {
             <button
               type="button"
               className="rounded-full px-3 py-1.5 text-muted text-sm transition-colors hover:bg-foreground/5 hover:text-foreground"
-              onClick={clearGrid}
+              onClick={() => {
+                if (window.confirm("グリッドをクリアしますか？")) {
+                  clearGrid();
+                }
+              }}
             >
               Clear
             </button>
@@ -261,57 +351,84 @@ export function ChordGrid() {
           </div>
 
           {/* 行 */}
-          {rows.map((rowCells, rowIndex) => (
-            <div key={`row-${String(rowIndex)}`} className="flex items-center gap-0.5">
-              {/* セル */}
-              {COL_INDICES.map((col) => {
-                const {
-                  label,
-                  chord: displayChord,
-                  isSustain,
-                } = getChordDisplayForCell(rows, rowIndex, col);
-                const cellChord = rowCells[col];
-                const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
-                const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
+          {rows.map((rowCells, rowIndex) => {
+            const isOutOfPlayRange = hasChords && rowIndex >= playableRowCount;
+            return (
+              <div
+                key={`row-${String(rowIndex)}`}
+                className={cn("flex items-center gap-0.5", isOutOfPlayRange && "opacity-40")}
+              >
+                {/* セル */}
+                {COL_INDICES.map((col) => {
+                  const {
+                    label,
+                    chord: displayChord,
+                    isSustain,
+                  } = getChordDisplayForCell(rows, rowIndex, col);
+                  const cellChord = rowCells[col];
+                  const isCurrentStep = isPlaying && currentRow === rowIndex && currentCol === col;
+                  const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
 
-                return (
-                  <GridCell
-                    key={`cell-${String(rowIndex)}-${String(col)}`}
-                    rowIndex={rowIndex}
-                    col={col}
-                    cellChord={cellChord}
-                    displayChord={displayChord}
-                    label={label}
-                    isSustain={isSustain}
-                    isCurrentStep={isCurrentStep}
-                    isSelected={isSelected}
-                    onClick={() => handleCellClick(rowIndex, col)}
-                  />
-                );
-              })}
+                  return (
+                    <GridCell
+                      key={`cell-${String(rowIndex)}-${String(col)}`}
+                      rowIndex={rowIndex}
+                      col={col}
+                      cellChord={cellChord}
+                      displayChord={displayChord}
+                      label={label}
+                      isSustain={isOutOfPlayRange ? false : isSustain}
+                      isCurrentStep={isCurrentStep}
+                      isSelected={isSelected}
+                      onClick={() => handleCellClick(rowIndex, col)}
+                      onDoubleClick={
+                        cellChord
+                          ? () => {
+                              useChordGridStore.getState().clearCell(rowIndex, col);
+                              useChordProgressionStore.getState().setActiveChordOverride(null);
+                            }
+                          : undefined
+                      }
+                    />
+                  );
+                })}
 
-              {/* 行削除ボタン */}
-              <div className="flex w-6 shrink-0 items-center justify-center">
-                {rows.length > 1 && (
-                  <button
-                    type="button"
-                    className="flex h-5 w-5 items-center justify-center rounded text-muted/40 transition-colors hover:bg-foreground/10 hover:text-foreground"
-                    onClick={() => removeRow(rowIndex)}
-                    title="行を削除"
-                  >
-                    <MinusIcon className="h-3 w-3" />
-                  </button>
-                )}
+                {/* 行削除ボタン */}
+                <div className="flex w-6 shrink-0 items-center justify-center">
+                  {rows.length > 1 && (
+                    <button
+                      type="button"
+                      className="flex h-5 w-5 items-center justify-center rounded text-muted/40 transition-colors hover:bg-foreground/10 hover:text-foreground"
+                      onClick={() => removeRow(rowIndex)}
+                      title="行を削除"
+                    >
+                      <MinusIcon className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* ガイド */}
-      {!hasChords && (
-        <p className="text-center text-muted text-sm">コードをドラッグしてグリッドに追加</p>
-      )}
+      {selectedCell ? (
+        <p className="fade-in animate-in text-center text-muted text-sm duration-200">
+          パレットからコードを選択して{selectedChord ? "置換" : "配置"} ·{" "}
+          <span className="text-foreground/40">Esc</span> で選択解除
+          {selectedChord ? (
+            <>
+              {" "}
+              · <span className="text-foreground/40">Delete</span> で削除
+            </>
+          ) : null}
+        </p>
+      ) : !hasChords ? (
+        <p className="text-center text-muted text-sm">
+          コードをドラッグ、またはクリックしてグリッドに追加
+        </p>
+      ) : null}
     </div>
   );
 }
