@@ -6,6 +6,18 @@ import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
 
 /**
+ * フレットボードセクションまでスムーズスクロールする。
+ */
+function scrollToFretboard(): void {
+  if (typeof window !== "undefined") {
+    const el = document.getElementById("fretboard-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+}
+
+/**
  * GridChord から ProgressionChord を生成する。
  */
 function toProgressionChord(chord: GridChord, id: string) {
@@ -53,13 +65,7 @@ export function selectChordFromPalette(chord: GridChord): void {
   }
   useFretboardStore.getState().resetSelectedScaleType();
 
-  // フレットボードセクションまでスクロール
-  if (typeof window !== "undefined") {
-    const el = document.getElementById("fretboard-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }
+  scrollToFretboard();
 }
 
 /**
@@ -70,13 +76,7 @@ export function addChordToGrid(chord: GridChord): void {
   useChordGridStore.getState().addChordToNextBeat(chord);
   setActiveChordAndResetScale(chord, `grid-${chord.rootName}-${chord.quality}`);
 
-  // フレットボードセクションまでスクロール
-  if (typeof window !== "undefined") {
-    const el = document.getElementById("fretboard-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }
+  scrollToFretboard();
 }
 
 /**
