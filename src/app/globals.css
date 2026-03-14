@@ -71,7 +71,7 @@
   /* ============================================
      Typography
      ============================================ */
-  --font-sans: var(--font-noto-serif), system-ui, serif;
+  --font-sans: "Noto Serif", "Georgia", serif;
 
   /* ============================================
      Radius — generous, soft feel

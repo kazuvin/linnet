@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Noto_Serif } from "next/font/google";
 import {
   GITHUB_URL,
   Header,
@@ -13,11 +12,6 @@ import {
 } from "@/components";
 import { Providers } from "./providers";
 import "./globals.css";
-
-const notoSerif = Noto_Serif({
-  variable: "--font-noto-serif",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -51,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={notoSerif.variable}>
+    <html lang="ja">
       <head>
         <meta
           name="viewport"

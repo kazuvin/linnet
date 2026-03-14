@@ -22,9 +22,7 @@ export default function ChordSearchPage() {
         <Card className="min-w-0 overflow-hidden">
           <ChordSearchResultsPanel />
         </Card>
-        <Card className="min-w-0 overflow-hidden">
-          <ChordSearchVoicingsPanel />
-        </Card>
+        <ChordSearchVoicingsPanel />
       </main>
     </PageTransition>
   );

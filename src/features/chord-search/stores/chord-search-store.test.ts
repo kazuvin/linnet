@@ -68,4 +68,45 @@ describe("useChordSearchStore", () => {
     useChordSearchStore.getState().clearAll();
     expect(useChordSearchStore.getState().selectedChord).toBeNull();
   });
+
+  it("同じ弦で別のフレットを選択すると、前の選択が置き換わる", () => {
+    const { togglePosition } = useChordSearchStore.getState();
+    togglePosition(6, 0); // 6弦0フレット
+    togglePosition(6, 3); // 6弦3フレット → 0フレットが置き換わる
+    const positions = useChordSearchStore.getState().selectedPositions;
+    expect(positions).toEqual([{ string: 6, fret: 3 }]);
+  });
+
+  it("同じ弦の同じフレットを再選択すると削除される", () => {
+    const { togglePosition } = useChordSearchStore.getState();
+    togglePosition(6, 3);
+    togglePosition(6, 3);
+    expect(useChordSearchStore.getState().selectedPositions).toEqual([]);
+  });
+
+  it("異なる弦では個別に選択できる", () => {
+    const { togglePosition } = useChordSearchStore.getState();
+    togglePosition(6, 0);
+    togglePosition(5, 2);
+    togglePosition(4, 2);
+    const positions = useChordSearchStore.getState().selectedPositions;
+    expect(positions).toHaveLength(3);
+    expect(positions).toEqual([
+      { string: 6, fret: 0 },
+      { string: 5, fret: 2 },
+      { string: 4, fret: 2 },
+    ]);
+  });
+
+  it("同じ弦で置き換えても他の弦の選択に影響しない", () => {
+    const { togglePosition } = useChordSearchStore.getState();
+    togglePosition(6, 0);
+    togglePosition(5, 2);
+    togglePosition(6, 3); // 6弦を置き換え
+    const positions = useChordSearchStore.getState().selectedPositions;
+    expect(positions).toEqual([
+      { string: 5, fret: 2 },
+      { string: 6, fret: 3 },
+    ]);
+  });
 });
