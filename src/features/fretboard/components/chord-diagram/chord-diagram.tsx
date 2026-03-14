@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { type ChordVoicing, getNoteAtPosition } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
 
@@ -6,6 +7,11 @@ type ChordDiagramProps = {
 };
 
 const MIN_DISPLAY_FRETS = 4;
+
+type NoteInfo = {
+  name: string;
+  isRoot: boolean;
+};
 
 /**
  * コードダイアグラム（コード譜）表示コンポーネント
@@ -30,6 +36,24 @@ export function ChordDiagram({ voicing }: ChordDiagramProps) {
   // 弦: 1弦(上) → 6弦(下)
   const strings = [1, 2, 3, 4, 5, 6] as const;
   const nutSpacerClass = isOpenPosition ? "w-[3px] shrink-0" : "w-px shrink-0";
+
+  // 押弦ポジションのノート情報を事前計算
+  const noteInfoMap = useMemo(() => {
+    const map = new Map<string, NoteInfo>();
+    const rootPC = voicing.chord.root.pitchClass;
+    for (let s = 1; s <= 6; s++) {
+      const idx = 6 - s;
+      const stringFret = frets[idx];
+      if (stringFret !== null && stringFret > 0) {
+        const note = getNoteAtPosition(s, stringFret);
+        map.set(`${s}-${stringFret}`, {
+          name: note.name,
+          isRoot: note.pitchClass === rootPC,
+        });
+      }
+    }
+    return map;
+  }, [frets, voicing.chord.root.pitchClass]);
 
   return (
     <div className="flex shrink-0 flex-col items-center gap-1 rounded-lg bg-surface p-2">
@@ -80,9 +104,7 @@ export function ChordDiagram({ voicing }: ChordDiagramProps) {
                   {displayFrets.map((fret) => {
                     const stringFret = frets[idx];
                     const isPressed = stringFret === fret;
-                    const isRoot =
-                      isPressed &&
-                      getNoteAtPosition(s, fret).pitchClass === voicing.chord.root.pitchClass;
+                    const noteInfo = isPressed ? noteInfoMap.get(`${s}-${fret}`) : undefined;
 
                     return (
                       <div key={fret} className="relative flex h-4 w-6 items-center justify-center">
@@ -96,16 +118,16 @@ export function ChordDiagram({ voicing }: ChordDiagramProps) {
                         {/* フレットの線（縦、右端） */}
                         <div className="absolute inset-y-0 right-0 w-px bg-foreground/15" />
                         {/* 押さえるポイント */}
-                        {isPressed && (
+                        {isPressed && noteInfo && (
                           <div
                             className={cn(
                               "relative z-10 flex size-3.5 items-center justify-center rounded-full font-bold text-[7px]",
-                              isRoot
+                              noteInfo.isRoot
                                 ? "bg-chord-root text-chord-root-fg"
                                 : "bg-chord-tone text-chord-tone-fg"
                             )}
                           >
-                            {getNoteAtPosition(s, fret).name}
+                            {noteInfo.name}
                           </div>
                         )}
                       </div>

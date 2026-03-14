@@ -115,11 +115,6 @@ export function FretboardGrid({
     return map;
   }, [positions]);
 
-  const positionsKey = useMemo(
-    () => positions.map((p) => `${p.string}-${p.fret}-${p.role}`).join("|"),
-    [positions]
-  );
-
   const handleCellClick = useCallback(
     (stringNum: number, fret: number) => {
       if (!searchMode) return;
@@ -197,7 +192,7 @@ export function FretboardGrid({
                   {/* Note dot */}
                   {pos && (
                     <div
-                      key={`${positionsKey}-${stringNum}-${fret}`}
+                      key={`${pos.role}-${stringNum}-${fret}`}
                       className={cn(
                         "relative z-10 flex size-5 items-center justify-center rounded-full font-bold text-[10px]",
                         "animate-note-pop",
