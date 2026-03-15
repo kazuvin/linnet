@@ -39,9 +39,6 @@ export function findChordPositions(
   // ベース音のピッチクラスを決定（指定なければルート）
   const bassPC = bassNoteName ? noteNameToPitchClass(bassNoteName) : chord.root.pitchClass;
 
-  // ベース音がコード構成音でなければ空を返す
-  if (!chordPCs.has(bassPC)) return [];
-
   const allVoicings: ChordVoicing[] = [];
 
   for (const bassString of ROOT_STRINGS) {

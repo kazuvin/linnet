@@ -591,14 +591,35 @@ describe("findChordPositions（ボイシング算出）", () => {
       expect(withBass.length).toBe(normal.length);
     });
 
-    it("bassNoteName がコード構成音でない場合は結果が空になる", () => {
-      // C メジャー (C, E, G) に F はないので結果なし
-      const voicings = findChordPositions("C", "major", 15, STANDARD_TUNING, "F");
-      expect(voicings.length).toBe(0);
+    it("bassNoteName が非構成音でもボイシングが生成される", () => {
+      // C/D: Cメジャーで D がベース（非構成音）
+      const voicings = findChordPositions("C", "major", 15, STANDARD_TUNING, "D");
+      expect(voicings.length).toBeGreaterThan(0);
+
+      for (const v of voicings) {
+        // ベース弦の音が D (pitchClass 2) であること
+        const bassStringIndex = v.frets.findIndex((f) => f !== null);
+        const bassStringNum = 6 - bassStringIndex;
+        const bassFret = v.frets[bassStringIndex];
+        expect(bassFret).not.toBeNull();
+        const bassNote = getNoteAtPosition(bassStringNum, bassFret as number);
+        expect(bassNote.pitchClass).toBe(2); // D
+
+        // 全コードトーン (C=0, E=4, G=7) が含まれること
+        const pcs = new Set<number>();
+        v.frets.forEach((fret, i) => {
+          if (fret !== null) {
+            pcs.add(getNoteAtPosition(6 - i, fret).pitchClass);
+          }
+        });
+        expect(pcs.has(0)).toBe(true); // C
+        expect(pcs.has(4)).toBe(true); // E
+        expect(pcs.has(7)).toBe(true); // G
+      }
     });
 
-    it("Am/C のようなマイナーコードの転回形でも動作する", () => {
-      const voicings = findChordPositions("A", "minor", 15, STANDARD_TUNING, "C");
+    it("Am/G のようなペダルベースでも動作する", () => {
+      const voicings = findChordPositions("A", "minor", 15, STANDARD_TUNING, "G");
       expect(voicings.length).toBeGreaterThan(0);
 
       for (const v of voicings) {
@@ -607,7 +628,7 @@ describe("findChordPositions（ボイシング算出）", () => {
         const bassFret = v.frets[bassStringIndex];
         expect(bassFret).not.toBeNull();
         const bassNote = getNoteAtPosition(bassStringNum, bassFret as number);
-        expect(bassNote.pitchClass).toBe(0); // C
+        expect(bassNote.pitchClass).toBe(7); // G
       }
     });
   });

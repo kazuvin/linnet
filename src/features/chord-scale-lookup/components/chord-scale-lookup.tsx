@@ -29,6 +29,7 @@ import {
   getChordNotes,
   type ScaleType,
 } from "@/lib/music-theory";
+import { FLAT_NOTE_NAMES, NOTE_NAMES, noteNameToPitchClass } from "@/lib/music-theory/note";
 import { useChordScaleLookupStore } from "../stores/chord-scale-lookup-store";
 
 type QualityGroup = {
@@ -164,9 +165,17 @@ export function ChordSelector({
     data;
 
   const bassNoteOptions = useMemo(() => {
-    const notes = getChordNotes(rootName, quality);
-    // ルート以外の構成音をベース音候補として返す
-    return notes.filter((n) => n.name !== rootName).map((n) => n.name);
+    const rootPC = noteNameToPitchClass(rootName);
+    const chordNotes = getChordNotes(rootName, quality);
+    const chordPCs = new Set(chordNotes.map((n) => n.pitchClass));
+
+    return NOTE_NAMES.filter((_, i) => i !== rootPC).map((sharpName, _idx) => {
+      const pc = noteNameToPitchClass(sharpName);
+      const flatName = FLAT_NOTE_NAMES[pc];
+      const label = sharpName === flatName ? sharpName : `${sharpName}/${flatName}`;
+      const isChordTone = chordPCs.has(pc);
+      return { value: sharpName, label, isChordTone };
+    });
   }, [rootName, quality]);
 
   return (
@@ -206,9 +215,10 @@ export function ChordSelector({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__none__">なし（ルート）</SelectItem>
-            {bassNoteOptions.map((name) => (
-              <SelectItem key={name} value={name}>
-                {name}
+            {bassNoteOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+                {opt.isChordTone && <span className="ml-1 text-muted text-xs">構成音</span>}
               </SelectItem>
             ))}
           </SelectContent>
