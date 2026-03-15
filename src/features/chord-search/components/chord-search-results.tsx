@@ -139,7 +139,7 @@ export function ChordSearchResults({
           {rootGroups.map((group) => (
             <div key={group.label} className="flex flex-col gap-2">
               <h3 className="text-muted text-xs">{group.label}</h3>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+              <div className="grid grid-cols-4 gap-2 md:grid-cols-6 lg:grid-cols-8">
                 {group.results.map((result) => {
                   const isActive =
                     selectedChord?.rootName === result.rootName &&
@@ -166,7 +166,7 @@ export function ChordSearchResults({
           {inversionGroups.map((group) => (
             <div key={`inv-${group.label}`} className="flex flex-col gap-2">
               <h3 className="text-muted text-xs">{group.label}</h3>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+              <div className="grid grid-cols-4 gap-2 md:grid-cols-6 lg:grid-cols-8">
                 {group.results.map((result) => {
                   const isActive =
                     selectedChord?.rootName === result.rootName &&

@@ -48,4 +48,31 @@ describe("useChordScaleLookupStore", () => {
     useChordScaleLookupStore.getState().setQuality("minor");
     expect(useChordScaleLookupStore.getState().selectedScaleType).toBeNull();
   });
+
+  it("初期状態で bassNoteName は undefined", () => {
+    expect(useChordScaleLookupStore.getState().bassNoteName).toBeUndefined();
+  });
+
+  it("setBassNoteName でベース音を設定できる", () => {
+    useChordScaleLookupStore.getState().setBassNoteName("E");
+    expect(useChordScaleLookupStore.getState().bassNoteName).toBe("E");
+  });
+
+  it("setBassNoteName に undefined を渡すとリセットされる", () => {
+    useChordScaleLookupStore.getState().setBassNoteName("E");
+    useChordScaleLookupStore.getState().setBassNoteName(undefined);
+    expect(useChordScaleLookupStore.getState().bassNoteName).toBeUndefined();
+  });
+
+  it("setRootName するとベース音がリセットされる", () => {
+    useChordScaleLookupStore.getState().setBassNoteName("E");
+    useChordScaleLookupStore.getState().setRootName("D");
+    expect(useChordScaleLookupStore.getState().bassNoteName).toBeUndefined();
+  });
+
+  it("setQuality するとベース音がリセットされる", () => {
+    useChordScaleLookupStore.getState().setBassNoteName("E");
+    useChordScaleLookupStore.getState().setQuality("minor");
+    expect(useChordScaleLookupStore.getState().bassNoteName).toBeUndefined();
+  });
 });

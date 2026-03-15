@@ -26,6 +26,7 @@ import {
   findOverlayPositions,
   findScalesForChord,
   formatChordSymbol,
+  getChordNotes,
   type ScaleType,
 } from "@/lib/music-theory";
 import { useChordScaleLookupStore } from "../stores/chord-scale-lookup-store";
@@ -84,12 +85,21 @@ const ALL_QUALITY_OPTIONS = QUALITY_GROUPS.flatMap((g) => g.options);
 
 /** ストアから読み取り、重い計算を1回だけ実行するフック */
 export function useChordScaleData() {
-  const { rootName, quality, selectedScaleType, setRootName, setQuality, setSelectedScaleType } =
-    useChordScaleLookupStore();
+  const {
+    rootName,
+    quality,
+    selectedScaleType,
+    bassNoteName,
+    setRootName,
+    setQuality,
+    setSelectedScaleType,
+    setBassNoteName,
+  } = useChordScaleLookupStore();
   const { showCharacteristicNotes, showAvoidNotes, activeInstrument, setActiveInstrument } =
     useFretboardStore();
 
-  const chordSymbol = formatChordSymbol(rootName, quality);
+  const baseSymbol = formatChordSymbol(rootName, quality);
+  const chordSymbol = bassNoteName ? `${baseSymbol}/${bassNoteName}` : baseSymbol;
 
   const availableScales = useMemo(() => findScalesForChord(rootName, quality), [rootName, quality]);
 
@@ -107,15 +117,20 @@ export function useChordScaleData() {
     return findOverlayPositions(rootName, activeScaleType, rootName, quality);
   }, [rootName, quality, activeScaleType]);
 
-  const voicings = useMemo(() => findChordPositions(rootName, quality), [rootName, quality]);
+  const voicings = useMemo(
+    () => findChordPositions(rootName, quality, 15, undefined, bassNoteName),
+    [rootName, quality, bassNoteName]
+  );
 
   return {
     rootName,
     quality,
     selectedScaleType,
+    bassNoteName,
     setRootName,
     setQuality,
     setSelectedScaleType,
+    setBassNoteName,
     showCharacteristicNotes,
     showAvoidNotes,
     activeInstrument,
@@ -134,9 +149,25 @@ type ChordScaleData = ReturnType<typeof useChordScaleData>;
 export function ChordSelector({
   data,
 }: {
-  data: Pick<ChordScaleData, "rootName" | "quality" | "chordSymbol" | "setRootName" | "setQuality">;
+  data: Pick<
+    ChordScaleData,
+    | "rootName"
+    | "quality"
+    | "chordSymbol"
+    | "bassNoteName"
+    | "setRootName"
+    | "setQuality"
+    | "setBassNoteName"
+  >;
 }) {
-  const { rootName, quality, chordSymbol, setRootName, setQuality } = data;
+  const { rootName, quality, chordSymbol, bassNoteName, setRootName, setQuality, setBassNoteName } =
+    data;
+
+  const bassNoteOptions = useMemo(() => {
+    const notes = getChordNotes(rootName, quality);
+    // ルート以外の構成音をベース音候補として返す
+    return notes.filter((n) => n.name !== rootName).map((n) => n.name);
+  }, [rootName, quality]);
 
   return (
     <section className="flex flex-col gap-3">
@@ -162,6 +193,23 @@ export function ChordSelector({
                   </SelectItem>
                 ))}
               </SelectGroup>
+            ))}
+          </SelectContent>
+        </Select>
+        <span className="shrink-0 font-medium text-muted text-sm">ベース音</span>
+        <Select
+          value={bassNoteName ?? "__none__"}
+          onValueChange={(v) => setBassNoteName(v === "__none__" ? undefined : v)}
+        >
+          <SelectTrigger>
+            <SelectValue>{bassNoteName ?? "なし"}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">なし（ルート）</SelectItem>
+            {bassNoteOptions.map((name) => (
+              <SelectItem key={name} value={name}>
+                {name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
