@@ -9,6 +9,7 @@ export type FretPosition = {
 export type SelectedChord = {
   readonly rootName: string;
   readonly quality: ChordQuality;
+  readonly bassNoteName?: string;
 };
 
 export type ChordSearchState = {
@@ -18,7 +19,7 @@ export type ChordSearchState = {
 
 type ChordSearchActions = {
   togglePosition: (string: number, fret: number) => void;
-  selectChord: (rootName: string, quality: ChordQuality) => void;
+  selectChord: (rootName: string, quality: ChordQuality, bassNoteName?: string) => void;
   clearAll: () => void;
 };
 
@@ -45,11 +46,13 @@ export const useChordSearchStore = create<ChordSearchState & ChordSearchActions>
         selectedPositions: [...withoutSameString, { string, fret }],
       };
     }),
-  selectChord: (rootName, quality) =>
+  selectChord: (rootName, quality, bassNoteName?) =>
     set((state) => {
       const isSame =
-        state.selectedChord?.rootName === rootName && state.selectedChord?.quality === quality;
-      return { selectedChord: isSame ? null : { rootName, quality } };
+        state.selectedChord?.rootName === rootName &&
+        state.selectedChord?.quality === quality &&
+        state.selectedChord?.bassNoteName === bassNoteName;
+      return { selectedChord: isSame ? null : { rootName, quality, bassNoteName } };
     }),
   clearAll: () => set({ selectedPositions: [], selectedChord: null }),
 }));

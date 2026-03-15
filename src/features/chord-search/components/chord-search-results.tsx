@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils";
 type ChordSearchResultsProps = {
   selectedPitchClasses: readonly PitchClass[];
   bassPitchClass: PitchClass | undefined;
-  selectedChord: { rootName: string; quality: ChordQuality } | null;
-  onSelectChord: (rootName: string, quality: ChordQuality) => void;
+  selectedChord: { rootName: string; quality: ChordQuality; bassNoteName?: string } | null;
+  onSelectChord: (rootName: string, quality: ChordQuality, bassNoteName?: string) => void;
 };
 
 type GroupedResults = {
@@ -143,7 +143,8 @@ export function ChordSearchResults({
                 {group.results.map((result) => {
                   const isActive =
                     selectedChord?.rootName === result.rootName &&
-                    selectedChord?.quality === result.quality;
+                    selectedChord?.quality === result.quality &&
+                    !selectedChord?.bassNoteName;
                   return (
                     <ChordSearchCard
                       key={`${result.rootName}-${result.quality}`}
@@ -169,13 +170,16 @@ export function ChordSearchResults({
                 {group.results.map((result) => {
                   const isActive =
                     selectedChord?.rootName === result.rootName &&
-                    selectedChord?.quality === result.quality;
+                    selectedChord?.quality === result.quality &&
+                    selectedChord?.bassNoteName === result.bassNoteName;
                   return (
                     <ChordSearchCard
                       key={`inv-${result.rootName}-${result.quality}`}
                       result={result}
                       isActive={isActive}
-                      onClick={() => onSelectChord(result.rootName, result.quality)}
+                      onClick={() =>
+                        onSelectChord(result.rootName, result.quality, result.bassNoteName)
+                      }
                     />
                   );
                 })}

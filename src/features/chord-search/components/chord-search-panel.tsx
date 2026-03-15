@@ -84,7 +84,11 @@ export function ChordSearchVoicingsPanel() {
 
   return (
     <Card className="min-w-0 overflow-hidden">
-      <ChordSearchVoicings rootName={selectedChord.rootName} quality={selectedChord.quality} />
+      <ChordSearchVoicings
+        rootName={selectedChord.rootName}
+        quality={selectedChord.quality}
+        bassNoteName={selectedChord.bassNoteName}
+      />
     </Card>
   );
 }
