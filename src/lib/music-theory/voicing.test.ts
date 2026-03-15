@@ -1,4 +1,4 @@
-import { getNoteAtPosition, STANDARD_TUNING } from "./fretboard";
+import { getNoteAtPosition } from "./fretboard";
 import { type ChordVoicing, findChordPositions } from "./voicing";
 
 /** ボイシングからフレット文字列を生成 (例: "x32010") */
@@ -553,82 +553,6 @@ describe("findChordPositions（ボイシング算出）", () => {
           const currStringSpan = getStringSpan(group[i]);
           expect(prevStringSpan).toBeLessThanOrEqual(currStringSpan);
         }
-      }
-    });
-  });
-
-  describe("bassNoteName オプション（オンコード対応）", () => {
-    it("bassNoteName を指定すると、その音がベース弦に来るボイシングが生成される", () => {
-      // C/E: Cメジャーで E がベース音
-      const voicings = findChordPositions("C", "major", 15, STANDARD_TUNING, "E");
-      expect(voicings.length).toBeGreaterThan(0);
-
-      for (const v of voicings) {
-        // ベース弦（最も低い弦番号が大きい=低音側）の音が E (pitchClass 4) であること
-        const bassStringIndex = v.frets.findIndex((f) => f !== null);
-        const bassStringNum = 6 - bassStringIndex;
-        const bassFret = v.frets[bassStringIndex];
-        expect(bassFret).not.toBeNull();
-        const bassNote = getNoteAtPosition(bassStringNum, bassFret as number);
-        expect(bassNote.pitchClass).toBe(4); // E
-      }
-    });
-
-    it("全てのコードトーンが含まれる", () => {
-      const voicings = findChordPositions("C", "major", 15, STANDARD_TUNING, "E");
-      // C=0, E=4, G=7
-      for (const v of voicings) {
-        const pcs = getPitchClasses(v);
-        expect(pcs.has(0)).toBe(true);
-        expect(pcs.has(4)).toBe(true);
-        expect(pcs.has(7)).toBe(true);
-      }
-    });
-
-    it("bassNoteName がルートと同じ場合は通常のボイシングと同じ結果になる", () => {
-      const normal = findChordPositions("C", "major");
-      const withBass = findChordPositions("C", "major", 15, STANDARD_TUNING, "C");
-      expect(withBass.length).toBe(normal.length);
-    });
-
-    it("bassNoteName が非構成音でもボイシングが生成される", () => {
-      // C/D: Cメジャーで D がベース（非構成音）
-      const voicings = findChordPositions("C", "major", 15, STANDARD_TUNING, "D");
-      expect(voicings.length).toBeGreaterThan(0);
-
-      for (const v of voicings) {
-        // ベース弦の音が D (pitchClass 2) であること
-        const bassStringIndex = v.frets.findIndex((f) => f !== null);
-        const bassStringNum = 6 - bassStringIndex;
-        const bassFret = v.frets[bassStringIndex];
-        expect(bassFret).not.toBeNull();
-        const bassNote = getNoteAtPosition(bassStringNum, bassFret as number);
-        expect(bassNote.pitchClass).toBe(2); // D
-
-        // 全コードトーン (C=0, E=4, G=7) が含まれること
-        const pcs = new Set<number>();
-        v.frets.forEach((fret, i) => {
-          if (fret !== null) {
-            pcs.add(getNoteAtPosition(6 - i, fret).pitchClass);
-          }
-        });
-        expect(pcs.has(0)).toBe(true); // C
-        expect(pcs.has(4)).toBe(true); // E
-        expect(pcs.has(7)).toBe(true); // G
-      }
-    });
-
-    it("Am/G のようなペダルベースでも動作する", () => {
-      const voicings = findChordPositions("A", "minor", 15, STANDARD_TUNING, "G");
-      expect(voicings.length).toBeGreaterThan(0);
-
-      for (const v of voicings) {
-        const bassStringIndex = v.frets.findIndex((f) => f !== null);
-        const bassStringNum = 6 - bassStringIndex;
-        const bassFret = v.frets[bassStringIndex];
-        expect(bassFret).not.toBeNull();
-        const bassNote = getNoteAtPosition(bassStringNum, bassFret as number);
-        expect(bassNote.pitchClass).toBe(7); // G
       }
     });
   });

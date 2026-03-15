@@ -1,6 +1,5 @@
 import { type Chord, type ChordQuality, createChord } from "./chord";
 import { getNoteAtPosition, STANDARD_TUNING } from "./fretboard";
-import { noteNameToPitchClass } from "./note";
 
 /**
  * 各弦のフレット番号
@@ -30,23 +29,19 @@ export function findChordPositions(
   rootName: string,
   quality: ChordQuality,
   maxFret = 15,
-  tuning: readonly string[] = STANDARD_TUNING,
-  bassNoteName?: string
+  tuning: readonly string[] = STANDARD_TUNING
 ): readonly ChordVoicing[] {
   const chord = createChord(rootName, quality);
+  const rootPC = chord.root.pitchClass;
   const chordPCs = new Set(chord.notes.map((n) => n.pitchClass));
-
-  // ベース音のピッチクラスを決定（指定なければルート）
-  const bassPC = bassNoteName ? noteNameToPitchClass(bassNoteName) : chord.root.pitchClass;
-
   const allVoicings: ChordVoicing[] = [];
 
   for (const bassString of ROOT_STRINGS) {
-    for (let bassFret = 0; bassFret <= maxFret; bassFret++) {
-      const bassNote = getNoteAtPosition(bassString, bassFret, tuning);
-      if (bassNote.pitchClass !== bassPC) continue;
+    for (let rootFret = 0; rootFret <= maxFret; rootFret++) {
+      const rootNote = getNoteAtPosition(bassString, rootFret, tuning);
+      if (rootNote.pitchClass !== rootPC) continue;
 
-      const voicings = buildAllVoicings(chord, chordPCs, bassString, bassFret, maxFret, tuning);
+      const voicings = buildAllVoicings(chord, chordPCs, bassString, rootFret, maxFret, tuning);
       allVoicings.push(...voicings);
     }
   }

@@ -26,10 +26,8 @@ import {
   findOverlayPositions,
   findScalesForChord,
   formatChordSymbol,
-  getChordNotes,
   type ScaleType,
 } from "@/lib/music-theory";
-import { FLAT_NOTE_NAMES, NOTE_NAMES, noteNameToPitchClass } from "@/lib/music-theory/note";
 import { useChordScaleLookupStore } from "../stores/chord-scale-lookup-store";
 
 type QualityGroup = {
@@ -86,21 +84,12 @@ const ALL_QUALITY_OPTIONS = QUALITY_GROUPS.flatMap((g) => g.options);
 
 /** ストアから読み取り、重い計算を1回だけ実行するフック */
 export function useChordScaleData() {
-  const {
-    rootName,
-    quality,
-    selectedScaleType,
-    bassNoteName,
-    setRootName,
-    setQuality,
-    setSelectedScaleType,
-    setBassNoteName,
-  } = useChordScaleLookupStore();
+  const { rootName, quality, selectedScaleType, setRootName, setQuality, setSelectedScaleType } =
+    useChordScaleLookupStore();
   const { showCharacteristicNotes, showAvoidNotes, activeInstrument, setActiveInstrument } =
     useFretboardStore();
 
-  const baseSymbol = formatChordSymbol(rootName, quality);
-  const chordSymbol = bassNoteName ? `${baseSymbol}/${bassNoteName}` : baseSymbol;
+  const chordSymbol = formatChordSymbol(rootName, quality);
 
   const availableScales = useMemo(() => findScalesForChord(rootName, quality), [rootName, quality]);
 
@@ -118,20 +107,15 @@ export function useChordScaleData() {
     return findOverlayPositions(rootName, activeScaleType, rootName, quality);
   }, [rootName, quality, activeScaleType]);
 
-  const voicings = useMemo(
-    () => findChordPositions(rootName, quality, 15, undefined, bassNoteName),
-    [rootName, quality, bassNoteName]
-  );
+  const voicings = useMemo(() => findChordPositions(rootName, quality), [rootName, quality]);
 
   return {
     rootName,
     quality,
     selectedScaleType,
-    bassNoteName,
     setRootName,
     setQuality,
     setSelectedScaleType,
-    setBassNoteName,
     showCharacteristicNotes,
     showAvoidNotes,
     activeInstrument,
@@ -150,33 +134,9 @@ type ChordScaleData = ReturnType<typeof useChordScaleData>;
 export function ChordSelector({
   data,
 }: {
-  data: Pick<
-    ChordScaleData,
-    | "rootName"
-    | "quality"
-    | "chordSymbol"
-    | "bassNoteName"
-    | "setRootName"
-    | "setQuality"
-    | "setBassNoteName"
-  >;
+  data: Pick<ChordScaleData, "rootName" | "quality" | "chordSymbol" | "setRootName" | "setQuality">;
 }) {
-  const { rootName, quality, chordSymbol, bassNoteName, setRootName, setQuality, setBassNoteName } =
-    data;
-
-  const bassNoteOptions = useMemo(() => {
-    const rootPC = noteNameToPitchClass(rootName);
-    const chordNotes = getChordNotes(rootName, quality);
-    const chordPCs = new Set(chordNotes.map((n) => n.pitchClass));
-
-    return NOTE_NAMES.filter((_, i) => i !== rootPC).map((sharpName, _idx) => {
-      const pc = noteNameToPitchClass(sharpName);
-      const flatName = FLAT_NOTE_NAMES[pc];
-      const label = sharpName === flatName ? sharpName : `${sharpName}/${flatName}`;
-      const isChordTone = chordPCs.has(pc);
-      return { value: sharpName, label, isChordTone };
-    });
-  }, [rootName, quality]);
+  const { rootName, quality, chordSymbol, setRootName, setQuality } = data;
 
   return (
     <section className="flex flex-col gap-3">
@@ -202,24 +162,6 @@ export function ChordSelector({
                   </SelectItem>
                 ))}
               </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
-        <span className="shrink-0 font-medium text-muted text-sm">ベース音</span>
-        <Select
-          value={bassNoteName ?? "__none__"}
-          onValueChange={(v) => setBassNoteName(v === "__none__" ? undefined : v)}
-        >
-          <SelectTrigger>
-            <SelectValue>{bassNoteName ?? "なし"}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">なし（ルート）</SelectItem>
-            {bassNoteOptions.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-                {opt.isChordTone && <span className="ml-1 text-muted text-xs">構成音</span>}
-              </SelectItem>
             ))}
           </SelectContent>
         </Select>
