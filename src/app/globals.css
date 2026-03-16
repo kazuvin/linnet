@@ -120,6 +120,8 @@
   --animate-note-pop: note-pop 0.2s var(--ease-spring) both;
   --animate-stagger-fade-in-up: stagger-fade-in-up 0.25s var(--ease-default)
     calc(var(--stagger-index, 0) * 40ms) both;
+  --animate-page-enter: page-enter 0.35s var(--ease-default) both;
+  --animate-page-fade-out: page-fade-out 0.2s ease both;
 }
 
 /* ============================================
@@ -255,7 +257,7 @@
 }
 
 @utility animate-page-enter {
-  animation: page-enter 0.35s var(--ease-default) both;
+  animation: var(--animate-page-enter);
 }
 
 /* View Transitions (crossfade) */
@@ -266,11 +268,11 @@
 }
 
 ::view-transition-old(page-content) {
-  animation: page-fade-out 0.2s ease both;
+  animation: var(--animate-page-fade-out);
 }
 
 ::view-transition-new(page-content) {
-  animation: page-enter 0.35s var(--ease-default) both;
+  animation: var(--animate-page-enter);
 }
 
 @keyframes page-fade-out {
