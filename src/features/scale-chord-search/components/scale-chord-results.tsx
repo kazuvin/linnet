@@ -1,9 +1,7 @@
 "use client";
 
-import { ModeSelector } from "@/features/chord-board/components";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
-import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { selectChordFromPalette } from "@/features/store-coordination";
@@ -25,7 +23,7 @@ const FUNCTION_LABEL: Record<ChordFunction, string> = {
 
 export function ScaleChordResults() {
   const paletteChords = useCurrentModeChords();
-  const { selectedMode, chordType, setChordType } = useKeyStore();
+  const selectedMode = useKeyStore((s) => s.selectedMode);
   const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
 
   function handleClick(chordInfo: (typeof paletteChords)[number]) {
@@ -50,10 +48,6 @@ export function ScaleChordResults() {
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="font-medium text-sm">検索結果</h2>
         <span className="text-[11px] text-muted">{paletteChords.length}件</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
-        <ModeSelector />
-        <ChordTypeSelector value={chordType} onValueChange={setChordType} />
       </div>
       <div className="grid grid-cols-4 gap-2 md:grid-cols-6 lg:grid-cols-8">
         {paletteChords.map((chordInfo) => {

@@ -22,12 +22,6 @@ export function ChordScalePageContent() {
 
   return (
     <>
-      {/* ページヘッダー */}
-      <section>
-        <h1 className="font-bold text-3xl tracking-tight lg:text-4xl">コードからスケール検索</h1>
-        <p className="mt-2 text-muted text-sm">コードを選択すると、使えるスケールが表示されます</p>
-      </section>
-
       {/* コード選択（メイン入力） */}
       <ChordSelector data={data} />
 
