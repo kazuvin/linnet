@@ -8,13 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { type SelectedMode, useKeyStore } from "@/features/key-selection/stores/key-store";
-import {
-  ALL_CATEGORY_IDS,
-  ALL_MODE_SOURCES,
-  CATEGORY_DISPLAY_NAMES,
-  type CategoryId,
-  MODE_DISPLAY_NAMES,
-} from "@/lib/music-theory";
+import { ALL_MODE_SOURCES, MODE_DISPLAY_NAMES } from "@/lib/music-theory";
 
 type ModeOption = {
   value: SelectedMode;
@@ -28,10 +22,6 @@ const MODE_OPTIONS: readonly ModeOption[] = [
   ...ALL_MODE_SOURCES.map((source) => ({
     value: source as SelectedMode,
     label: MODE_DISPLAY_NAMES[source],
-  })),
-  ...ALL_CATEGORY_IDS.map((id: CategoryId) => ({
-    value: `category:${id}` as SelectedMode,
-    label: CATEGORY_DISPLAY_NAMES[id],
   })),
 ];
 

@@ -5,4 +5,9 @@ import type { ScaleType } from "./scale";
  * ダイアトニック、セカンダリードミナント、裏コード、
  * またはモーダルインターチェンジの親スケール。
  */
-export type ChordSource = "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
+export type ChordSource =
+  | "diatonic"
+  | "secondary-dominant"
+  | "tritone-substitution"
+  | "free"
+  | ScaleType;
