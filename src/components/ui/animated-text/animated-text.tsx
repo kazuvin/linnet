@@ -199,7 +199,7 @@ export function AnimatedText({
     <Tag
       ref={containerRef}
       className={className}
-      style={{ position: "relative", display: "inline-block" }}
+      style={{ position: "relative", display: "inline-block", whiteSpace: "nowrap" }}
     >
       {flowChars.map((dc) => (
         <span
