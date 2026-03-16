@@ -127,23 +127,33 @@ function FreeTabContent() {
 
   return (
     <>
-      {/* Root note selector */}
-      <TabNav value={selectedRoot} onValueChange={setSelectedRoot} variant="secondary" size="sm">
-        {ROOT_OPTIONS.map((option) => (
-          <TabNavItem key={option.value} value={option.value}>
-            {option.label}
-          </TabNavItem>
-        ))}
-      </TabNav>
-
-      {/* Quality group tabs */}
-      <TabNav value={selectedGroup} onValueChange={setSelectedGroup} variant="primary" size="sm">
-        {QUALITY_GROUPS.map((g) => (
-          <TabNavItem key={g.id} value={g.id}>
-            {g.label}
-          </TabNavItem>
-        ))}
-      </TabNav>
+      {/* Root & Quality group selectors */}
+      <div className="flex items-center gap-2">
+        <Select value={selectedRoot} onValueChange={setSelectedRoot}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ROOT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {QUALITY_GROUPS.map((g) => (
+              <SelectItem key={g.id} value={g.id}>
+                {g.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Chord cards */}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 lg:grid-cols-4 lg:gap-2">
