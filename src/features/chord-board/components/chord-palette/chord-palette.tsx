@@ -73,15 +73,9 @@ type ChordPaletteProps = {
   layout?: "row" | "wrap";
   /** "grid" でグリッドに追加、"view" でフレットボード表示のみ */
   interactionMode?: "grid" | "view";
-  /** セクション見出し */
-  heading?: string;
 };
 
-export function ChordPalette({
-  layout = "row",
-  interactionMode = "grid",
-  heading = "Chords",
-}: ChordPaletteProps) {
+export function ChordPalette({ layout = "row", interactionMode = "grid" }: ChordPaletteProps) {
   const paletteChords = useCurrentModeChords();
   const { selectedMode, chordType, setChordType } = useKeyStore();
   const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
@@ -135,7 +129,7 @@ export function ChordPalette({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
-        <h2 className="font-bold text-lg">{heading}</h2>
+        <h2 className="font-bold text-lg">Chords</h2>
         <div className="flex items-center gap-2">
           <ModeSelector />
           <ChordTypeSelector value={chordType} onValueChange={setChordType} />

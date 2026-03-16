@@ -118,8 +118,8 @@
   --animate-shake: shake 0.4s ease 0.3s both;
   --animate-draw: draw 0.3s ease forwards 0.15s;
   --animate-note-pop: note-pop 0.2s var(--ease-spring) both;
-  --animate-stagger-fade-in-up: stagger-fade-in-up 0.2s var(--ease-default)
-    calc(var(--stagger-index, 0) * 30ms) forwards;
+  --animate-stagger-fade-in-up: stagger-fade-in-up 0.25s var(--ease-default)
+    calc(var(--stagger-index, 0) * 40ms) both;
 }
 
 /* ============================================
@@ -246,14 +246,16 @@
 @keyframes page-enter {
   from {
     opacity: 0;
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @utility animate-page-enter {
-  animation: page-enter 0.15s ease both;
+  animation: page-enter 0.35s var(--ease-default) both;
 }
 
 /* ============================================

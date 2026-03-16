@@ -1,9 +1,9 @@
 "use client";
 
 import { Card } from "@/components";
-import { ChordBoard } from "@/features/chord-board/components";
 import { Fretboard, GuitarVoicingCard } from "@/features/fretboard/components";
 import { KeySelector } from "@/features/key-selection/components/key-selector";
+import { ScaleChordResults } from "./scale-chord-results";
 
 export function ScaleChordPageContent() {
   return (
@@ -19,9 +19,9 @@ export function ScaleChordPageContent() {
       {/* スケール選択（メイン入力） */}
       <KeySelector />
 
-      {/* コード一覧（メイン結果） */}
-      <Card className="min-w-0 overflow-y-auto overflow-x-hidden">
-        <ChordBoard layout="wrap" interactionMode="view" heading="含まれるコード" />
+      {/* コード一覧（検索結果） */}
+      <Card className="min-w-0 overflow-hidden">
+        <ScaleChordResults />
       </Card>
 
       {/* 詳細表示（副次的） */}
