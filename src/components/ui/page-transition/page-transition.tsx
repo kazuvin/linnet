@@ -5,11 +5,7 @@ export type PageTransitionProps = ComponentProps<"div">;
 
 export function PageTransition({ className, children, ...props }: PageTransitionProps) {
   return (
-    <div
-      className={cn("animate-page-enter", className)}
-      style={{ viewTransitionName: "page-content" }}
-      {...props}
-    >
+    <div className={cn("animate-page-enter", className)} {...props}>
       {children}
     </div>
   );
