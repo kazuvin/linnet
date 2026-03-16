@@ -52,6 +52,9 @@ function inferChordFunction(degree: number, quality: ChordQuality): ChordFunctio
     quality === "dominant9" ||
     quality === "dominant7sharp9" ||
     quality === "dominant7flat9" ||
+    quality === "dominant7flat5" ||
+    quality === "dominant11" ||
+    quality === "dominant13" ||
     quality === "augmented7"
   ) {
     return "dominant";

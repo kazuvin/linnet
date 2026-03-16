@@ -1,6 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { TabNav, TabNavItem } from "@/components/ui/tab-nav";
 import { FUNCTION_CELL_STYLES } from "@/features/chord-grid/lib/chord-function-styles";
 import type { GridChord } from "@/features/chord-grid/stores/chord-grid-store";
 import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
@@ -42,15 +50,18 @@ const QUALITY_GROUPS: QualityGroup[] = [
       "diminished7",
       "augmented7",
       "minorMajor7",
+      "augmentedMajor7",
     ],
   },
-  { id: "sus", label: "Sus", qualities: ["sus2", "sus4", "7sus4"] },
+  { id: "sus", label: "Sus", qualities: ["sus2", "sus4", "7sus2", "7sus4"] },
   { id: "6th", label: "6th", qualities: ["6", "minor6"] },
-  { id: "add", label: "Add", qualities: ["add9"] },
+  { id: "9th", label: "9th", qualities: ["add9", "dominant9", "major9", "minor9"] },
+  { id: "11th", label: "11th", qualities: ["dominant11", "minor11"] },
+  { id: "13th", label: "13th", qualities: ["dominant13", "major13", "minor13"] },
   {
-    id: "9th",
-    label: "9th",
-    qualities: ["dominant9", "major9", "minor9", "dominant7sharp9", "dominant7flat9"],
+    id: "altered",
+    label: "Altered",
+    qualities: ["dominant7flat5", "dominant7sharp9", "dominant7flat9"],
   },
 ];
 
@@ -116,41 +127,23 @@ function FreeTabContent() {
 
   return (
     <>
-      {/* Quality group tabs */}
-      <div className="flex flex-wrap gap-1">
-        {QUALITY_GROUPS.map((g) => (
-          <button
-            key={g.id}
-            type="button"
-            className={`rounded-md border px-2 py-1 font-semibold text-xs transition-colors ${
-              selectedGroup === g.id
-                ? "border-foreground bg-foreground text-background"
-                : "border-border bg-background text-foreground hover:bg-muted"
-            }`}
-            onClick={() => setSelectedGroup(g.id)}
-          >
-            {g.label}
-          </button>
-        ))}
-      </div>
-
       {/* Root note selector */}
-      <div className="flex flex-wrap gap-1">
+      <TabNav value={selectedRoot} onValueChange={setSelectedRoot} variant="secondary" size="sm">
         {ROOT_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`rounded-md border px-2 py-1 font-semibold text-xs transition-colors ${
-              selectedRoot === option.value
-                ? "border-foreground bg-foreground text-background"
-                : "border-border bg-background text-foreground hover:bg-muted"
-            }`}
-            onClick={() => setSelectedRoot(option.value)}
-          >
+          <TabNavItem key={option.value} value={option.value}>
             {option.label}
-          </button>
+          </TabNavItem>
         ))}
-      </div>
+      </TabNav>
+
+      {/* Quality group tabs */}
+      <TabNav value={selectedGroup} onValueChange={setSelectedGroup} variant="primary" size="sm">
+        {QUALITY_GROUPS.map((g) => (
+          <TabNavItem key={g.id} value={g.id}>
+            {g.label}
+          </TabNavItem>
+        ))}
+      </TabNav>
 
       {/* Chord cards */}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 lg:grid-cols-4 lg:gap-2">
@@ -219,14 +212,15 @@ function ScaleTabContent() {
     <>
       <div className="flex items-center gap-2">
         <ModeSelector />
-        <select
-          className="rounded-md border border-border bg-background px-2 py-1 text-xs"
-          value={chordType}
-          onChange={(e) => setChordType(e.target.value as "triad" | "seventh")}
-        >
-          <option value="triad">Triad</option>
-          <option value="seventh">Seventh</option>
-        </select>
+        <Select value={chordType} onValueChange={(v) => setChordType(v as "triad" | "seventh")}>
+          <SelectTrigger className="h-8 px-3 py-1 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="triad">Triad</SelectItem>
+            <SelectItem value="seventh">Seventh</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 lg:grid-cols-4 lg:gap-2">
@@ -277,30 +271,10 @@ export function FreeChordPicker() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4">
         <h2 className="font-bold text-lg">Chords</h2>
-        <div className="flex rounded-lg border border-border">
-          <button
-            type="button"
-            className={`rounded-l-lg px-3 py-1 font-semibold text-xs transition-colors ${
-              activeTab === "free"
-                ? "bg-foreground text-background"
-                : "bg-background text-foreground hover:bg-muted"
-            }`}
-            onClick={() => setActiveTab("free")}
-          >
-            Free
-          </button>
-          <button
-            type="button"
-            className={`rounded-r-lg border-border border-l px-3 py-1 font-semibold text-xs transition-colors ${
-              activeTab === "scale"
-                ? "bg-foreground text-background"
-                : "bg-background text-foreground hover:bg-muted"
-            }`}
-            onClick={() => setActiveTab("scale")}
-          >
-            Scale
-          </button>
-        </div>
+        <TabNav value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)} size="sm">
+          <TabNavItem value="free">Free</TabNavItem>
+          <TabNavItem value="scale">Scale</TabNavItem>
+        </TabNav>
       </div>
 
       {activeTab === "free" ? <FreeTabContent /> : <ScaleTabContent />}
