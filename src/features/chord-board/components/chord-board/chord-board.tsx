@@ -9,12 +9,14 @@ type ChordBoardProps = {
   layout?: "row" | "wrap";
   /** "grid" でグリッドに追加、"view" でフレットボード表示のみ */
   interactionMode?: "grid" | "view";
+  /** セクション見出し */
+  heading?: string;
 };
 
-export function ChordBoard({ layout, interactionMode }: ChordBoardProps) {
+export function ChordBoard({ layout, interactionMode, heading }: ChordBoardProps) {
   return (
     <section className="flex flex-col gap-6">
-      <ChordPalette layout={layout} interactionMode={interactionMode} />
+      <ChordPalette layout={layout} interactionMode={interactionMode} heading={heading} />
       <DragOverlay>
         {(item) => {
           const data = item.data as PaletteDragData;

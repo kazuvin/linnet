@@ -14,11 +14,8 @@ export function ChordSearchFretboard() {
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-muted text-sm">
-          フレットボード上の音をクリックして、その音を含むコードを検索できます
-        </p>
-        {selectedPositions.length > 0 && (
+      {selectedPositions.length > 0 && (
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={clearAll}
@@ -26,8 +23,8 @@ export function ChordSearchFretboard() {
           >
             クリア
           </button>
-        )}
-      </div>
+        </div>
+      )}
       <FretboardGrid
         positions={[]}
         maxFret={MAX_FRET}

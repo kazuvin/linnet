@@ -139,14 +139,9 @@ export function ChordSelector({
   const { rootName, quality, chordSymbol, setRootName, setQuality } = data;
 
   return (
-    <section className="flex flex-col gap-3">
-      <AnimatedText
-        as="h1"
-        text={chordSymbol}
-        className="font-bold text-5xl tracking-tight lg:text-6xl"
-      />
+    <section className="flex flex-wrap items-center gap-3">
+      <AnimatedText text={chordSymbol} className="font-bold text-3xl tracking-tight lg:text-4xl" />
       <div className="flex flex-wrap items-center gap-3">
-        <span className="shrink-0 font-medium text-muted text-sm">コード</span>
         <RootNoteSelector value={rootName} onValueChange={setRootName} />
         <Select value={quality} onValueChange={(v) => setQuality(v as ChordQuality)}>
           <SelectTrigger>
