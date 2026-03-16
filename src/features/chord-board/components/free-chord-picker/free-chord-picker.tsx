@@ -131,7 +131,7 @@ function FreeTabContent() {
       <div className="flex items-center gap-2">
         <Select value={selectedRoot} onValueChange={setSelectedRoot}>
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue>{ROOT_OPTIONS.find((o) => o.value === selectedRoot)?.label}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {ROOT_OPTIONS.map((option) => (
@@ -143,7 +143,7 @@ function FreeTabContent() {
         </Select>
         <Select value={selectedGroup} onValueChange={setSelectedGroup}>
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue>{group.label}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {QUALITY_GROUPS.map((g) => (
@@ -223,8 +223,8 @@ function ScaleTabContent() {
       <div className="flex items-center gap-2">
         <ModeSelector />
         <Select value={chordType} onValueChange={(v) => setChordType(v as "triad" | "seventh")}>
-          <SelectTrigger className="h-8 px-3 py-1 text-xs">
-            <SelectValue />
+          <SelectTrigger>
+            <SelectValue>{chordType === "triad" ? "Triad" : "Seventh"}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="triad">Triad</SelectItem>
