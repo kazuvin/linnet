@@ -258,6 +258,30 @@
   animation: page-enter 0.35s var(--ease-default) both;
 }
 
+/* View Transitions (crossfade) */
+@supports (view-transition-name: none) {
+  .animate-page-enter {
+    animation: none;
+  }
+}
+
+::view-transition-old(page-content) {
+  animation: page-fade-out 0.2s ease both;
+}
+
+::view-transition-new(page-content) {
+  animation: page-enter 0.35s var(--ease-default) both;
+}
+
+@keyframes page-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 /* ============================================
    Enter/Exit Animations (tailwindcss-animate pattern)
    Used for Dropdown, Dialog, and overlay components
