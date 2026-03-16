@@ -4,23 +4,15 @@ import {
   CHORD_DRAG_TYPE,
   type PaletteDragData,
 } from "@/features/chord-board/components/chord-palette/chord-palette";
+import {
+  FUNCTION_CELL_STYLES,
+  SUSTAIN_CELL_STYLES,
+} from "@/features/chord-grid/lib/chord-function-styles";
 import type { DragItem } from "@/lib/dnd";
 import { useDrag, useDrop } from "@/lib/dnd";
 import { cn } from "@/lib/utils";
 import type { GridChord } from "../../stores/chord-grid-store";
 import { useChordGridStore } from "../../stores/chord-grid-store";
-
-const FUNCTION_CELL_STYLES: Record<string, string> = {
-  tonic: "border-transparent bg-tonic text-tonic-foreground",
-  subdominant: "border-transparent bg-subdominant text-subdominant-foreground",
-  dominant: "border-transparent bg-dominant text-dominant-foreground",
-};
-
-const SUSTAIN_CELL_STYLES: Record<string, string> = {
-  tonic: "bg-tonic/40",
-  subdominant: "bg-subdominant/40",
-  dominant: "bg-dominant/40",
-};
 
 type GridCellProps = {
   rowIndex: number;

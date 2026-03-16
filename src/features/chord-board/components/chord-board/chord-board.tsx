@@ -1,14 +1,9 @@
 "use client";
 
+import { FUNCTION_CELL_STYLES } from "@/features/chord-grid/lib/chord-function-styles";
 import { DragOverlay } from "@/lib/dnd";
 import { ChordPalette } from "../chord-palette";
 import type { PaletteDragData } from "../chord-palette/chord-palette";
-
-const FUNCTION_CELL_STYLES: Record<string, string> = {
-  tonic: "border-transparent bg-tonic text-tonic-foreground",
-  subdominant: "border-transparent bg-subdominant text-subdominant-foreground",
-  dominant: "border-transparent bg-dominant text-dominant-foreground",
-};
 
 type ChordBoardProps = {
   layout?: "row" | "wrap";
