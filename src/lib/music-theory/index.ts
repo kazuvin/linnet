@@ -30,7 +30,13 @@ export {
 // Chord-Scale Lookup
 export { type ChordScaleMatch, findScalesForChord } from "./chord-scale-lookup";
 // Chord Search
-export { type ChordSearchResult, findChordsContainingNotes } from "./chord-search";
+export {
+  type ChordSearchResult,
+  type ClassifiedChordSearchResult,
+  type ClassifiedResults,
+  classifyChordSearchResults,
+  findChordsContainingNotes,
+} from "./chord-search";
 // Note
 
 // Chord

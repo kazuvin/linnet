@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findChordsContainingNotes } from "./chord-search";
+import { classifyChordSearchResults, findChordsContainingNotes } from "./chord-search";
 import type { PitchClass } from "./note";
 
 describe("findChordsContainingNotes", () => {
@@ -63,5 +63,53 @@ describe("findChordsContainingNotes", () => {
       11 as PitchClass,
     ]);
     expect(fourNotes.length).toBeLessThan(twoNotes.length);
+  });
+});
+
+describe("classifyChordSearchResults", () => {
+  it("ベース音がルートと一致する場合、rootPositionに分類される", () => {
+    // C, E, G を選択、ベース音 = C (pitchClass 0)
+    const results = findChordsContainingNotes([0 as PitchClass, 4 as PitchClass, 7 as PitchClass]);
+    const classified = classifyChordSearchResults(results, 0 as PitchClass);
+
+    // Cメジャーはルートポジション
+    const cMajor = classified.rootPosition.find((r) => r.rootName === "C" && r.quality === "major");
+    expect(cMajor).toBeDefined();
+    expect(cMajor?.bassNoteName).toBeUndefined();
+  });
+
+  it("ベース音がルートと一致しない場合、inversionsに分類されbassNoteNameが付く", () => {
+    // C, E, G を選択、ベース音 = E (pitchClass 4)
+    const results = findChordsContainingNotes([0 as PitchClass, 4 as PitchClass, 7 as PitchClass]);
+    const classified = classifyChordSearchResults(results, 4 as PitchClass);
+
+    // Cメジャーは転回形（C/E）
+    const cMajorInversion = classified.inversions.find(
+      (r) => r.rootName === "C" && r.quality === "major"
+    );
+    expect(cMajorInversion).toBeDefined();
+    expect(cMajorInversion?.bassNoteName).toBe("E");
+    expect(cMajorInversion?.symbol).toBe("C/E");
+  });
+
+  it("ベース音がundefinedの場合、全てrootPositionに分類される（従来互換）", () => {
+    const results = findChordsContainingNotes([0 as PitchClass, 4 as PitchClass, 7 as PitchClass]);
+    const classified = classifyChordSearchResults(results, undefined);
+
+    expect(classified.inversions).toHaveLength(0);
+    expect(classified.rootPosition.length).toBe(results.length);
+  });
+
+  it("Am/Cのようにフラット系の音名でもスラッシュ表記が正しい", () => {
+    // A, C, E を選択、ベース音 = C (pitchClass 0)
+    const results = findChordsContainingNotes([9 as PitchClass, 0 as PitchClass, 4 as PitchClass]);
+    const classified = classifyChordSearchResults(results, 0 as PitchClass);
+
+    const amInversion = classified.inversions.find(
+      (r) => r.rootName === "A" && r.quality === "minor"
+    );
+    expect(amInversion).toBeDefined();
+    expect(amInversion?.bassNoteName).toBe("C");
+    expect(amInversion?.symbol).toBe("Am/C");
   });
 });
