@@ -15,7 +15,6 @@ export default function ChordSearchPage() {
   return (
     <PageTransition>
       <main className="container mx-auto grid gap-[var(--grid-gap)] overflow-x-hidden px-4 pt-24 pb-12 max-lg:gap-[var(--grid-gap-sm)]">
-        <h1 className="font-bold text-3xl tracking-tight lg:text-4xl">フレットからコード検索</h1>
         <Card className="min-w-0 overflow-hidden">
           <ChordSearchFretboard />
         </Card>

@@ -25,7 +25,7 @@ function ExitOverlay({ char, left, duration }: { char: string; left: number; dur
     el.style.transition = "none";
     el.style.opacity = "1";
     el.offsetHeight;
-    el.style.transition = `opacity ${duration}ms ease`;
+    el.style.transition = `opacity ${duration}ms var(--ease-default)`;
     el.style.opacity = "0";
   }, [duration]);
 
@@ -106,7 +106,7 @@ export function AnimatedText({
     if (!container) return;
     const cLeft = container.getBoundingClientRect().left;
     const transT = `transform ${duration}ms var(--ease-default)`;
-    const fadeT = `opacity ${duration}ms ease`;
+    const fadeT = `opacity ${duration}ms var(--ease-default)`;
 
     // Phase 1: 初期状態を一括設定（reflow なし）
     for (const dc of displayChars) {
