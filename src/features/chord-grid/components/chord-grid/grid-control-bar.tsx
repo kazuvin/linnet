@@ -3,16 +3,11 @@
 import { PlayIcon, StopIcon, TrashIcon, VolumeIcon, VolumeOffIcon } from "@/components/icons";
 import { IconButton } from "@/components/ui/button";
 import { NumberStepper } from "@/components/ui/number-stepper";
+import { FUNCTION_CELL_STYLES } from "@/features/chord-grid/lib/chord-function-styles";
 import { deleteSelectedGridCell } from "@/features/store-coordination";
 import { cn } from "@/lib/utils";
 import type { GridChord } from "../../stores/chord-grid-store";
 import { GridActionsMenu } from "../grid-actions-menu";
-
-const FUNCTION_CELL_STYLES: Record<string, string> = {
-  tonic: "border-transparent bg-tonic text-tonic-foreground",
-  subdominant: "border-transparent bg-subdominant text-subdominant-foreground",
-  dominant: "border-transparent bg-dominant text-dominant-foreground",
-};
 
 type GridControlBarProps = {
   selectedChord: GridChord | null;
