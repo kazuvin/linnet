@@ -1,12 +1,7 @@
 import { create } from "zustand";
-import type { CategoryId, ScaleType } from "@/lib/music-theory";
+import type { ScaleType } from "@/lib/music-theory";
 
-export type SelectedMode =
-  | "diatonic"
-  | "secondary-dominant"
-  | "tritone-substitution"
-  | ScaleType
-  | `category:${CategoryId}`;
+export type SelectedMode = "diatonic" | "secondary-dominant" | "tritone-substitution" | ScaleType;
 
 type KeyState = {
   rootName: string;

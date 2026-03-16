@@ -7,12 +7,14 @@ import type { PaletteDragData } from "../chord-palette/chord-palette";
 
 type ChordBoardProps = {
   layout?: "row" | "wrap";
+  /** "grid" でグリッドに追加、"view" でフレットボード表示のみ */
+  interactionMode?: "grid" | "view";
 };
 
-export function ChordBoard({ layout }: ChordBoardProps) {
+export function ChordBoard({ layout, interactionMode }: ChordBoardProps) {
   return (
     <section className="flex flex-col gap-6">
-      <ChordPalette layout={layout} />
+      <ChordPalette layout={layout} interactionMode={interactionMode} />
       <DragOverlay>
         {(item) => {
           const data = item.data as PaletteDragData;

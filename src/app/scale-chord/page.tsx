@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { PageTransition } from "@/components";
-import { ChordScalePageContent } from "@/features/chord-scale-lookup/components";
+import { ScaleChordPageContent } from "@/features/scale-chord-search/components";
 
 export const metadata: Metadata = {
-  title: "コードからスケール検索",
-  description: "コードを選択して使えるスケールとボイシングを確認できます。",
+  title: "スケールからコード検索",
+  description: "スケールを選択して含まれるコードとボイシングを確認できます。",
 };
 
-export default function ChordScalePage() {
+export default function ScaleChordPage() {
   return (
     <PageTransition>
       <main className="container mx-auto grid gap-[var(--grid-gap)] overflow-x-hidden px-4 pt-24 pb-12 max-lg:gap-[var(--grid-gap-sm)]">
-        <ChordScalePageContent />
+        <ScaleChordPageContent />
       </main>
     </PageTransition>
   );

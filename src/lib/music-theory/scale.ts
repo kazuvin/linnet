@@ -26,6 +26,27 @@ export const SCALE_TYPES = [
   "lydian-augmented",
   "mixolydian-b6",
   "locrian-natural2",
+  // Pentatonic & Blues
+  "pentatonic-major",
+  "pentatonic-minor",
+  "blues",
+  // Symmetric
+  "whole-tone",
+  // Ethnic / Exotic
+  "double-harmonic",
+  "hungarian-minor",
+  "neapolitan-major",
+  "neapolitan-minor",
+  "persian",
+  "enigmatic",
+  // Japanese
+  "hirajoshi",
+  "in-sen",
+  // Bebop
+  "bebop-dominant",
+  "bebop-major",
+  // Other
+  "prometheus",
 ] as const;
 
 export type ScaleType = (typeof SCALE_TYPES)[number];
@@ -56,6 +77,27 @@ export const SCALE_PATTERNS: Record<ScaleType, readonly number[]> = {
   "lydian-augmented": [0, 2, 4, 6, 8, 9, 11],
   "mixolydian-b6": [0, 2, 4, 5, 7, 8, 10],
   "locrian-natural2": [0, 2, 3, 5, 6, 8, 10],
+  // Pentatonic & Blues
+  "pentatonic-major": [0, 2, 4, 7, 9],
+  "pentatonic-minor": [0, 3, 5, 7, 10],
+  blues: [0, 3, 5, 6, 7, 10],
+  // Symmetric
+  "whole-tone": [0, 2, 4, 6, 8, 10],
+  // Ethnic / Exotic
+  "double-harmonic": [0, 1, 4, 5, 7, 8, 11],
+  "hungarian-minor": [0, 2, 3, 6, 7, 8, 11],
+  "neapolitan-major": [0, 1, 3, 5, 7, 9, 11],
+  "neapolitan-minor": [0, 1, 3, 5, 7, 8, 11],
+  persian: [0, 1, 4, 5, 6, 8, 11],
+  enigmatic: [0, 1, 4, 6, 8, 10, 11],
+  // Japanese
+  hirajoshi: [0, 2, 3, 7, 8],
+  "in-sen": [0, 1, 5, 7, 10],
+  // Bebop
+  "bebop-dominant": [0, 2, 4, 5, 7, 9, 10, 11],
+  "bebop-major": [0, 2, 4, 5, 7, 8, 9, 11],
+  // Other
+  prometheus: [0, 2, 4, 6, 9, 10],
 } as const;
 
 export type Scale = {
@@ -94,6 +136,19 @@ const FLAT_PREFER_SCALE_TYPES = new Set<ScaleType>([
   "lydian-augmented",
   "mixolydian-b6",
   "locrian-natural2",
+  "pentatonic-minor",
+  "blues",
+  "double-harmonic",
+  "hungarian-minor",
+  "neapolitan-major",
+  "neapolitan-minor",
+  "persian",
+  "enigmatic",
+  "hirajoshi",
+  "in-sen",
+  "bebop-dominant",
+  "bebop-major",
+  "prometheus",
 ]);
 
 function shouldPreferFlatForScale(rootName: string, type: ScaleType): boolean {

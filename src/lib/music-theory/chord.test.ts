@@ -52,8 +52,41 @@ describe("chord", () => {
       expect(CHORD_INTERVAL_PATTERNS.augmented7).toEqual([0, 4, 8, 10]);
     });
 
-    it("全22種類のコードクオリティが定義されている", () => {
-      expect(Object.keys(CHORD_INTERVAL_PATTERNS)).toHaveLength(22);
+    it("全30種類のコードクオリティが定義されている", () => {
+      expect(Object.keys(CHORD_INTERVAL_PATTERNS)).toHaveLength(30);
+    });
+
+    // 新規追加コード
+    it("augmentedMajor7は [0, 4, 8, 11]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.augmentedMajor7).toEqual([0, 4, 8, 11]);
+    });
+
+    it("dominant7flat5は [0, 4, 6, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.dominant7flat5).toEqual([0, 4, 6, 10]);
+    });
+
+    it("7sus2は [0, 2, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS["7sus2"]).toEqual([0, 2, 7, 10]);
+    });
+
+    it("dominant11は [0, 2, 4, 5, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.dominant11).toEqual([0, 2, 4, 5, 7, 10]);
+    });
+
+    it("minor11は [0, 2, 3, 5, 7, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.minor11).toEqual([0, 2, 3, 5, 7, 10]);
+    });
+
+    it("dominant13は [0, 2, 4, 7, 9, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.dominant13).toEqual([0, 2, 4, 7, 9, 10]);
+    });
+
+    it("major13は [0, 2, 4, 7, 9, 11]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.major13).toEqual([0, 2, 4, 7, 9, 11]);
+    });
+
+    it("minor13は [0, 2, 3, 7, 9, 10]", () => {
+      expect(CHORD_INTERVAL_PATTERNS.minor13).toEqual([0, 2, 3, 7, 9, 10]);
     });
 
     // テンションコード・拡張コード
@@ -289,11 +322,13 @@ describe("chord", () => {
         "minor7b5",
         "diminished7",
         "augmented7",
+        "augmentedMajor7",
         "sus2",
         "sus4",
         "6",
         "minor6",
         "minorMajor7",
+        "7sus2",
         "7sus4",
         "add9",
         "dominant9",
@@ -301,6 +336,12 @@ describe("chord", () => {
         "minor9",
         "dominant7sharp9",
         "dominant7flat9",
+        "dominant7flat5",
+        "dominant11",
+        "minor11",
+        "dominant13",
+        "major13",
+        "minor13",
       ];
       for (const quality of qualities) {
         const chord = createChord("C", quality);

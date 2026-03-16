@@ -20,13 +20,6 @@ export {
   SECONDARY_DOMINANT_SCALES,
   sortScalesWithDefault,
 } from "./available-scales";
-export {
-  ALL_CATEGORY_IDS,
-  CATEGORY_DISPLAY_NAMES,
-  type CategoryChordInfo,
-  type CategoryId,
-  getCategoryChords,
-} from "./category-codes";
 // Chord-Scale Lookup
 export { type ChordScaleMatch, findScalesForChord } from "./chord-scale-lookup";
 // Chord Search
@@ -61,6 +54,8 @@ export {
   getDiatonicSevenths,
   getDiatonicTriads,
 } from "./diatonic";
+// Free Chord
+export { buildFreeGridChord, buildFreeRomanNumeral, computeDegreeFromKey } from "./free-chord";
 // Fretboard
 export {
   type FretPosition,

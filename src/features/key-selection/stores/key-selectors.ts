@@ -1,12 +1,10 @@
 import { useMemo } from "react";
 import {
   ALL_MODE_SOURCES,
-  type CategoryId,
   type ChordSource,
   type DiatonicChordInfo,
   filterNonDiatonicChords,
   getAllModalInterchangeChords,
-  getCategoryChords,
   getChordFunction,
   getDiatonicChords,
   getModalInterchangeChords,
@@ -58,13 +56,6 @@ export function useModalInterchangeChordsByMode(): readonly ModalInterchangeMode
   );
 }
 
-function parseCategoryMode(mode: string): CategoryId | null {
-  if (mode.startsWith("category:")) {
-    return mode.slice("category:".length) as CategoryId;
-  }
-  return null;
-}
-
 export function useCurrentModeChords(): readonly PaletteChordInfo[] {
   const rootName = useKeyStore((s) => s.rootName);
   const selectedMode = useKeyStore((s) => s.selectedMode);
@@ -93,17 +84,6 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
         chord: ts.chord,
         chordFunction: "dominant" as const,
         isAvailable: true,
-      }));
-    }
-    const categoryId = parseCategoryMode(selectedMode);
-    if (categoryId) {
-      return getCategoryChords(rootName, categoryId, seventh).map((cc) => ({
-        degree: cc.degree,
-        romanNumeral: cc.romanNumeral,
-        chord: cc.chord,
-        chordFunction: cc.chordFunction,
-        isAvailable: true,
-        source: cc.source,
       }));
     }
     const scaleMode = selectedMode as ScaleType;

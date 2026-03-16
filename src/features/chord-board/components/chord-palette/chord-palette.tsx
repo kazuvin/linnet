@@ -5,7 +5,11 @@ import { useChordProgressionStore } from "@/features/chord-progression/stores/ch
 import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import { useCurrentModeChords } from "@/features/key-selection/stores/key-selectors";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
-import { addChordToGrid, replaceSelectedGridCell } from "@/features/store-coordination";
+import {
+  addChordToGrid,
+  replaceSelectedGridCell,
+  selectChordFromPalette,
+} from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
 import { useDrag } from "@/lib/dnd";
 import type { ChordFunction } from "@/lib/music-theory";
@@ -67,15 +71,17 @@ function DraggableChordCard({ chord, isSelected, onClick, dragData }: DraggableC
 
 type ChordPaletteProps = {
   layout?: "row" | "wrap";
+  /** "grid" でグリッドに追加、"view" でフレットボード表示のみ */
+  interactionMode?: "grid" | "view";
 };
 
-export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
+export function ChordPalette({ layout = "row", interactionMode = "grid" }: ChordPaletteProps) {
   const paletteChords = useCurrentModeChords();
   const { selectedMode, chordType, setChordType } = useKeyStore();
   const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
 
   function getEffectiveSource(chordInfo: (typeof paletteChords)[number]) {
-    return (chordInfo.source ?? selectedMode) as Exclude<typeof selectedMode, `category:${string}`>;
+    return (chordInfo.source ?? selectedMode) as typeof selectedMode;
   }
 
   function toGridChord(chordInfo: (typeof paletteChords)[number]): GridChord {
@@ -93,6 +99,14 @@ export function ChordPalette({ layout = "row" }: ChordPaletteProps) {
 
   function handleClick(chordInfo: (typeof paletteChords)[number]) {
     const gridChord = toGridChord(chordInfo);
+
+    if (interactionMode === "view") {
+      selectChordFromPalette(gridChord);
+      if (!useChordPlaybackStore.getState().isMuted) {
+        playChord(gridChord.rootName, gridChord.quality);
+      }
+      return;
+    }
 
     // グリッドでセルが選択中の場合、そのセルのコードを置換する
     const gridSelected = useChordGridStore.getState().selectedCell;

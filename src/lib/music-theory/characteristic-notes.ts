@@ -8,7 +8,7 @@ import type { ScaleType } from "./scale";
  * - チャーチモード: メジャー型はイオニアン、マイナー型はエオリアンとの差分
  * - その他: 親スケールとの差分や、そのスケール固有の特徴的な音程
  */
-export const CHARACTERISTIC_INTERVALS: Record<ScaleType, readonly number[]> = {
+export const CHARACTERISTIC_INTERVALS: Partial<Record<ScaleType, readonly number[]>> = {
   // チャーチモード
   major: [5], // P4 — リディアンとの差（半音上にM3がある唯一の音）
   dorian: [9], // M6 — エオリアンとの差（♮6）
@@ -41,6 +41,33 @@ export const CHARACTERISTIC_INTERVALS: Record<ScaleType, readonly number[]> = {
   "lydian-dominant": [6, 10], // #4, b7 — リディアン+ミクソリディアンの特徴
   "half-whole-diminished": [1, 6], // b2, b5 — 対称スケールの特徴的な音
   "phrygian-dominant": [1, 4], // b2, M3 — フリジアン+メジャー3rdの特徴的組み合わせ
+
+  // Pentatonic & Blues
+  "pentatonic-major": [7], // P5 — ペンタトニックの安定感の象徴
+  "pentatonic-minor": [3], // m3 — ブルーノートの始まり
+  blues: [6], // b5 — ブルーノート
+
+  // Symmetric
+  "whole-tone": [4, 8], // M3, #5 — 全音スケールの特徴
+
+  // Ethnic / Exotic
+  "double-harmonic": [1, 11], // b2, M7 — 独特の半音関係
+  "hungarian-minor": [6, 11], // #4, M7 — ハンガリアンの特徴
+  "neapolitan-major": [1], // b2 — ナポリの特徴
+  "neapolitan-minor": [1, 8], // b2, b6 — ナポリマイナーの特徴
+  persian: [1, 6], // b2, b5 — ペルシャンの特徴
+  enigmatic: [1, 6, 10], // b2, #4, b7 — エニグマティックの特徴
+
+  // Japanese
+  hirajoshi: [3, 8], // m3, m6 — 平調子の特徴
+  "in-sen": [1, 10], // b2, b7 — 陰旋の特徴
+
+  // Bebop
+  "bebop-dominant": [10, 11], // b7, M7 — パッシングトーンとしてのM7
+  "bebop-major": [8, 9], // b6, M6 — パッシングトーンとしてのb6
+
+  // Other
+  prometheus: [6, 9], // #4, M6 — プロメテウスの特徴
 } as const;
 
 /**
@@ -54,8 +81,10 @@ export function getCharacteristicPitchClasses(
   const intervals = CHARACTERISTIC_INTERVALS[scaleType];
 
   const pitchClasses = new Set<PitchClass>();
-  for (const interval of intervals) {
-    pitchClasses.add(((root.pitchClass + interval) % 12) as PitchClass);
+  if (intervals) {
+    for (const interval of intervals) {
+      pitchClasses.add(((root.pitchClass + interval) % 12) as PitchClass);
+    }
   }
 
   return pitchClasses;

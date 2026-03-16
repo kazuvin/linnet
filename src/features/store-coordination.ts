@@ -6,18 +6,6 @@ import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
 
 /**
- * フレットボードセクションまでスムーズスクロールする。
- */
-function scrollToFretboard(): void {
-  if (typeof window !== "undefined") {
-    const el = document.getElementById("fretboard-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }
-}
-
-/**
  * GridChord から ProgressionChord を生成する。
  */
 function toProgressionChord(chord: GridChord, id: string) {
@@ -64,8 +52,6 @@ export function selectChordFromPalette(chord: GridChord): void {
     useChordProgressionStore.getState().setActiveChordOverride(toProgressionChord(chord, id));
   }
   useFretboardStore.getState().resetSelectedScaleType();
-
-  scrollToFretboard();
 }
 
 /**
@@ -75,8 +61,6 @@ export function selectChordFromPalette(chord: GridChord): void {
 export function addChordToGrid(chord: GridChord): void {
   useChordGridStore.getState().addChordToNextBeat(chord);
   setActiveChordAndResetScale(chord, `grid-${chord.rootName}-${chord.quality}`);
-
-  scrollToFretboard();
 }
 
 /**

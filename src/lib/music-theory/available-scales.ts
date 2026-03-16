@@ -20,7 +20,7 @@ export const SECONDARY_DOMINANT_SCALES: readonly AvailableScaleInfo[] = [
 ];
 
 /** 全ScaleTypeの表示名マッピング */
-export const SCALE_DISPLAY_NAMES: Partial<Record<ScaleType, string>> = {
+export const SCALE_DISPLAY_NAMES: Record<ScaleType, string> = {
   major: "Ionian",
   "natural-minor": "Natural Minor",
   "harmonic-minor": "Harmonic Minor",
@@ -46,6 +46,27 @@ export const SCALE_DISPLAY_NAMES: Partial<Record<ScaleType, string>> = {
   "lydian-augmented": "Lydian Augmented",
   "mixolydian-b6": "Mixolydian b6",
   "locrian-natural2": "Locrian \u266e2",
+  // Pentatonic & Blues
+  "pentatonic-major": "Major Pentatonic",
+  "pentatonic-minor": "Minor Pentatonic",
+  blues: "Blues",
+  // Symmetric
+  "whole-tone": "Whole Tone",
+  // Ethnic / Exotic
+  "double-harmonic": "Double Harmonic",
+  "hungarian-minor": "Hungarian Minor",
+  "neapolitan-major": "Neapolitan Major",
+  "neapolitan-minor": "Neapolitan Minor",
+  persian: "Persian",
+  enigmatic: "Enigmatic",
+  // Japanese
+  hirajoshi: "Hirajoshi",
+  "in-sen": "In-Sen",
+  // Bebop
+  "bebop-dominant": "Bebop Dominant",
+  "bebop-major": "Bebop Major",
+  // Other
+  prometheus: "Prometheus",
 };
 
 /**
@@ -135,12 +156,14 @@ export function computeChordQualityFromScale(
  * コードのソース（出所モード）と度数から、デフォルトで表示すべきスケールを返す。
  * - "secondary-dominant" → mixolydian
  * - "tritone-substitution" → lydian-dominant
+ * - "free" → コード品質に依存しないため null
  * - "diatonic" → major の回転モード
  * - ScaleType → そのモードの回転モード
  */
 export function getDefaultScaleForSource(source: ChordSource, degree: number): ScaleType | null {
   if (source === "secondary-dominant") return "mixolydian";
   if (source === "tritone-substitution") return "lydian-dominant";
+  if (source === "free") return null;
   const parentScaleType: ScaleType = source === "diatonic" ? "major" : source;
   return getRotatedMode(parentScaleType, degree);
 }

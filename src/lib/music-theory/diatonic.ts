@@ -82,12 +82,16 @@ export function formatRomanNumeral(degree: number, quality: ChordQuality): strin
       return `${base}+`;
     case "augmented7":
       return `${base}+7`;
+    case "augmentedMajor7":
+      return `${base}+M7`;
 
     // サスペンデッド系
     case "sus2":
       return `${base}sus2`;
     case "sus4":
       return `${base}sus4`;
+    case "7sus2":
+      return `${base}7sus2`;
     case "7sus4":
       return `${base}7sus4`;
 
@@ -118,6 +122,22 @@ export function formatRomanNumeral(degree: number, quality: ChordQuality): strin
       return `${base}7(#9)`;
     case "dominant7flat9":
       return `${base}7(b9)`;
+    case "dominant7flat5":
+      return `${base}7(b5)`;
+
+    // 11thコード
+    case "dominant11":
+      return `${base}11`;
+    case "minor11":
+      return `${base.toLowerCase()}m11`;
+
+    // 13thコード
+    case "dominant13":
+      return `${base}13`;
+    case "major13":
+      return `${base}M13`;
+    case "minor13":
+      return `${base.toLowerCase()}m13`;
   }
 }
 

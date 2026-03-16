@@ -19,11 +19,13 @@ const CHORD_SYMBOL_SUFFIXES: Record<ChordQuality, string> = {
   minor7b5: "m7(b5)",
   diminished7: "dim7",
   augmented7: "aug7",
+  augmentedMajor7: "augM7",
   sus2: "sus2",
   sus4: "sus4",
   "6": "6",
   minor6: "m6",
   minorMajor7: "mM7",
+  "7sus2": "7sus2",
   "7sus4": "7sus4",
   add9: "add9",
   dominant9: "9",
@@ -31,6 +33,12 @@ const CHORD_SYMBOL_SUFFIXES: Record<ChordQuality, string> = {
   minor9: "m9",
   dominant7sharp9: "7(#9)",
   dominant7flat9: "7(b9)",
+  dominant7flat5: "7(b5)",
+  dominant11: "11",
+  minor11: "m11",
+  dominant13: "13",
+  major13: "M13",
+  minor13: "m13",
 };
 
 const FLAT_KEYS = new Set(["Db", "Eb", "Gb", "Ab", "Bb"]);

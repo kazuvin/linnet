@@ -48,6 +48,7 @@ const MODE_SHORT_NAMES: Record<string, string> = {
 
 function formatSourceLabel(source: ChordSource): string | null {
   if (source === "diatonic") return null;
+  if (source === "free") return null;
   if (source === "secondary-dominant") return "SecDom";
   if (source === "tritone-substitution") return "SubV";
   return MODE_SHORT_NAMES[source] ?? MODE_DISPLAY_NAMES[source] ?? source;

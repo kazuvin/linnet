@@ -66,9 +66,9 @@ describe("scale", () => {
       expect(SCALE_PATTERNS["phrygian-dominant"]).toEqual([0, 1, 4, 5, 7, 8, 10]);
     });
 
-    it("全スケールパターンが7音または8音からなる", () => {
+    it("全スケールパターンが5音から8音からなる", () => {
       for (const [, pattern] of Object.entries(SCALE_PATTERNS)) {
-        expect(pattern.length).toBeGreaterThanOrEqual(7);
+        expect(pattern.length).toBeGreaterThanOrEqual(5);
         expect(pattern.length).toBeLessThanOrEqual(8);
       }
     });

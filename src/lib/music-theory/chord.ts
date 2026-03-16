@@ -11,18 +11,26 @@ export type ChordQuality =
   | "minor7b5"
   | "diminished7"
   | "augmented7"
+  | "augmentedMajor7"
   | "sus2"
   | "sus4"
   | "6"
   | "minor6"
   | "minorMajor7"
+  | "7sus2"
   | "7sus4"
   | "add9"
   | "dominant9"
   | "major9"
   | "minor9"
   | "dominant7sharp9"
-  | "dominant7flat9";
+  | "dominant7flat9"
+  | "dominant7flat5"
+  | "dominant11"
+  | "minor11"
+  | "dominant13"
+  | "major13"
+  | "minor13";
 
 export const CHORD_INTERVAL_PATTERNS: Record<ChordQuality, readonly number[]> = {
   major: [0, 4, 7],
@@ -35,6 +43,7 @@ export const CHORD_INTERVAL_PATTERNS: Record<ChordQuality, readonly number[]> = 
   minor7b5: [0, 3, 6, 10],
   diminished7: [0, 3, 6, 9],
   augmented7: [0, 4, 8, 10],
+  augmentedMajor7: [0, 4, 8, 11],
   // サスペンデッド系
   sus2: [0, 2, 7],
   sus4: [0, 5, 7],
@@ -43,7 +52,8 @@ export const CHORD_INTERVAL_PATTERNS: Record<ChordQuality, readonly number[]> = 
   minor6: [0, 3, 7, 9],
   // マイナーメジャー7
   minorMajor7: [0, 3, 7, 11],
-  // 7sus4
+  // 7sus
+  "7sus2": [0, 2, 7, 10],
   "7sus4": [0, 5, 7, 10],
   // アドナインス
   add9: [0, 2, 4, 7],
@@ -54,6 +64,14 @@ export const CHORD_INTERVAL_PATTERNS: Record<ChordQuality, readonly number[]> = 
   // オルタード系テンション
   dominant7sharp9: [0, 3, 4, 7, 10],
   dominant7flat9: [0, 1, 4, 7, 10],
+  dominant7flat5: [0, 4, 6, 10],
+  // 11thコード
+  dominant11: [0, 2, 4, 5, 7, 10],
+  minor11: [0, 2, 3, 5, 7, 10],
+  // 13thコード
+  dominant13: [0, 2, 4, 7, 9, 10],
+  major13: [0, 2, 4, 7, 9, 11],
+  minor13: [0, 2, 3, 7, 9, 10],
 } as const;
 
 export type Chord = {
@@ -75,11 +93,13 @@ const CHORD_SYMBOL_SUFFIXES: Record<ChordQuality, string> = {
   minor7b5: "m7(b5)",
   diminished7: "dim7",
   augmented7: "aug7",
+  augmentedMajor7: "augM7",
   sus2: "sus2",
   sus4: "sus4",
   "6": "6",
   minor6: "m6",
   minorMajor7: "mM7",
+  "7sus2": "7sus2",
   "7sus4": "7sus4",
   add9: "add9",
   dominant9: "9",
@@ -87,6 +107,12 @@ const CHORD_SYMBOL_SUFFIXES: Record<ChordQuality, string> = {
   minor9: "m9",
   dominant7sharp9: "7(#9)",
   dominant7flat9: "7(b9)",
+  dominant7flat5: "7(b5)",
+  dominant11: "11",
+  minor11: "m11",
+  dominant13: "13",
+  major13: "M13",
+  minor13: "m13",
 };
 
 const TRIAD_TO_SEVENTH: Partial<Record<ChordQuality, ChordQuality>> = {
