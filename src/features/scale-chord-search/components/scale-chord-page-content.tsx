@@ -33,7 +33,7 @@ export function ScaleChordPageContent() {
       <section className="flex flex-col items-center gap-4">
         <AnimatedText
           text={scaleDisplayText}
-          className="font-bold text-5xl tracking-tight lg:text-6xl"
+          className="font-bold text-4xl tracking-tight lg:text-5xl"
         />
         <div className="flex flex-wrap items-center justify-center gap-3">
           <span className="shrink-0 font-medium text-muted text-sm">スケール</span>
