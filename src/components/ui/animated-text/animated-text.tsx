@@ -106,19 +106,27 @@ export function AnimatedText({
 
     const container = containerRef.current;
     if (!container) return;
-    const cLeft = container.getBoundingClientRect().left;
     const newWidth = container.getBoundingClientRect().width;
+    const cLeftNew = container.getBoundingClientRect().left;
     const transT = `transform ${duration}ms var(--ease-default)`;
-    const fadeT = `opacity ${duration}ms var(--ease-default)`;
+    const enterT = `opacity ${duration}ms var(--ease-default), transform ${duration}ms var(--ease-default)`;
     const widthT = `width ${duration}ms var(--ease-default)`;
 
     // コンテナ幅を旧幅に固定（中央揃え時のガクつき防止）
     const oldWidth = savedWidth.current;
-    if (oldWidth !== undefined && Math.abs(oldWidth - newWidth) > 0.5) {
+    const widthChanged = oldWidth !== undefined && Math.abs(oldWidth - newWidth) > 0.5;
+    if (widthChanged) {
       container.style.width = `${oldWidth}px`;
     }
 
-    // Phase 1: 初期状態を一括設定（reflow なし）
+    // reflow してコンテナの旧幅での位置を確定
+    container.offsetHeight;
+    const cLeft = container.getBoundingClientRect().left;
+
+    // コンテナシフト量（中央/右揃え時、幅変化でコンテナ自体がずれる量）
+    const containerShift = cLeftNew - cLeft;
+
+    // Phase 1: 初期状態を一括設定
     for (const dc of displayChars) {
       if (dc.state === "exiting") continue;
       const el = charRefs.current.get(dc.id);
@@ -134,8 +142,12 @@ export function AnimatedText({
           }
         }
       } else {
+        // entering: コンテナシフトを打ち消して最終位置でフェードイン
         el.style.transition = "none";
         el.style.opacity = "0";
+        if (Math.abs(containerShift) > 0.5) {
+          el.style.transform = `translateX(${containerShift}px)`;
+        }
       }
     }
 
@@ -143,7 +155,7 @@ export function AnimatedText({
     container.offsetHeight;
 
     // Phase 3: トランジション開始（一括設定）
-    if (oldWidth !== undefined && Math.abs(oldWidth - newWidth) > 0.5) {
+    if (widthChanged) {
       container.style.transition = widthT;
       container.style.width = `${newWidth}px`;
     }
@@ -159,8 +171,9 @@ export function AnimatedText({
           el.style.transform = "";
         }
       } else {
-        el.style.transition = fadeT;
+        el.style.transition = enterT;
         el.style.opacity = "1";
+        el.style.transform = "";
       }
     }
 
