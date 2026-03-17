@@ -208,7 +208,7 @@ export function AnimatedText({
             if (el) charRefs.current.set(dc.id, el);
             else charRefs.current.delete(dc.id);
           }}
-          style={{ display: "inline-block" }}
+          style={{ display: "inline-block", whiteSpace: "pre" }}
         >
           {dc.char}
         </span>
