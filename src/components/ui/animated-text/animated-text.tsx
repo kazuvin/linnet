@@ -59,6 +59,7 @@ export function AnimatedText({
   const containerRef = useRef<HTMLElement>(null);
   const charRefs = useRef(new Map<string, HTMLSpanElement>());
   const savedPositions = useRef(new Map<string, number>());
+  const savedWidth = useRef<number | undefined>(undefined);
   const prevTextRef = useRef(text);
   const cleanupTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const genId = useRef(createIdGenerator()).current;
@@ -67,17 +68,18 @@ export function AnimatedText({
     text.split("").map((char) => ({ id: genId(), char, state: "stable" as const }))
   );
 
-  // 安定レンダー後に各文字の位置を保存
+  // 安定レンダー後に各文字の位置とコンテナ幅を保存
   useLayoutEffect(() => {
     if (displayChars.some((c) => c.state !== "stable")) return;
     const container = containerRef.current;
     if (!container) return;
-    const cLeft = container.getBoundingClientRect().left;
+    const rect = container.getBoundingClientRect();
+    savedWidth.current = rect.width;
     savedPositions.current.clear();
     for (const dc of displayChars) {
       const el = charRefs.current.get(dc.id);
       if (el) {
-        savedPositions.current.set(dc.id, el.getBoundingClientRect().left - cLeft);
+        savedPositions.current.set(dc.id, el.getBoundingClientRect().left - rect.left);
       }
     }
   });
@@ -105,8 +107,16 @@ export function AnimatedText({
     const container = containerRef.current;
     if (!container) return;
     const cLeft = container.getBoundingClientRect().left;
+    const newWidth = container.getBoundingClientRect().width;
     const transT = `transform ${duration}ms var(--ease-default)`;
     const fadeT = `opacity ${duration}ms var(--ease-default)`;
+    const widthT = `width ${duration}ms var(--ease-default)`;
+
+    // コンテナ幅を旧幅に固定（中央揃え時のガクつき防止）
+    const oldWidth = savedWidth.current;
+    if (oldWidth !== undefined && Math.abs(oldWidth - newWidth) > 0.5) {
+      container.style.width = `${oldWidth}px`;
+    }
 
     // Phase 1: 初期状態を一括設定（reflow なし）
     for (const dc of displayChars) {
@@ -133,6 +143,11 @@ export function AnimatedText({
     container.offsetHeight;
 
     // Phase 3: トランジション開始（一括設定）
+    if (oldWidth !== undefined && Math.abs(oldWidth - newWidth) > 0.5) {
+      container.style.transition = widthT;
+      container.style.width = `${newWidth}px`;
+    }
+
     for (const dc of displayChars) {
       if (dc.state === "exiting") continue;
       const el = charRefs.current.get(dc.id);
@@ -155,6 +170,11 @@ export function AnimatedText({
         const cleaned = prev.filter((c) => c.state !== "exiting");
         return cleaned.map((c) => ({ ...c, state: "stable" as const }));
       });
+      const c = containerRef.current;
+      if (c) {
+        c.style.transition = "";
+        c.style.width = "";
+      }
       for (const el of charRefs.current.values()) {
         el.style.transition = "";
         el.style.transform = "";
@@ -179,7 +199,7 @@ export function AnimatedText({
     <Tag
       ref={containerRef}
       className={className}
-      style={{ position: "relative", display: "inline-block" }}
+      style={{ position: "relative", display: "inline-block", whiteSpace: "nowrap" }}
     >
       {flowChars.map((dc) => (
         <span
