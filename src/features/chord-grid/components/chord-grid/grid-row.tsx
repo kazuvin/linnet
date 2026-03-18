@@ -12,7 +12,7 @@ import { useAvailableScalesForCell } from "@/features/fretboard/hooks/use-availa
 import type { ScaleType } from "@/lib/music-theory";
 import { SCALE_DISPLAY_NAMES } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
-import { FUNCTION_CELL_STYLES, SUSTAIN_CELL_STYLES } from "../../lib/chord-function-styles";
+import { FUNCTION_CELL_STYLES } from "../../lib/chord-function-styles";
 import { getChordDisplayForCell } from "../../lib/get-chord-display";
 import type { GridChord } from "../../stores/chord-grid-store";
 import { COLUMNS, useChordGridStore } from "../../stores/chord-grid-store";
@@ -37,7 +37,7 @@ type GridRowProps = {
 
 // --- スケール表示用のヘルパー ---
 
-/** セルに表示するスケール情報を取得する（コードの持続と同じロジック） */
+/** セルに対応するスケール情報を取得する（コードの持続と同じロジック） */
 function getScaleDisplayForCell(
   rows: (GridChord | null)[][],
   cellScales: (ScaleType | null)[][],
@@ -46,17 +46,16 @@ function getScaleDisplayForCell(
 ): {
   scaleType: ScaleType | null;
   chord: GridChord | null;
-  isOrigin: boolean;
-  isSustain: boolean;
+  originRow: number;
+  originCol: number;
 } {
   const cell = rows[rowIndex][colIndex];
   const scale = cellScales[rowIndex]?.[colIndex] ?? null;
 
   if (cell !== null) {
-    return { scaleType: scale, chord: cell, isOrigin: true, isSustain: false };
+    return { scaleType: scale, chord: cell, originRow: rowIndex, originCol: colIndex };
   }
 
-  // 先頭まで遡り、最も近いコードとスケールを探す
   const totalPos = rowIndex * COLUMNS + colIndex;
   for (let pos = totalPos - 1; pos >= 0; pos--) {
     const r = Math.floor(pos / COLUMNS);
@@ -65,97 +64,114 @@ function getScaleDisplayForCell(
       return {
         scaleType: cellScales[r]?.[c] ?? null,
         chord: rows[r][c],
-        isOrigin: false,
-        isSustain: true,
+        originRow: r,
+        originCol: c,
       };
     }
   }
-  return { scaleType: null, chord: null, isOrigin: false, isSustain: false };
+  return { scaleType: null, chord: null, originRow: -1, originCol: -1 };
 }
 
-// --- スケールセル（個別） ---
+/** 行のスケール表示用にスパンセグメントを作成 */
+type ScaleSegment = {
+  startCol: number;
+  span: number;
+  chord: GridChord | null;
+  scaleType: ScaleType | null;
+  originRow: number;
+  originCol: number;
+};
 
-function ScaleCell({
-  rowIndex,
-  col,
-  colCount,
-  scaleType,
-  chord,
-  isOrigin,
-  isSustain,
-  isSelected,
+function buildScaleSegments(
+  rows: (GridChord | null)[][],
+  cellScales: (ScaleType | null)[][],
+  rowIndex: number
+): ScaleSegment[] {
+  const segments: ScaleSegment[] = [];
+  let i = 0;
+
+  while (i < COLUMNS) {
+    const info = getScaleDisplayForCell(rows, cellScales, rowIndex, i);
+    const segment: ScaleSegment = {
+      startCol: i,
+      span: 1,
+      chord: info.chord,
+      scaleType: info.scaleType,
+      originRow: info.originRow,
+      originCol: info.originCol,
+    };
+
+    // 同じ origin のセルをまとめる
+    let j = i + 1;
+    while (j < COLUMNS) {
+      const next = getScaleDisplayForCell(rows, cellScales, rowIndex, j);
+      if (next.originRow === info.originRow && next.originCol === info.originCol) {
+        segment.span++;
+        j++;
+      } else {
+        break;
+      }
+    }
+
+    segments.push(segment);
+    i = j;
+  }
+
+  return segments;
+}
+
+// --- スケールスパン（セグメント単位） ---
+
+function ScaleSegmentCell({
+  segment,
+  selectedCell,
   isOutOfPlayRange,
 }: {
-  rowIndex: number;
-  col: number;
-  colCount: number;
-  scaleType: ScaleType | null;
-  chord: GridChord | null;
-  isOrigin: boolean;
-  isSustain: boolean;
-  isSelected: boolean;
+  segment: ScaleSegment;
+  selectedCell: { row: number; col: number } | null;
   isOutOfPlayRange: boolean;
 }) {
   const setCellScale = useChordGridStore((s) => s.setCellScale);
+  const { chord, scaleType, originRow, originCol, span } = segment;
 
-  // 選択中のセルかつコードがあるセルのみスケール変更可能
+  const isOriginSelected = selectedCell?.row === originRow && selectedCell?.col === originCol;
+
   const { availableScales } = useAvailableScalesForCell(
-    isSelected && isOrigin ? (chord?.rootName ?? null) : null,
-    isSelected && isOrigin ? (chord?.quality ?? null) : null,
-    isSelected && isOrigin ? (chord?.source ?? null) : null,
-    isSelected && isOrigin ? (chord?.degree ?? 0) : 0
+    isOriginSelected && chord ? (chord.rootName ?? null) : null,
+    isOriginSelected && chord ? (chord.quality ?? null) : null,
+    isOriginSelected && chord ? (chord.source ?? null) : null,
+    isOriginSelected && chord ? (chord.degree ?? 0) : 0
   );
 
   const displayName = scaleType ? SCALE_DISPLAY_NAMES[scaleType] : null;
-  const shortName = displayName
-    ? displayName.length > 8
-      ? `${displayName.slice(0, 7)}…`
-      : displayName
-    : null;
 
   const handleScaleChange = (value: string) => {
-    setCellScale(rowIndex, col, value as ScaleType);
+    setCellScale(originRow, originCol, value as ScaleType);
   };
 
-  const isFirst = col === 0;
-  const isLast = col === colCount - 1;
-  const roundedClass = cn(
-    isFirst && "rounded-l-sm",
-    isLast && "rounded-r-sm",
-    !isFirst && !isLast && "rounded-none"
-  );
-
-  // 空セル（コードもサステインもなし）
+  // 空セグメント
   if (!chord) {
-    return (
-      <div
-        className={cn(
-          "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
-          roundedClass
-        )}
-      />
-    );
+    return <div className="h-6" style={{ flex: span }} />;
   }
 
-  // 選択中のコード原点セル → ドロップダウン
-  if (isSelected && isOrigin && availableScales.length > 0) {
+  const bgClass = FUNCTION_CELL_STYLES[chord.chordFunction] ?? "bg-foreground/5";
+
+  // 選択中 → ドロップダウン
+  if (isOriginSelected && availableScales.length > 0) {
     return (
       <div
-        className={cn(
-          "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
-          roundedClass
-        )}
+        className={cn("flex h-6 items-center overflow-hidden rounded-sm", bgClass)}
+        style={{ flex: span }}
       >
         <Select value={scaleType ?? "__none__"} onValueChange={handleScaleChange}>
           <SelectTrigger
             className={cn(
-              "h-6 w-full min-w-0 border-0 px-0.5 text-center text-[8px] leading-none shadow-none lg:text-[9px]",
-              roundedClass,
-              FUNCTION_CELL_STYLES[chord.chordFunction] ?? "bg-foreground/5"
+              "h-6 w-full min-w-0 border-0 px-1.5 text-left text-[9px] leading-none shadow-none lg:text-[10px]",
+              bgClass
             )}
           >
             <SelectValue>
-              <span className="truncate">{shortName ?? "---"}</span>
+              <span className="truncate">{displayName ?? "---"}</span>
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -170,43 +186,20 @@ function ScaleCell({
     );
   }
 
-  // コード原点セル → スケール名表示
-  if (isOrigin) {
-    return (
-      <div
-        className={cn(
-          "flex h-6 w-8 shrink-0 items-center justify-center overflow-hidden md:w-7 lg:w-auto lg:flex-1",
-          roundedClass,
-          FUNCTION_CELL_STYLES[chord.chordFunction] ?? "bg-foreground/5"
-        )}
-      >
-        <span className="max-w-full truncate px-0.5 text-[8px] leading-none lg:text-[9px]">
-          {shortName}
-        </span>
-      </div>
-    );
-  }
-
-  // サステインセル
-  if (isSustain && !isOutOfPlayRange) {
-    return (
-      <div
-        className={cn(
-          "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
-          roundedClass,
-          SUSTAIN_CELL_STYLES[chord.chordFunction] ?? "bg-card/50"
-        )}
-      />
-    );
+  // 通常表示
+  if (isOutOfPlayRange) {
+    return <div className="h-6" style={{ flex: span }} />;
   }
 
   return (
     <div
-      className={cn(
-        "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
-        roundedClass
+      className={cn("flex h-6 items-center overflow-hidden rounded-sm px-1.5", bgClass)}
+      style={{ flex: span }}
+    >
+      {displayName && (
+        <span className="truncate text-[9px] leading-none lg:text-[10px]">{displayName}</span>
       )}
-    />
+    </div>
   );
 }
 
@@ -225,40 +218,21 @@ function ScaleRow({
   selectedCell: { row: number; col: number } | null;
   isOutOfPlayRange: boolean;
 }) {
-  // この行にコードがあるか、またはサステインがあるか確認
-  const hasAnyDisplay = COL_INDICES.some((col) => {
-    const { chord } = getScaleDisplayForCell(rows, cellScales, rowIndex, col);
-    return chord !== null;
-  });
+  const segments = buildScaleSegments(rows, cellScales, rowIndex);
+  const hasAnyChord = segments.some((s) => s.chord !== null);
 
-  if (!hasAnyDisplay) return null;
+  if (!hasAnyChord) return null;
 
   return (
-    <div className={cn("flex items-center", isOutOfPlayRange && "opacity-40")}>
-      {COL_INDICES.map((col) => {
-        const { scaleType, chord, isOrigin, isSustain } = getScaleDisplayForCell(
-          rows,
-          cellScales,
-          rowIndex,
-          col
-        );
-        const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === col;
-
-        return (
-          <ScaleCell
-            key={`scale-${String(rowIndex)}-${String(col)}`}
-            rowIndex={rowIndex}
-            col={col}
-            colCount={COLUMNS}
-            scaleType={scaleType}
-            chord={chord}
-            isOrigin={isOrigin}
-            isSustain={isSustain}
-            isSelected={isSelected}
-            isOutOfPlayRange={isOutOfPlayRange}
-          />
-        );
-      })}
+    <div className={cn("flex items-center gap-0.5", isOutOfPlayRange && "opacity-40")}>
+      {segments.map((segment) => (
+        <ScaleSegmentCell
+          key={`scale-seg-${String(rowIndex)}-${String(segment.startCol)}`}
+          segment={segment}
+          selectedCell={selectedCell}
+          isOutOfPlayRange={isOutOfPlayRange}
+        />
+      ))}
       {/* 行削除ボタンとの幅合わせ */}
       <div className="w-6 shrink-0" />
     </div>

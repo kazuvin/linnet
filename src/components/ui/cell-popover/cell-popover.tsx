@@ -94,7 +94,7 @@ export function CellPopover({ anchorRef, open, onClose, children }: CellPopoverP
       ref={popoverRef}
       className={cn(
         "fixed z-50 animate-in rounded-lg border border-foreground/10 bg-background p-1 shadow-dropdown duration-200",
-        "fade-in-0 zoom-in-95 slide-in-from-top-2"
+        "fade-in-0 zoom-in-95 slide-in-from-bottom-2"
       )}
       style={
         position
