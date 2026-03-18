@@ -93,14 +93,12 @@ export function CellPopover({ anchorRef, open, onClose, children }: CellPopoverP
     <div
       ref={popoverRef}
       className={cn(
-        "fixed z-50 animate-in rounded-lg border border-foreground/10 bg-background p-1 shadow-dropdown duration-200",
-        "fade-in-0 zoom-in-95 slide-in-from-bottom-2"
-      )}
-      style={
+        "fixed z-50 rounded-lg border border-foreground/10 bg-background p-1 shadow-dropdown",
         position
-          ? { top: position.top, left: position.left }
-          : { visibility: "hidden" as const, top: 0, left: 0 }
-      }
+          ? "fade-in-0 zoom-in-95 slide-in-from-bottom-2 animate-in duration-200"
+          : "invisible"
+      )}
+      style={position ? { top: position.top, left: position.left } : { top: 0, left: 0 }}
     >
       {children}
     </div>,
