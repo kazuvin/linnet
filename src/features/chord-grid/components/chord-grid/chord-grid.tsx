@@ -38,7 +38,7 @@ export function ChordGrid() {
 
   const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
 
-  // ポップオーバー表示フラグ（selectedCell と同期）
+  // ポップオーバー表示フラグ
   const [showPopover, setShowPopover] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTarget, setDialogTarget] = useState<{ row: number; col: number } | null>(null);
@@ -62,9 +62,10 @@ export function ChordGrid() {
 
   const handleCellClick = useCallback(
     (rowIndex: number, col: number) => {
-      // 同じセルをクリック → ポップオーバーをトグル
+      // 同じセルをクリック → 選択解除 + ポップオーバー閉じる
       if (selectedCell?.row === rowIndex && selectedCell?.col === col) {
-        setShowPopover((prev) => !prev);
+        selectGridCell(rowIndex, col); // トグルで解除
+        setShowPopover(false);
         return;
       }
       selectGridCell(rowIndex, col);
@@ -112,7 +113,6 @@ export function ChordGrid() {
   return (
     <div className="flex flex-col gap-4">
       <GridControlBar
-        selectedChord={selectedChord}
         isPlaying={isPlaying}
         hasChords={hasChords}
         togglePlayback={togglePlayback}

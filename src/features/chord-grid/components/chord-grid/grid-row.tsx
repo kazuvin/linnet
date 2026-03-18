@@ -12,7 +12,6 @@ import { useAvailableScalesForCell } from "@/features/fretboard/hooks/use-availa
 import type { ScaleType } from "@/lib/music-theory";
 import { SCALE_DISPLAY_NAMES } from "@/lib/music-theory";
 import { cn } from "@/lib/utils";
-import { FUNCTION_CELL_STYLES } from "../../lib/chord-function-styles";
 import { getChordDisplayForCell } from "../../lib/get-chord-display";
 import type { GridChord } from "../../stores/chord-grid-store";
 import { COLUMNS, useChordGridStore } from "../../stores/chord-grid-store";
@@ -101,7 +100,6 @@ function buildScaleSegments(
       originCol: info.originCol,
     };
 
-    // 同じ origin のセルをまとめる
     let j = i + 1;
     while (j < COLUMNS) {
       const next = getScaleDisplayForCell(rows, cellScales, rowIndex, j);
@@ -120,27 +118,17 @@ function buildScaleSegments(
   return segments;
 }
 
-// --- スケールスパン（セグメント単位） ---
+// --- スケールセグメント ---
 
-function ScaleSegmentCell({
-  segment,
-  selectedCell,
-  isOutOfPlayRange,
-}: {
-  segment: ScaleSegment;
-  selectedCell: { row: number; col: number } | null;
-  isOutOfPlayRange: boolean;
-}) {
+function ScaleSegmentCell({ segment }: { segment: ScaleSegment }) {
   const setCellScale = useChordGridStore((s) => s.setCellScale);
   const { chord, scaleType, originRow, originCol, span } = segment;
 
-  const isOriginSelected = selectedCell?.row === originRow && selectedCell?.col === originCol;
-
   const { availableScales } = useAvailableScalesForCell(
-    isOriginSelected && chord ? (chord.rootName ?? null) : null,
-    isOriginSelected && chord ? (chord.quality ?? null) : null,
-    isOriginSelected && chord ? (chord.source ?? null) : null,
-    isOriginSelected && chord ? (chord.degree ?? 0) : 0
+    chord?.rootName ?? null,
+    chord?.quality ?? null,
+    chord?.source ?? null,
+    chord?.degree ?? 0
   );
 
   const displayName = scaleType ? SCALE_DISPLAY_NAMES[scaleType] : null;
@@ -149,27 +137,20 @@ function ScaleSegmentCell({
     setCellScale(originRow, originCol, value as ScaleType);
   };
 
-  // 空セグメント
+  // 空セグメント（コードなし）
   if (!chord) {
     return <div className="h-6" style={{ flex: span }} />;
   }
 
-  const bgClass = FUNCTION_CELL_STYLES[chord.chordFunction] ?? "bg-foreground/5";
-
-  // 選択中 → ドロップダウン
-  if (isOriginSelected && availableScales.length > 0) {
+  // スケールが選択可能な場合はクリッカブル
+  if (availableScales.length > 0) {
     return (
       <div
-        className={cn("flex h-6 items-center overflow-hidden rounded-sm", bgClass)}
+        className="flex h-6 items-center overflow-hidden rounded-sm bg-foreground/[0.03]"
         style={{ flex: span }}
       >
         <Select value={scaleType ?? "__none__"} onValueChange={handleScaleChange}>
-          <SelectTrigger
-            className={cn(
-              "h-6 w-full min-w-0 border-0 px-1.5 text-left text-[9px] leading-none shadow-none lg:text-[10px]",
-              bgClass
-            )}
-          >
+          <SelectTrigger className="h-6 w-full min-w-0 cursor-pointer rounded-sm border-0 bg-transparent px-1.5 text-left text-[9px] text-muted leading-none shadow-none transition-colors hover:bg-foreground/5 lg:text-[10px]">
             <SelectValue>
               <span className="truncate">{displayName ?? "---"}</span>
             </SelectValue>
@@ -186,18 +167,16 @@ function ScaleSegmentCell({
     );
   }
 
-  // 通常表示
-  if (isOutOfPlayRange) {
-    return <div className="h-6" style={{ flex: span }} />;
-  }
-
+  // スケール情報のみ表示
   return (
     <div
-      className={cn("flex h-6 items-center overflow-hidden rounded-sm px-1.5", bgClass)}
+      className="flex h-6 items-center overflow-hidden rounded-sm bg-foreground/[0.03] px-1.5"
       style={{ flex: span }}
     >
       {displayName && (
-        <span className="truncate text-[9px] leading-none lg:text-[10px]">{displayName}</span>
+        <span className="truncate text-[9px] text-muted leading-none lg:text-[10px]">
+          {displayName}
+        </span>
       )}
     </div>
   );
@@ -209,19 +188,14 @@ function ScaleRow({
   rowIndex,
   rows,
   cellScales,
-  selectedCell,
   isOutOfPlayRange,
 }: {
   rowIndex: number;
   rows: (GridChord | null)[][];
   cellScales: (ScaleType | null)[][];
-  selectedCell: { row: number; col: number } | null;
   isOutOfPlayRange: boolean;
 }) {
   const segments = buildScaleSegments(rows, cellScales, rowIndex);
-  const hasAnyChord = segments.some((s) => s.chord !== null);
-
-  if (!hasAnyChord) return null;
 
   return (
     <div className={cn("flex items-center gap-0.5", isOutOfPlayRange && "opacity-40")}>
@@ -229,8 +203,6 @@ function ScaleRow({
         <ScaleSegmentCell
           key={`scale-seg-${String(rowIndex)}-${String(segment.startCol)}`}
           segment={segment}
-          selectedCell={selectedCell}
-          isOutOfPlayRange={isOutOfPlayRange}
         />
       ))}
       {/* 行削除ボタンとの幅合わせ */}
@@ -303,12 +275,11 @@ export function GridRow({
         </div>
       </div>
 
-      {/* スケール行 */}
+      {/* スケール行（常に表示） */}
       <ScaleRow
         rowIndex={rowIndex}
         rows={rows}
         cellScales={cellScales}
-        selectedCell={selectedCell}
         isOutOfPlayRange={isOutOfPlayRange}
       />
     </div>
