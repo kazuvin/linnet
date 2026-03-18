@@ -702,6 +702,86 @@ describe("chord-grid-store", () => {
     });
   });
 
+  describe("getScaleAtPosition", () => {
+    it("コードが配置されたセルではそのデフォルトスケールを返す", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      // diatonic degree 1 → ionian (major)
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 0)).toBe("major");
+    });
+
+    it("null セルでは直前のコードのスケールを返す（持続）", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 1)).toBe("major");
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 3)).toBe("major");
+    });
+
+    it("先頭が null の場合は null を返す", () => {
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 0)).toBeNull();
+    });
+
+    it("行をまたいで持続する", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 4, sampleChord);
+      });
+      expect(useChordGridStore.getState().getScaleAtPosition(1, 3)).toBe("major");
+    });
+
+    it("次のコードがあればそのコードのスケールを返す", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCell(0, 4, sampleChord2);
+      });
+      // sampleChord2 は diatonic degree 6 → aeolian
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 0)).toBe("major");
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 4)).toBe("aeolian");
+    });
+
+    it("setCellScale で変更されたスケールを返す", async () => {
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+        useChordGridStore.getState().setCellScale(0, 0, "mixolydian");
+      });
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 0)).toBe("mixolydian");
+      // 持続セルでも変更されたスケールを返す
+      expect(useChordGridStore.getState().getScaleAtPosition(0, 2)).toBe("mixolydian");
+    });
+  });
+
+  describe("setCell がデフォルトスケールを設定する", () => {
+    it("diatonic コードのデフォルトスケールが cellScales に設定される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, sampleChord);
+      });
+      // diatonic degree 1 → ionian
+      expect(result.current.cellScales[0][0]).toBe("major");
+    });
+
+    it("addChordToNextBeat でもデフォルトスケールが設定される", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      await act(async () => {
+        useChordGridStore.getState().addChordToNextBeat(sampleChord);
+      });
+      expect(result.current.cellScales[0][0]).toBe("major");
+    });
+
+    it("secondary-dominant のデフォルトスケールは mixolydian", async () => {
+      const { result } = renderHook(() => useChordGridStore());
+      const secDom: GridChord = {
+        ...sampleChord,
+        source: "secondary-dominant",
+      };
+      await act(async () => {
+        useChordGridStore.getState().setCell(0, 0, secDom);
+      });
+      expect(result.current.cellScales[0][0]).toBe("mixolydian");
+    });
+  });
+
   describe("_resetChordGridForTesting", () => {
     it("初期状態に戻る", async () => {
       const { result } = renderHook(() => useChordGridStore());

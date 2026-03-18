@@ -137,14 +137,19 @@ function ScaleSegmentCell({ segment }: { segment: ScaleSegment }) {
 
   // 空セグメント（コードなし）
   if (!chord) {
-    return <div className="h-6 rounded-sm bg-foreground/[0.03]" style={{ flex: span }} />;
+    return (
+      <div
+        className="h-6 rounded-sm border border-foreground/10 bg-background"
+        style={{ flex: span }}
+      />
+    );
   }
 
   // スケールが選択可能な場合はクリッカブル
   if (availableScales.length > 0) {
     return (
       <div
-        className="flex h-6 items-center overflow-hidden rounded-sm bg-foreground/[0.03]"
+        className="flex h-6 items-center overflow-hidden rounded-sm border border-foreground/10 bg-background"
         style={{ flex: span }}
       >
         <Select value={scaleType ?? "__none__"} onValueChange={handleScaleChange}>
@@ -168,7 +173,7 @@ function ScaleSegmentCell({ segment }: { segment: ScaleSegment }) {
   // スケール情報のみ表示
   return (
     <div
-      className="flex h-6 items-center overflow-hidden rounded-sm bg-foreground/[0.03] px-1.5"
+      className="flex h-6 items-center overflow-hidden rounded-sm border border-foreground/10 bg-background px-1.5"
       style={{ flex: span }}
     >
       {displayName && (
