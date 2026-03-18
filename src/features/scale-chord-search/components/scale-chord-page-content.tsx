@@ -3,8 +3,8 @@
 import { Card } from "@/components";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { ModeSelector } from "@/features/chord-board/components";
+import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { Fretboard, GuitarVoicingCard } from "@/features/fretboard/components";
-import { ChordTypeSelector } from "@/features/key-selection/components/chord-type-selector";
 import { RootNoteSelector } from "@/features/key-selection/components/root-note-selector";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { changeKey } from "@/features/store-coordination";
@@ -24,8 +24,10 @@ function getScaleDisplayText(rootName: string, selectedMode: string): string {
 }
 
 export function ScaleChordPageContent() {
-  const { rootName, chordType, selectedMode, setChordType } = useKeyStore();
+  const { rootName, selectedMode } = useKeyStore();
+  const activeChordOverride = useChordProgressionStore((s) => s.activeChordOverride);
   const scaleDisplayText = getScaleDisplayText(rootName, selectedMode);
+  const hasSelectedChord = activeChordOverride !== null;
 
   return (
     <>
@@ -39,7 +41,6 @@ export function ScaleChordPageContent() {
           <span className="shrink-0 font-medium text-muted text-sm">スケール</span>
           <RootNoteSelector value={rootName} onValueChange={changeKey} />
           <ModeSelector />
-          <ChordTypeSelector value={chordType} onValueChange={setChordType} />
         </div>
       </section>
 
@@ -48,16 +49,18 @@ export function ScaleChordPageContent() {
         <ScaleChordResults />
       </Card>
 
-      {/* 詳細表示（副次的） */}
-      <div className="flex min-w-0 flex-col gap-[var(--grid-gap)] border-foreground/5 border-t pt-[var(--grid-gap)] max-lg:gap-[var(--grid-gap-sm)] max-lg:pt-[var(--grid-gap-sm)]">
-        <p className="text-muted text-xs">
-          コードをクリックすると、フレットボード上で構成音を確認できます
-        </p>
-        <Card id="fretboard-section" className="min-w-0 overflow-hidden">
-          <Fretboard />
-        </Card>
-        <GuitarVoicingCard />
-      </div>
+      {/* 詳細表示（コード選択時のみ表示） */}
+      {hasSelectedChord && (
+        <div className="flex min-w-0 flex-col gap-[var(--grid-gap)] border-foreground/5 border-t pt-[var(--grid-gap)] max-lg:gap-[var(--grid-gap-sm)] max-lg:pt-[var(--grid-gap-sm)]">
+          <p className="text-muted text-xs">
+            コードをクリックすると、フレットボード上で構成音を確認できます
+          </p>
+          <Card id="fretboard-section" className="min-w-0 overflow-hidden">
+            <Fretboard />
+          </Card>
+          <GuitarVoicingCard />
+        </div>
+      )}
     </>
   );
 }
