@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,20 @@ type CellPopoverProps = {
   children: ReactNode;
 };
 
+function computePosition(anchor: HTMLElement, popoverWidth: number): { top: number; left: number } {
+  const rect = anchor.getBoundingClientRect();
+  let left = rect.left + rect.width / 2 - popoverWidth / 2;
+  // 画面右端からはみ出す場合
+  if (left + popoverWidth > window.innerWidth - 8) {
+    left = window.innerWidth - popoverWidth - 8;
+  }
+  // 画面左端からはみ出す場合
+  if (left < 8) {
+    left = 8;
+  }
+  return { top: rect.bottom + 4, left };
+}
+
 /**
  * セル要素にアンカーされたポップオーバー。
  * セルの下に表示され、画面外にはみ出す場合は自動調整する。
@@ -19,40 +33,31 @@ export function CellPopover({ anchorRef, open, onClose, children }: CellPopoverP
   const popoverRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
 
-  // ポジション計算
-  useEffect(() => {
+  // useLayoutEffect で描画前に位置を確定させる
+  useLayoutEffect(() => {
     if (!open || !anchorRef.current) {
       setPosition(null);
       return;
     }
 
+    const anchor = anchorRef.current;
+    const popoverWidth = popoverRef.current?.offsetWidth ?? 160;
+    setPosition(computePosition(anchor, popoverWidth));
+  }, [open, anchorRef]);
+
+  // スクロール・リサイズ時の位置更新（通常の useEffect で十分）
+  useEffect(() => {
+    if (!open || !anchorRef.current) return;
+
     const updatePosition = () => {
       const anchor = anchorRef.current;
       if (!anchor) return;
-      const rect = anchor.getBoundingClientRect();
-      const popover = popoverRef.current;
-      const popoverWidth = popover?.offsetWidth ?? 160;
-
-      let left = rect.left + rect.width / 2 - popoverWidth / 2;
-      // 画面右端からはみ出す場合
-      if (left + popoverWidth > window.innerWidth - 8) {
-        left = window.innerWidth - popoverWidth - 8;
-      }
-      // 画面左端からはみ出す場合
-      if (left < 8) {
-        left = 8;
-      }
-
-      setPosition({
-        top: rect.bottom + 4,
-        left,
-      });
+      const popoverWidth = popoverRef.current?.offsetWidth ?? 160;
+      setPosition(computePosition(anchor, popoverWidth));
     };
 
-    updatePosition();
     window.addEventListener("scroll", updatePosition, true);
     window.addEventListener("resize", updatePosition);
-
     return () => {
       window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("resize", updatePosition);
@@ -89,16 +94,25 @@ export function CellPopover({ anchorRef, open, onClose, children }: CellPopoverP
 
   if (!open || typeof window === "undefined") return null;
 
+  // 位置未確定時は非表示で DOM に配置（offsetWidth 計測用）
+  if (!position) {
+    return createPortal(
+      <div
+        ref={popoverRef}
+        className="pointer-events-none fixed z-50 opacity-0"
+        style={{ top: -9999, left: -9999 }}
+      >
+        {children}
+      </div>,
+      document.body
+    );
+  }
+
   return createPortal(
     <div
       ref={popoverRef}
-      className={cn(
-        "fixed z-50 rounded-lg border border-foreground/10 bg-background p-1 shadow-dropdown",
-        position
-          ? "fade-in-0 zoom-in-95 slide-in-from-bottom-2 animate-in duration-200"
-          : "invisible"
-      )}
-      style={position ? { top: position.top, left: position.left } : { top: 0, left: 0 }}
+      className="fade-in-0 zoom-in-95 fixed z-50 animate-in rounded-lg border border-foreground/10 bg-background p-1 shadow-dropdown duration-200"
+      style={{ top: position.top, left: position.left }}
     >
       {children}
     </div>,
