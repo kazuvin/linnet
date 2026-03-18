@@ -44,8 +44,8 @@ export function CellPopover({ anchorRef, open, onClose, children }: CellPopoverP
       }
 
       setPosition({
-        top: rect.bottom + 4 + window.scrollY,
-        left: left + window.scrollX,
+        top: rect.bottom + 4,
+        left,
       });
     };
 

@@ -36,7 +36,7 @@ type GridRowProps = {
 
 // --- スケール表示用のヘルパー ---
 
-/** セルに対応するスケール情報を取得する（コードの持続と同じロジック） */
+/** セルに対応するスケール情報を取得する（同一行内のみ遡る） */
 function getScaleDisplayForCell(
   rows: (GridChord | null)[][],
   cellScales: (ScaleType | null)[][],
@@ -55,15 +55,13 @@ function getScaleDisplayForCell(
     return { scaleType: scale, chord: cell, originRow: rowIndex, originCol: colIndex };
   }
 
-  const totalPos = rowIndex * COLUMNS + colIndex;
-  for (let pos = totalPos - 1; pos >= 0; pos--) {
-    const r = Math.floor(pos / COLUMNS);
-    const c = pos % COLUMNS;
-    if (rows[r][c] !== null) {
+  // 同一行内で前方のコードを探す（行を跨がない）
+  for (let c = colIndex - 1; c >= 0; c--) {
+    if (rows[rowIndex][c] !== null) {
       return {
-        scaleType: cellScales[r]?.[c] ?? null,
-        chord: rows[r][c],
-        originRow: r,
+        scaleType: cellScales[rowIndex]?.[c] ?? null,
+        chord: rows[rowIndex][c],
+        originRow: rowIndex,
         originCol: c,
       };
     }
@@ -139,7 +137,7 @@ function ScaleSegmentCell({ segment }: { segment: ScaleSegment }) {
 
   // 空セグメント（コードなし）
   if (!chord) {
-    return <div className="h-6" style={{ flex: span }} />;
+    return <div className="h-6 rounded-sm bg-foreground/[0.03]" style={{ flex: span }} />;
   }
 
   // スケールが選択可能な場合はクリッカブル
