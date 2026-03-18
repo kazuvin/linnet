@@ -26,10 +26,20 @@ export function useAvailableScales(): {
   const selectedChord = useSelectedProgressionChord();
   const selectedCell = useChordGridStore((s) => s.selectedCell);
   const cellScales = useChordGridStore((s) => s.cellScales);
+  const isPlaying = useChordGridStore((s) => s.isPlaying);
+  const currentRow = useChordGridStore((s) => s.currentRow);
+  const currentCol = useChordGridStore((s) => s.currentCol);
 
-  // セルに保存されたスケール
-  const cellScale =
-    selectedCell !== null ? (cellScales[selectedCell.row]?.[selectedCell.col] ?? null) : null;
+  // セルに保存されたスケール（再生中は再生位置、それ以外は選択セルから取得）
+  const cellScale = useMemo(() => {
+    if (isPlaying && currentRow >= 0 && currentCol >= 0) {
+      return useChordGridStore.getState().getScaleAtPosition(currentRow, currentCol);
+    }
+    if (selectedCell !== null) {
+      return cellScales[selectedCell.row]?.[selectedCell.col] ?? null;
+    }
+    return null;
+  }, [isPlaying, currentRow, currentCol, selectedCell, cellScales]);
 
   const isDominantSource =
     selectedChord?.source === "secondary-dominant" ||
