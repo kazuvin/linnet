@@ -2,11 +2,11 @@
 
 import { useCallback, useRef, useState } from "react";
 import { PlusIcon, TrashIcon } from "@/components/icons";
+import { CellPopover, CellPopoverItem } from "@/components/ui/cell-popover";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { selectGridCell } from "@/features/store-coordination";
 import { playChord } from "@/lib/audio/chord-player";
-import { cn } from "@/lib/utils";
 import { useGridKeyboard } from "../../hooks/use-grid-keyboard";
 import { useGridPlayback } from "../../hooks/use-grid-playback";
 import type { GridChord } from "../../stores/chord-grid-store";
@@ -38,41 +38,57 @@ export function ChordGrid() {
 
   const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
 
-  // コンテキストメニュー & ダイアログ
-  const [contextMenuCell, setContextMenuCell] = useState<{ row: number; col: number } | null>(null);
+  // ポップオーバー & ダイアログ
+  const [popoverCell, setPopoverCell] = useState<{ row: number; col: number } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTarget, setDialogTarget] = useState<{ row: number; col: number } | null>(null);
-  const contextMenuRef = useRef<HTMLDivElement>(null);
+  const cellRefsMap = useRef<Map<string, HTMLButtonElement>>(new Map());
+
+  const popoverAnchorRef = useRef<HTMLButtonElement | null>(null);
+  // ポップオーバーのアンカーを更新
+  const getPopoverAnchor = useCallback(() => {
+    if (!popoverCell) return null;
+    return cellRefsMap.current.get(`${popoverCell.row}-${popoverCell.col}`) ?? null;
+  }, [popoverCell]);
+  popoverAnchorRef.current = getPopoverAnchor();
+
+  const registerCellRef = useCallback((row: number, col: number, el: HTMLButtonElement | null) => {
+    const key = `${row}-${col}`;
+    if (el) {
+      cellRefsMap.current.set(key, el);
+    } else {
+      cellRefsMap.current.delete(key);
+    }
+  }, []);
 
   const handleCellClick = useCallback(
     (rowIndex: number, col: number) => {
       selectGridCell(rowIndex, col);
 
-      // 同じセルをもう一度クリックしたらメニューを閉じる
-      if (contextMenuCell?.row === rowIndex && contextMenuCell?.col === col) {
-        setContextMenuCell(null);
+      if (popoverCell?.row === rowIndex && popoverCell?.col === col) {
+        setPopoverCell(null);
         return;
       }
-      setContextMenuCell({ row: rowIndex, col });
+      setPopoverCell({ row: rowIndex, col });
     },
-    [contextMenuCell]
+    [popoverCell]
   );
 
   const handleAddOrChange = useCallback(() => {
-    if (contextMenuCell) {
-      setDialogTarget(contextMenuCell);
+    if (popoverCell) {
+      setDialogTarget(popoverCell);
       setDialogOpen(true);
     }
-    setContextMenuCell(null);
-  }, [contextMenuCell]);
+    setPopoverCell(null);
+  }, [popoverCell]);
 
   const handleDelete = useCallback(() => {
-    if (contextMenuCell) {
-      clearCell(contextMenuCell.row, contextMenuCell.col);
+    if (popoverCell) {
+      clearCell(popoverCell.row, popoverCell.col);
       useChordProgressionStore.getState().setActiveChordOverride(null);
     }
-    setContextMenuCell(null);
-  }, [contextMenuCell, clearCell]);
+    setPopoverCell(null);
+  }, [popoverCell, clearCell]);
 
   const handleChordSelect = useCallback(
     (chord: GridChord) => {
@@ -88,15 +104,12 @@ export function ChordGrid() {
     [dialogTarget, setCell]
   );
 
-  const contextCellChord = contextMenuCell
-    ? rows[contextMenuCell.row]?.[contextMenuCell.col]
-    : null;
+  const popoverCellChord = popoverCell ? rows[popoverCell.row]?.[popoverCell.col] : null;
 
   useGridKeyboard(selectedCell, clearSelection);
 
   return (
     <div className="flex flex-col gap-4">
-      {/* コントロールバー */}
       <GridControlBar
         selectedChord={selectedChord}
         isPlaying={isPlaying}
@@ -127,43 +140,29 @@ export function ChordGrid() {
               isOutOfPlayRange={hasChords && rowIndex >= playableRowCount}
               totalRows={rows.length}
               onCellClick={handleCellClick}
+              registerCellRef={registerCellRef}
             />
           ))}
         </div>
       </div>
 
-      {/* セルアクションバー */}
-      {contextMenuCell !== null && (
-        <div
-          ref={contextMenuRef}
-          className="fade-in flex animate-in items-center justify-center gap-2 duration-150"
-        >
-          <button
-            type="button"
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-medium text-sm transition-colors",
-              "bg-foreground text-background hover:bg-foreground/90"
-            )}
-            onClick={handleAddOrChange}
-          >
-            <PlusIcon className="h-3.5 w-3.5" />
-            {contextCellChord ? "コードを変更" : "コードを追加"}
-          </button>
-          {contextCellChord && (
-            <button
-              type="button"
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-medium text-sm transition-colors",
-                "bg-destructive/10 text-destructive hover:bg-destructive/20"
-              )}
-              onClick={handleDelete}
-            >
-              <TrashIcon className="h-3.5 w-3.5" />
-              コードを削除
-            </button>
-          )}
-        </div>
-      )}
+      {/* セルポップオーバー */}
+      <CellPopover
+        anchorRef={popoverAnchorRef}
+        open={popoverCell !== null}
+        onClose={() => setPopoverCell(null)}
+      >
+        <CellPopoverItem onClick={handleAddOrChange}>
+          <PlusIcon className="h-4 w-4" />
+          {popoverCellChord ? "コードを変更" : "コードを追加"}
+        </CellPopoverItem>
+        {popoverCellChord && (
+          <CellPopoverItem onClick={handleDelete} variant="destructive">
+            <TrashIcon className="h-4 w-4" />
+            コードを削除
+          </CellPopoverItem>
+        )}
+      </CellPopover>
 
       {/* コード選択ダイアログ */}
       <ChordSelectorDialog
@@ -178,7 +177,7 @@ export function ChordGrid() {
       />
 
       {/* ガイド */}
-      {!contextMenuCell && (
+      {!popoverCell && (
         <GridGuide
           selectedCell={selectedCell}
           selectedChord={selectedChord}

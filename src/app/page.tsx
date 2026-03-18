@@ -1,6 +1,8 @@
+"use client";
+
 import { Card, PageTransition } from "@/components";
 import { ChordGrid } from "@/features/chord-grid";
-import { Fretboard, GuitarVoicingCard } from "@/features/fretboard/components";
+import { FretboardSection } from "@/features/fretboard/components/fretboard-section";
 import { KeySelector } from "@/features/key-selection/components/key-selector";
 
 export default function Home() {
@@ -11,10 +13,7 @@ export default function Home() {
         <Card className="min-w-0 overflow-hidden">
           <ChordGrid />
         </Card>
-        <Card id="fretboard-section" className="min-w-0 overflow-hidden">
-          <Fretboard />
-        </Card>
-        <GuitarVoicingCard />
+        <FretboardSection />
       </main>
     </PageTransition>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import {
   CHORD_DRAG_TYPE,
   type PaletteDragData,
@@ -26,17 +27,10 @@ type GridCellProps = {
   onClick: () => void;
 };
 
-export function GridCell({
-  rowIndex,
-  col,
-  cellChord,
-  displayChord,
-  label,
-  isSustain,
-  isCurrentStep,
-  isSelected,
-  onClick,
-}: GridCellProps) {
+export const GridCell = forwardRef<HTMLButtonElement, GridCellProps>(function GridCell(
+  { rowIndex, col, cellChord, displayChord, label, isSustain, isCurrentStep, isSelected, onClick },
+  ref
+) {
   const setCell = useChordGridStore((s) => s.setCell);
   const clearCell = useChordGridStore((s) => s.clearCell);
   const clearSelection = useChordGridStore((s) => s.clearSelection);
@@ -95,7 +89,7 @@ export function GridCell({
 
   return (
     <button
-      key={`cell-${String(rowIndex)}-${String(col)}`}
+      ref={ref}
       type="button"
       className={cn(
         "relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border transition-all duration-150 md:w-7 lg:aspect-square lg:h-auto lg:w-auto lg:flex-1",
@@ -130,4 +124,4 @@ export function GridCell({
       ) : null}
     </button>
   );
-}
+});

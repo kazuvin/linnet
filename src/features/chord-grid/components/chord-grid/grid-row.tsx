@@ -32,6 +32,7 @@ type GridRowProps = {
   isOutOfPlayRange: boolean;
   totalRows: number;
   onCellClick: (rowIndex: number, col: number) => void;
+  registerCellRef: (row: number, col: number, el: HTMLButtonElement | null) => void;
 };
 
 // --- スケール表示用のヘルパー ---
@@ -249,6 +250,7 @@ export function GridRow({
   isOutOfPlayRange,
   totalRows,
   onCellClick,
+  registerCellRef,
 }: GridRowProps) {
   const removeRow = useChordGridStore((s) => s.removeRow);
 
@@ -269,6 +271,7 @@ export function GridRow({
           return (
             <GridCell
               key={`cell-${String(rowIndex)}-${String(col)}`}
+              ref={(el) => registerCellRef(rowIndex, col, el)}
               rowIndex={rowIndex}
               col={col}
               cellChord={cellChord}

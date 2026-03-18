@@ -64,14 +64,31 @@ const ALL_QUALITIES: ChordQuality[] = QUALITY_GROUPS.filter((g) => g.id !== "all
   (g) => g.qualities
 );
 
-const ORDERED_ROOTS = NOTE_NAMES; // C, C#, D, D#, E, F, F#, G, G#, A, A#, B
+const ORDERED_ROOTS = NOTE_NAMES;
 
 function getRootLabel(name: string, index: number): string {
   const flat = FLAT_NOTE_NAMES[index];
   return name === flat ? name : `${name}/${flat}`;
 }
 
-// --- Free tab: all chords C→B with filter ---
+// --- セル風コードボタン ---
+
+function ChordCellButton({ chord, onClick }: { chord: GridChord; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        "flex aspect-square items-center justify-center rounded-sm border font-bold text-[10px] leading-none transition-all active:scale-90",
+        FUNCTION_CELL_STYLES[chord.chordFunction] ?? "border-foreground/10 bg-background"
+      )}
+      onClick={onClick}
+    >
+      {chord.symbol}
+    </button>
+  );
+}
+
+// --- Free tab ---
 
 function FreeTabContent({ onSelect }: { onSelect: (chord: GridChord) => void }) {
   const [filterGroup, setFilterGroup] = useState("all");
@@ -118,29 +135,22 @@ function FreeTabContent({ onSelect }: { onSelect: (chord: GridChord) => void }) 
 
       {/* コード一覧 */}
       <div className="max-h-[50vh] overflow-y-auto">
-        <div className="grid grid-cols-1 gap-1">
+        <div className="grid grid-cols-1 gap-2">
           {ORDERED_ROOTS.map((root, rootIdx) => {
             const rootChords = chords.filter((c) => c.rootName === root);
             if (rootChords.length === 0) return null;
             return (
               <div key={root}>
-                <div className="sticky top-0 z-10 bg-background/95 px-1 py-1 font-bold text-muted text-xs backdrop-blur-sm">
+                <div className="sticky top-0 z-10 bg-background/95 px-0.5 py-1 font-bold text-muted text-xs backdrop-blur-sm">
                   {getRootLabel(root, rootIdx)}
                 </div>
-                <div className="grid grid-cols-3 gap-1 sm:grid-cols-4">
+                <div className="grid grid-cols-5 gap-1 sm:grid-cols-6">
                   {rootChords.map((chord) => (
-                    <button
+                    <ChordCellButton
                       key={`${chord.rootName}-${chord.quality}`}
-                      type="button"
-                      className={cn(
-                        "flex items-center justify-center rounded-lg px-2 py-2.5 font-medium text-sm transition-all active:scale-95",
-                        FUNCTION_CELL_STYLES[chord.chordFunction] ??
-                          "border border-foreground/10 bg-background"
-                      )}
+                      chord={chord}
                       onClick={() => onSelect(chord)}
-                    >
-                      {chord.symbol}
-                    </button>
+                    />
                   ))}
                 </div>
               </div>
@@ -152,7 +162,7 @@ function FreeTabContent({ onSelect }: { onSelect: (chord: GridChord) => void }) 
   );
 }
 
-// --- Mode tab: chords based on selected mode ---
+// --- Mode tab ---
 
 function ModeTabContent({ onSelect }: { onSelect: (chord: GridChord) => void }) {
   const paletteChords = useCurrentModeChords();
@@ -186,24 +196,16 @@ function ModeTabContent({ onSelect }: { onSelect: (chord: GridChord) => void }) 
         </Select>
       </div>
 
-      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+      <div className="grid grid-cols-5 gap-1 sm:grid-cols-6">
         {paletteChords.map((chordInfo) => {
           const source = (chordInfo.source ?? selectedMode) as GridChord["source"];
           const gridChord = toGridChord(chordInfo);
           return (
-            <button
+            <ChordCellButton
               key={`${chordInfo.degree}-${chordInfo.chord.symbol}-${source}`}
-              type="button"
-              className={cn(
-                "flex flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-2.5 transition-all active:scale-95",
-                FUNCTION_CELL_STYLES[chordInfo.chordFunction] ??
-                  "border border-foreground/10 bg-background"
-              )}
+              chord={gridChord}
               onClick={() => onSelect(gridChord)}
-            >
-              <span className="text-[10px] text-muted">{chordInfo.romanNumeral}</span>
-              <span className="font-bold text-sm">{chordInfo.chord.symbol}</span>
-            </button>
+            />
           );
         })}
       </div>
@@ -237,7 +239,7 @@ export function ChordSelectorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="lg">
+      <DialogContent size="md">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <DialogTitle>{title}</DialogTitle>
