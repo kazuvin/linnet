@@ -96,7 +96,7 @@ export const GridCell = forwardRef<HTMLButtonElement, GridCellProps>(function Gr
         "ring-0 ring-foreground ring-offset-0 ring-offset-background",
         isCurrentStep && "ring-2 ring-offset-2",
         isOver && "z-10 ring-2 ring-primary ring-offset-2",
-        isSelected && "z-10 ring-2 ring-primary ring-offset-2",
+        isSelected && !isOver && "z-10 ring-2 ring-primary/50 ring-offset-1",
         isDragging && "opacity-30",
         cellChord
           ? cn(

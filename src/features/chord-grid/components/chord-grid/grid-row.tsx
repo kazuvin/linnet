@@ -78,6 +78,7 @@ function getScaleDisplayForCell(
 function ScaleCell({
   rowIndex,
   col,
+  colCount,
   scaleType,
   chord,
   isOrigin,
@@ -87,6 +88,7 @@ function ScaleCell({
 }: {
   rowIndex: number;
   col: number;
+  colCount: number;
   scaleType: ScaleType | null;
   chord: GridChord | null;
   isOrigin: boolean;
@@ -115,21 +117,40 @@ function ScaleCell({
     setCellScale(rowIndex, col, value as ScaleType);
   };
 
+  const isFirst = col === 0;
+  const isLast = col === colCount - 1;
+  const roundedClass = cn(
+    isFirst && "rounded-l-sm",
+    isLast && "rounded-r-sm",
+    !isFirst && !isLast && "rounded-none"
+  );
+
   // 空セル（コードもサステインもなし）
   if (!chord) {
     return (
-      <div className="flex h-5 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1" />
+      <div
+        className={cn(
+          "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
+          roundedClass
+        )}
+      />
     );
   }
 
   // 選択中のコード原点セル → ドロップダウン
   if (isSelected && isOrigin && availableScales.length > 0) {
     return (
-      <div className="flex h-5 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1">
+      <div
+        className={cn(
+          "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
+          roundedClass
+        )}
+      >
         <Select value={scaleType ?? "__none__"} onValueChange={handleScaleChange}>
           <SelectTrigger
             className={cn(
-              "h-5 w-full min-w-0 rounded-sm border-0 px-0.5 text-center text-[7px] leading-none shadow-none lg:text-[8px]",
+              "h-6 w-full min-w-0 border-0 px-0.5 text-center text-[8px] leading-none shadow-none lg:text-[9px]",
+              roundedClass,
               FUNCTION_CELL_STYLES[chord.chordFunction] ?? "bg-foreground/5"
             )}
           >
@@ -154,11 +175,12 @@ function ScaleCell({
     return (
       <div
         className={cn(
-          "flex h-5 w-8 shrink-0 items-center justify-center overflow-hidden rounded-sm md:w-7 lg:w-auto lg:flex-1",
+          "flex h-6 w-8 shrink-0 items-center justify-center overflow-hidden md:w-7 lg:w-auto lg:flex-1",
+          roundedClass,
           FUNCTION_CELL_STYLES[chord.chordFunction] ?? "bg-foreground/5"
         )}
       >
-        <span className="max-w-full truncate px-0.5 text-[7px] leading-none lg:text-[8px]">
+        <span className="max-w-full truncate px-0.5 text-[8px] leading-none lg:text-[9px]">
           {shortName}
         </span>
       </div>
@@ -170,7 +192,8 @@ function ScaleCell({
     return (
       <div
         className={cn(
-          "flex h-5 w-8 shrink-0 items-center justify-center rounded-sm md:w-7 lg:w-auto lg:flex-1",
+          "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
+          roundedClass,
           SUSTAIN_CELL_STYLES[chord.chordFunction] ?? "bg-card/50"
         )}
       />
@@ -178,7 +201,12 @@ function ScaleCell({
   }
 
   return (
-    <div className="flex h-5 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1" />
+    <div
+      className={cn(
+        "flex h-6 w-8 shrink-0 items-center justify-center md:w-7 lg:w-auto lg:flex-1",
+        roundedClass
+      )}
+    />
   );
 }
 
@@ -206,7 +234,7 @@ function ScaleRow({
   if (!hasAnyDisplay) return null;
 
   return (
-    <div className={cn("flex items-center gap-0.5", isOutOfPlayRange && "opacity-40")}>
+    <div className={cn("flex items-center", isOutOfPlayRange && "opacity-40")}>
       {COL_INDICES.map((col) => {
         const { scaleType, chord, isOrigin, isSustain } = getScaleDisplayForCell(
           rows,
@@ -221,6 +249,7 @@ function ScaleRow({
             key={`scale-${String(rowIndex)}-${String(col)}`}
             rowIndex={rowIndex}
             col={col}
+            colCount={COLUMNS}
             scaleType={scaleType}
             chord={chord}
             isOrigin={isOrigin}
@@ -255,7 +284,7 @@ export function GridRow({
   const removeRow = useChordGridStore((s) => s.removeRow);
 
   return (
-    <div className={cn("flex flex-col", isOutOfPlayRange && "opacity-40")}>
+    <div className={cn("flex flex-col gap-0.5", isOutOfPlayRange && "opacity-40")}>
       <div className="flex items-center gap-0.5">
         {/* セル */}
         {COL_INDICES.map((col) => {

@@ -38,18 +38,17 @@ export function ChordGrid() {
 
   const selectedChord = selectedCell ? rows[selectedCell.row]?.[selectedCell.col] : null;
 
-  // ポップオーバー & ダイアログ
-  const [popoverCell, setPopoverCell] = useState<{ row: number; col: number } | null>(null);
+  // ポップオーバー表示フラグ（selectedCell と同期）
+  const [showPopover, setShowPopover] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTarget, setDialogTarget] = useState<{ row: number; col: number } | null>(null);
   const cellRefsMap = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const popoverAnchorRef = useRef<HTMLButtonElement | null>(null);
-  // ポップオーバーのアンカーを更新
   const getPopoverAnchor = useCallback(() => {
-    if (!popoverCell) return null;
-    return cellRefsMap.current.get(`${popoverCell.row}-${popoverCell.col}`) ?? null;
-  }, [popoverCell]);
+    if (!selectedCell || !showPopover) return null;
+    return cellRefsMap.current.get(`${selectedCell.row}-${selectedCell.col}`) ?? null;
+  }, [selectedCell, showPopover]);
   popoverAnchorRef.current = getPopoverAnchor();
 
   const registerCellRef = useCallback((row: number, col: number, el: HTMLButtonElement | null) => {
@@ -63,32 +62,36 @@ export function ChordGrid() {
 
   const handleCellClick = useCallback(
     (rowIndex: number, col: number) => {
-      selectGridCell(rowIndex, col);
-
-      if (popoverCell?.row === rowIndex && popoverCell?.col === col) {
-        setPopoverCell(null);
+      // 同じセルをクリック → ポップオーバーをトグル
+      if (selectedCell?.row === rowIndex && selectedCell?.col === col) {
+        setShowPopover((prev) => !prev);
         return;
       }
-      setPopoverCell({ row: rowIndex, col });
+      selectGridCell(rowIndex, col);
+      setShowPopover(true);
     },
-    [popoverCell]
+    [selectedCell]
   );
 
+  const closePopover = useCallback(() => {
+    setShowPopover(false);
+  }, []);
+
   const handleAddOrChange = useCallback(() => {
-    if (popoverCell) {
-      setDialogTarget(popoverCell);
+    if (selectedCell) {
+      setDialogTarget(selectedCell);
       setDialogOpen(true);
     }
-    setPopoverCell(null);
-  }, [popoverCell]);
+    setShowPopover(false);
+  }, [selectedCell]);
 
   const handleDelete = useCallback(() => {
-    if (popoverCell) {
-      clearCell(popoverCell.row, popoverCell.col);
+    if (selectedCell) {
+      clearCell(selectedCell.row, selectedCell.col);
       useChordProgressionStore.getState().setActiveChordOverride(null);
     }
-    setPopoverCell(null);
-  }, [popoverCell, clearCell]);
+    setShowPopover(false);
+  }, [selectedCell, clearCell]);
 
   const handleChordSelect = useCallback(
     (chord: GridChord) => {
@@ -103,8 +106,6 @@ export function ChordGrid() {
     },
     [dialogTarget, setCell]
   );
-
-  const popoverCellChord = popoverCell ? rows[popoverCell.row]?.[popoverCell.col] : null;
 
   useGridKeyboard(selectedCell, clearSelection);
 
@@ -124,7 +125,7 @@ export function ChordGrid() {
 
       {/* グリッド本体 */}
       <div className="-mx-4 overflow-x-auto px-4 pb-1">
-        <div className="flex w-fit flex-col gap-1 lg:w-full">
+        <div className="flex w-fit flex-col gap-2 lg:w-full">
           <GridHeader />
           {rows.map((rowCells, rowIndex) => (
             <GridRow
@@ -149,14 +150,14 @@ export function ChordGrid() {
       {/* セルポップオーバー */}
       <CellPopover
         anchorRef={popoverAnchorRef}
-        open={popoverCell !== null}
-        onClose={() => setPopoverCell(null)}
+        open={showPopover && selectedCell !== null}
+        onClose={closePopover}
       >
         <CellPopoverItem onClick={handleAddOrChange}>
           <PlusIcon className="h-4 w-4" />
-          {popoverCellChord ? "コードを変更" : "コードを追加"}
+          {selectedChord ? "コードを変更" : "コードを追加"}
         </CellPopoverItem>
-        {popoverCellChord && (
+        {selectedChord && (
           <CellPopoverItem onClick={handleDelete} variant="destructive">
             <TrashIcon className="h-4 w-4" />
             コードを削除
@@ -177,7 +178,7 @@ export function ChordGrid() {
       />
 
       {/* ガイド */}
-      {!popoverCell && (
+      {!showPopover && (
         <GridGuide
           selectedCell={selectedCell}
           selectedChord={selectedChord}
