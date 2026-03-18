@@ -1,125 +1,45 @@
 "use client";
 
-import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
+import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type CellPopoverProps = {
-  anchorRef: React.RefObject<HTMLElement | null>;
-  open: boolean;
-  onClose: () => void;
-  children: ReactNode;
-};
+// Root
+export const CellPopover = PopoverPrimitive.Root;
 
-function computePosition(anchor: HTMLElement, popoverWidth: number): { top: number; left: number } {
-  const rect = anchor.getBoundingClientRect();
-  let left = rect.left + rect.width / 2 - popoverWidth / 2;
-  // 画面右端からはみ出す場合
-  if (left + popoverWidth > window.innerWidth - 8) {
-    left = window.innerWidth - popoverWidth - 8;
-  }
-  // 画面左端からはみ出す場合
-  if (left < 8) {
-    left = 8;
-  }
-  return { top: rect.bottom + 4, left };
-}
+// Anchor（virtualRef でセル要素をアンカーとして指定）
+export const CellPopoverAnchor = PopoverPrimitive.Anchor;
 
-/**
- * セル要素にアンカーされたポップオーバー。
- * セルの下に表示され、画面外にはみ出す場合は自動調整する。
- */
-export function CellPopover({ anchorRef, open, onClose, children }: CellPopoverProps) {
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+// Content
+export type CellPopoverContentProps = ComponentProps<typeof PopoverPrimitive.Content>;
 
-  // useLayoutEffect で描画前に位置を確定させる
-  useLayoutEffect(() => {
-    if (!open || !anchorRef.current) {
-      setPosition(null);
-      return;
-    }
-
-    const anchor = anchorRef.current;
-    const popoverWidth = popoverRef.current?.offsetWidth ?? 160;
-    setPosition(computePosition(anchor, popoverWidth));
-  }, [open, anchorRef]);
-
-  // スクロール・リサイズ時の位置更新（通常の useEffect で十分）
-  useEffect(() => {
-    if (!open || !anchorRef.current) return;
-
-    const updatePosition = () => {
-      const anchor = anchorRef.current;
-      if (!anchor) return;
-      const popoverWidth = popoverRef.current?.offsetWidth ?? 160;
-      setPosition(computePosition(anchor, popoverWidth));
-    };
-
-    window.addEventListener("scroll", updatePosition, true);
-    window.addEventListener("resize", updatePosition);
-    return () => {
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [open, anchorRef]);
-
-  // 外側クリックで閉じる
-  useEffect(() => {
-    if (!open) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (popoverRef.current?.contains(target)) return;
-      if (anchorRef.current?.contains(target)) return;
-      onClose();
-    };
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-
-    // 少し遅延させてクリックイベントの伝播を待つ
-    const timer = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscape);
-    }, 0);
-
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [open, onClose, anchorRef]);
-
-  if (!open || typeof window === "undefined") return null;
-
-  // 位置未確定時は非表示で DOM に配置（offsetWidth 計測用）
-  if (!position) {
-    return createPortal(
-      <div
-        ref={popoverRef}
-        className="pointer-events-none fixed z-50 opacity-0"
-        style={{ top: -9999, left: -9999 }}
-      >
-        {children}
-      </div>,
-      document.body
-    );
-  }
-
-  return createPortal(
-    <div
-      ref={popoverRef}
-      className="fade-in-0 zoom-in-95 fixed z-50 animate-in rounded-lg border border-foreground/10 bg-background p-1 shadow-dropdown duration-200"
-      style={{ top: position.top, left: position.left }}
-    >
-      {children}
-    </div>,
-    document.body
+export function CellPopoverContent({
+  className,
+  sideOffset = 4,
+  ...props
+}: CellPopoverContentProps) {
+  return (
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        sideOffset={sideOffset}
+        className={cn(
+          "z-50 overflow-hidden rounded-lg border border-foreground/10 bg-background p-1 shadow-dropdown",
+          "data-[state=closed]:animate-out data-[state=open]:animate-in",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
+          "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "duration-200",
+          className
+        )}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
   );
 }
 
+// Item
 type CellPopoverItemProps = {
   onClick: () => void;
   children: ReactNode;

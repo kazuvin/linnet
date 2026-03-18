@@ -2,7 +2,12 @@
 
 import { useCallback, useRef, useState } from "react";
 import { PlusIcon, TrashIcon } from "@/components/icons";
-import { CellPopover, CellPopoverItem } from "@/components/ui/cell-popover";
+import {
+  CellPopover,
+  CellPopoverAnchor,
+  CellPopoverContent,
+  CellPopoverItem,
+} from "@/components/ui/cell-popover";
 import { useChordPlaybackStore } from "@/features/chord-playback/stores/chord-playback-store";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { selectGridCell } from "@/features/store-coordination";
@@ -44,12 +49,14 @@ export function ChordGrid() {
   const [dialogTarget, setDialogTarget] = useState<{ row: number; col: number } | null>(null);
   const cellRefsMap = useRef<Map<string, HTMLButtonElement>>(new Map());
 
-  const popoverAnchorRef = useRef<HTMLButtonElement | null>(null);
-  const getPopoverAnchor = useCallback(() => {
-    if (!selectedCell || !showPopover) return null;
-    return cellRefsMap.current.get(`${selectedCell.row}-${selectedCell.col}`) ?? null;
-  }, [selectedCell, showPopover]);
-  popoverAnchorRef.current = getPopoverAnchor();
+  // Radix Popover の virtualRef 用（Measurable インターフェースに準拠）
+  const popoverAnchorRef = useRef<{ getBoundingClientRect: () => DOMRect }>({
+    getBoundingClientRect: () => new DOMRect(),
+  });
+  if (selectedCell) {
+    const el = cellRefsMap.current.get(`${selectedCell.row}-${selectedCell.col}`);
+    if (el) popoverAnchorRef.current = el;
+  }
 
   const registerCellRef = useCallback((row: number, col: number, el: HTMLButtonElement | null) => {
     const key = `${row}-${col}`;
@@ -74,9 +81,15 @@ export function ChordGrid() {
     [selectedCell]
   );
 
-  const closePopover = useCallback(() => {
-    setShowPopover(false);
-  }, []);
+  const handlePopoverOpenChange = useCallback(
+    (open: boolean) => {
+      setShowPopover(open);
+      if (!open) {
+        clearSelection();
+      }
+    },
+    [clearSelection]
+  );
 
   const handleAddOrChange = useCallback(() => {
     if (selectedCell) {
@@ -124,45 +137,47 @@ export function ChordGrid() {
       />
 
       {/* グリッド本体 */}
-      <div className="-mx-4 overflow-x-auto px-4 pb-1">
-        <div className="flex w-fit flex-col gap-2 lg:w-full">
-          <GridHeader />
-          {rows.map((rowCells, rowIndex) => (
-            <GridRow
-              key={`row-${String(rowIndex)}`}
-              rowCells={rowCells}
-              rowIndex={rowIndex}
-              rows={rows}
-              cellScales={cellScales}
-              isPlaying={isPlaying}
-              currentRow={currentRow}
-              currentCol={currentCol}
-              selectedCell={selectedCell}
-              isOutOfPlayRange={hasChords && rowIndex >= playableRowCount}
-              totalRows={rows.length}
-              onCellClick={handleCellClick}
-              registerCellRef={registerCellRef}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* セルポップオーバー */}
       <CellPopover
-        anchorRef={popoverAnchorRef}
         open={showPopover && selectedCell !== null}
-        onClose={closePopover}
+        onOpenChange={handlePopoverOpenChange}
       >
-        <CellPopoverItem onClick={handleAddOrChange}>
-          <PlusIcon className="h-4 w-4" />
-          {selectedChord ? "コードを変更" : "コードを追加"}
-        </CellPopoverItem>
-        {selectedChord && (
-          <CellPopoverItem onClick={handleDelete} variant="destructive">
-            <TrashIcon className="h-4 w-4" />
-            コードを削除
+        <CellPopoverAnchor virtualRef={popoverAnchorRef} />
+        <div className="-mx-4 overflow-x-auto px-4 pb-1">
+          <div className="flex w-fit flex-col gap-2 lg:w-full">
+            <GridHeader />
+            {rows.map((rowCells, rowIndex) => (
+              <GridRow
+                key={`row-${String(rowIndex)}`}
+                rowCells={rowCells}
+                rowIndex={rowIndex}
+                rows={rows}
+                cellScales={cellScales}
+                isPlaying={isPlaying}
+                currentRow={currentRow}
+                currentCol={currentCol}
+                selectedCell={selectedCell}
+                isOutOfPlayRange={hasChords && rowIndex >= playableRowCount}
+                totalRows={rows.length}
+                onCellClick={handleCellClick}
+                registerCellRef={registerCellRef}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* セルポップオーバー */}
+        <CellPopoverContent>
+          <CellPopoverItem onClick={handleAddOrChange}>
+            <PlusIcon className="h-4 w-4" />
+            {selectedChord ? "コードを変更" : "コードを追加"}
           </CellPopoverItem>
-        )}
+          {selectedChord && (
+            <CellPopoverItem onClick={handleDelete} variant="destructive">
+              <TrashIcon className="h-4 w-4" />
+              コードを削除
+            </CellPopoverItem>
+          )}
+        </CellPopoverContent>
       </CellPopover>
 
       {/* コード選択ダイアログ */}

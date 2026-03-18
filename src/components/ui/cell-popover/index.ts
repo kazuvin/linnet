@@ -1,1 +1,6 @@
-export { CellPopover, CellPopoverItem } from "./cell-popover";
+export {
+  CellPopover,
+  CellPopoverAnchor,
+  CellPopoverContent,
+  CellPopoverItem,
+} from "./cell-popover";
