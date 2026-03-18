@@ -7,16 +7,19 @@ import { useFretboardPositions } from "@/features/fretboard/hooks/use-fretboard-
 import type { InstrumentTab } from "@/features/fretboard/stores/fretboard-store";
 import { MAX_FRET, useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import { PianoKeyboard } from "@/features/keyboard/components";
+import { SCALE_DISPLAY_NAMES } from "@/lib/music-theory";
 import { FretboardGrid } from "../fretboard-grid";
 import { FretboardLegend } from "../fretboard-legend";
-import { ScaleChecker } from "../scale-checker";
+import { ScalePlayButton } from "../scale-checker/scale-play-button";
 
 export function Fretboard() {
   const { showCharacteristicNotes, showAvoidNotes, activeInstrument, setActiveInstrument } =
     useFretboardStore();
-  const { availableScales, activeScaleType, scaleRoot } = useAvailableScales();
+  const { activeScaleType, scaleRoot } = useAvailableScales();
   const positions = useFretboardPositions(activeScaleType);
   const selectedChord = useSelectedProgressionChord();
+
+  const scaleDisplayName = activeScaleType ? SCALE_DISPLAY_NAMES[activeScaleType] : null;
 
   return (
     <section className="flex flex-col gap-4">
@@ -28,12 +31,18 @@ export function Fretboard() {
           <TabNavItem value="fretboard">フレットボード</TabNavItem>
           <TabNavItem value="keyboard">鍵盤</TabNavItem>
         </TabNav>
-        <ScaleChecker
-          availableScales={availableScales}
-          activeScaleType={activeScaleType}
-          chordSymbol={selectedChord?.symbol ?? null}
-          scaleRoot={scaleRoot}
-        />
+        {/* スケール表示（読み取り専用） */}
+        {selectedChord && activeScaleType && scaleRoot && (
+          <div className="flex items-center gap-2">
+            <span className="text-muted text-sm">
+              <span className="font-bold text-foreground">{selectedChord.symbol}</span>{" "}
+              <span className="text-foreground/70">
+                {scaleRoot} {scaleDisplayName}
+              </span>
+            </span>
+            <ScalePlayButton scaleType={activeScaleType} scaleRoot={scaleRoot} />
+          </div>
+        )}
       </div>
       {activeInstrument === "fretboard" ? (
         <>

@@ -12,24 +12,23 @@ export function GridGuide({ selectedCell, selectedChord, hasChords }: GridGuideP
   if (selectedCell) {
     return (
       <p className="fade-in animate-in text-center text-muted text-sm duration-200">
-        パレットからコードを選択して{selectedChord ? "置換" : "配置"} ·{" "}
-        <span className="text-foreground/40">Esc</span> で選択解除
         {selectedChord ? (
           <>
-            {" "}
+            コードを変更・削除できます · <span className="text-foreground/40">Esc</span> で選択解除
             · <span className="text-foreground/40">Delete</span> で削除
           </>
-        ) : null}
+        ) : (
+          <>
+            セルをクリックしてコードを追加 · <span className="text-foreground/40">Esc</span>{" "}
+            で選択解除
+          </>
+        )}
       </p>
     );
   }
 
   if (!hasChords) {
-    return (
-      <p className="text-center text-muted text-sm">
-        コードをドラッグ、またはクリックしてグリッドに追加
-      </p>
-    );
+    return <p className="text-center text-muted text-sm">セルをクリックしてコードを追加</p>;
   }
 
   return null;

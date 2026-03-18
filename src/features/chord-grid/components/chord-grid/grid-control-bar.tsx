@@ -1,16 +1,11 @@
 "use client";
 
-import { PlayIcon, StopIcon, TrashIcon, VolumeIcon, VolumeOffIcon } from "@/components/icons";
+import { PlayIcon, StopIcon, VolumeIcon, VolumeOffIcon } from "@/components/icons";
 import { IconButton } from "@/components/ui/button";
 import { NumberStepper } from "@/components/ui/number-stepper";
-import { FUNCTION_CELL_STYLES } from "@/features/chord-grid/lib/chord-function-styles";
-import { deleteSelectedGridCell } from "@/features/store-coordination";
-import { cn } from "@/lib/utils";
-import type { GridChord } from "../../stores/chord-grid-store";
 import { GridActionsMenu } from "../grid-actions-menu";
 
 type GridControlBarProps = {
-  selectedChord: GridChord | null;
   isPlaying: boolean;
   hasChords: boolean;
   togglePlayback: () => void;
@@ -22,7 +17,6 @@ type GridControlBarProps = {
 };
 
 export function GridControlBar({
-  selectedChord,
   isPlaying,
   hasChords,
   togglePlayback,
@@ -36,28 +30,6 @@ export function GridControlBar({
     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-x-3">
       <div className="flex min-w-0 items-center gap-2">
         <h2 className="shrink-0 font-bold text-lg">Grid</h2>
-
-        {/* 選択中: コード名 + アクション */}
-        {selectedChord && (
-          <div
-            className={cn(
-              "flex h-8 items-center gap-0.5 rounded-sm border pr-0.5 pl-2",
-              FUNCTION_CELL_STYLES[selectedChord.chordFunction] ??
-                "border-border bg-surface-elevated"
-            )}
-          >
-            <span className="font-bold text-sm leading-none">{selectedChord.symbol}</span>
-            <button
-              type="button"
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
-              onClick={deleteSelectedGridCell}
-              aria-label="選択中のコードを削除"
-              title="削除"
-            >
-              <TrashIcon className="h-3 w-3" />
-            </button>
-          </div>
-        )}
 
         <div className="ml-auto flex items-center gap-1">
           <IconButton

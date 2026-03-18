@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import type { ChordFunction, ChordQuality, ChordSource } from "@/lib/music-theory";
+import type { ChordFunction, ChordQuality, ChordSource, ScaleType } from "@/lib/music-theory";
+import { getDefaultScaleForSource } from "@/lib/music-theory";
 
 export const COLUMNS = 16;
 export const INITIAL_ROWS = 4;
@@ -19,6 +20,7 @@ export type GridChord = {
 type ChordGridState = {
   bpm: number;
   rows: (GridChord | null)[][];
+  cellScales: (ScaleType | null)[][];
   isPlaying: boolean;
   currentRow: number;
   currentCol: number;
@@ -36,18 +38,23 @@ type ChordGridActions = {
   setCurrentPosition: (row: number, col: number) => void;
   stop: () => void;
   getChordAtPosition: (row: number, col: number) => GridChord | null;
+  getScaleAtPosition: (row: number, col: number) => ScaleType | null;
   getPlayableRowCount: () => number;
   addChordToNextBeat: (chord: GridChord) => void;
   selectCell: (row: number, col: number) => void;
   clearSelection: () => void;
   moveSelection: (direction: "up" | "down" | "left" | "right") => void;
+  setCellScale: (row: number, col: number, scaleType: ScaleType | null) => void;
+  getCellScale: (row: number, col: number) => ScaleType | null;
 };
 
 const createEmptyRow = (): (GridChord | null)[] => Array.from({ length: COLUMNS }, () => null);
+const createEmptyScaleRow = (): (ScaleType | null)[] => Array.from({ length: COLUMNS }, () => null);
 
 const INITIAL_STATE: ChordGridState = {
   bpm: 120,
   rows: Array.from({ length: INITIAL_ROWS }, () => createEmptyRow()),
+  cellScales: Array.from({ length: INITIAL_ROWS }, () => createEmptyScaleRow()),
   isPlaying: false,
   currentRow: -1,
   currentCol: -1,
@@ -63,13 +70,17 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
     const { rows } = get();
     if (row < 0 || row >= rows.length || col < 0 || col >= COLUMNS) return;
     const isLastRow = row === rows.length - 1;
+    const defaultScale = getDefaultScaleForSource(chord.source, chord.degree);
     set((state) => {
       const newRows = state.rows.map((r) => [...r]);
+      const newScales = state.cellScales.map((r) => [...r]);
       newRows[row][col] = chord;
+      newScales[row][col] = defaultScale;
       if (isLastRow) {
         newRows.push(createEmptyRow());
+        newScales.push(createEmptyScaleRow());
       }
-      return { rows: newRows };
+      return { rows: newRows, cellScales: newScales };
     });
   },
 
@@ -79,14 +90,21 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
     const clearSelected = selectedCell?.row === row && selectedCell?.col === col;
     set((state) => {
       const newRows = state.rows.map((r) => [...r]);
+      const newScales = state.cellScales.map((r) => [...r]);
       newRows[row][col] = null;
-      return { rows: newRows, ...(clearSelected ? { selectedCell: null } : {}) };
+      newScales[row][col] = null;
+      return {
+        rows: newRows,
+        cellScales: newScales,
+        ...(clearSelected ? { selectedCell: null } : {}),
+      };
     });
   },
 
   clearGrid: () =>
     set({
       rows: Array.from({ length: INITIAL_ROWS }, () => createEmptyRow()),
+      cellScales: Array.from({ length: INITIAL_ROWS }, () => createEmptyScaleRow()),
       isPlaying: false,
       currentRow: -1,
       currentCol: -1,
@@ -96,14 +114,20 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   addRow: () =>
     set((state) => ({
       rows: [...state.rows, createEmptyRow()],
+      cellScales: [...state.cellScales, createEmptyScaleRow()],
     })),
 
   removeRow: (rowIndex) =>
     set((state) => {
       if (state.rows.length <= 1) return state;
       const newRows = state.rows.filter((_, i) => i !== rowIndex);
+      const newScales = state.cellScales.filter((_, i) => i !== rowIndex);
       const clearSelected = state.selectedCell?.row === rowIndex;
-      return { rows: newRows, ...(clearSelected ? { selectedCell: null } : {}) };
+      return {
+        rows: newRows,
+        cellScales: newScales,
+        ...(clearSelected ? { selectedCell: null } : {}),
+      };
     }),
 
   setPlaying: (playing) => set({ isPlaying: playing }),
@@ -115,12 +139,25 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
   getChordAtPosition: (row, col) => {
     const { rows } = get();
     if (row < 0 || row >= rows.length) return null;
-    // 現在位置から先頭まで遡り、最も近いコードを探す（次のコードまで無制限持続）
     const totalPos = row * COLUMNS + col;
     for (let pos = totalPos; pos >= 0; pos--) {
       const r = Math.floor(pos / COLUMNS);
       const c = pos % COLUMNS;
       if (r < rows.length && rows[r][c] !== null) return rows[r][c];
+    }
+    return null;
+  },
+
+  getScaleAtPosition: (row, col) => {
+    const { rows, cellScales } = get();
+    if (row < 0 || row >= rows.length) return null;
+    const totalPos = row * COLUMNS + col;
+    for (let pos = totalPos; pos >= 0; pos--) {
+      const r = Math.floor(pos / COLUMNS);
+      const c = pos % COLUMNS;
+      if (r < rows.length && rows[r][c] !== null) {
+        return cellScales[r]?.[c] ?? null;
+      }
     }
     return null;
   },
@@ -135,6 +172,7 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
 
   addChordToNextBeat: (chord) => {
     const { rows } = get();
+    const defaultScale = getDefaultScaleForSource(chord.source, chord.degree);
     const beatPositions = [0, 4, 8, 12];
     for (let r = 0; r < rows.length; r++) {
       const nextBeat = beatPositions.find((pos) => rows[r][pos] === null);
@@ -142,11 +180,14 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
         const isLastRow = r === rows.length - 1;
         set((state) => {
           const newRows = state.rows.map((row) => [...row]);
+          const newScales = state.cellScales.map((row) => [...row]);
           newRows[r][nextBeat] = chord;
+          newScales[r][nextBeat] = defaultScale;
           if (isLastRow) {
             newRows.push(createEmptyRow());
+            newScales.push(createEmptyScaleRow());
           }
-          return { rows: newRows };
+          return { rows: newRows, cellScales: newScales };
         });
         return;
       }
@@ -203,12 +244,29 @@ export const useChordGridStore = create<ChordGridState & ChordGridActions>()((se
       }
     }
   },
+
+  setCellScale: (row, col, scaleType) => {
+    const { cellScales } = get();
+    if (row < 0 || row >= cellScales.length || col < 0 || col >= COLUMNS) return;
+    set((state) => {
+      const newScales = state.cellScales.map((r) => [...r]);
+      newScales[row][col] = scaleType;
+      return { cellScales: newScales };
+    });
+  },
+
+  getCellScale: (row, col) => {
+    const { cellScales } = get();
+    if (row < 0 || row >= cellScales.length || col < 0 || col >= COLUMNS) return null;
+    return cellScales[row][col];
+  },
 }));
 
 export function _resetChordGridForTesting(): void {
   useChordGridStore.setState({
     ...INITIAL_STATE,
     rows: Array.from({ length: INITIAL_ROWS }, () => createEmptyRow()),
+    cellScales: Array.from({ length: INITIAL_ROWS }, () => createEmptyScaleRow()),
     selectedCell: null,
   });
 }

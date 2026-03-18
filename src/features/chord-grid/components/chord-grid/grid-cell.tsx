@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentProps } from "react";
 import {
   CHORD_DRAG_TYPE,
   type PaletteDragData,
@@ -15,6 +16,7 @@ import type { GridChord } from "../../stores/chord-grid-store";
 import { useChordGridStore } from "../../stores/chord-grid-store";
 
 type GridCellProps = {
+  ref?: ComponentProps<"button">["ref"];
   rowIndex: number;
   col: number;
   cellChord: GridChord | null;
@@ -24,10 +26,10 @@ type GridCellProps = {
   isCurrentStep: boolean;
   isSelected: boolean;
   onClick: () => void;
-  onDoubleClick?: () => void;
 };
 
 export function GridCell({
+  ref,
   rowIndex,
   col,
   cellChord,
@@ -37,7 +39,6 @@ export function GridCell({
   isCurrentStep,
   isSelected,
   onClick,
-  onDoubleClick,
 }: GridCellProps) {
   const setCell = useChordGridStore((s) => s.setCell);
   const clearCell = useChordGridStore((s) => s.clearCell);
@@ -59,29 +60,24 @@ export function GridCell({
       };
 
       if (data.gridPosition) {
-        // グリッド内ドラッグ: 入れ替え or 移動
         const src = data.gridPosition;
         const isSameCell = src.row === rowIndex && src.col === col;
         if (isSameCell) return;
 
         const targetChord = useChordGridStore.getState().rows[rowIndex]?.[col];
         if (targetChord) {
-          // 入れ替え: ドロップ先のコードをドラッグ元に移す
           setCell(src.row, src.col, targetChord);
         } else {
-          // 移動: ドラッグ元をクリア
           clearCell(src.row, src.col);
         }
         setCell(rowIndex, col, chord);
       } else {
-        // パレットからのドラッグ
         setCell(rowIndex, col, chord);
       }
       clearSelection();
     },
   });
 
-  // コードがあるセルはドラッグ可能
   const dragData: PaletteDragData | null = cellChord
     ? {
         rootName: cellChord.rootName,
@@ -102,14 +98,14 @@ export function GridCell({
 
   return (
     <button
-      key={`cell-${String(rowIndex)}-${String(col)}`}
+      ref={ref}
       type="button"
       className={cn(
         "relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm border transition-all duration-150 md:w-7 lg:aspect-square lg:h-auto lg:w-auto lg:flex-1",
         "ring-0 ring-foreground ring-offset-0 ring-offset-background",
         isCurrentStep && "ring-2 ring-offset-2",
         isOver && "z-10 ring-2 ring-primary ring-offset-2",
-        isSelected && "z-10 ring-2 ring-primary ring-offset-2",
+        isSelected && !isOver && "z-10 ring-2 ring-primary/50 ring-offset-1",
         isDragging && "opacity-30",
         cellChord
           ? cn(
@@ -125,7 +121,6 @@ export function GridCell({
             : cn("border-foreground/10 bg-background", isCurrentStep && "bg-surface-elevated")
       )}
       onClick={onClick}
-      onDoubleClick={onDoubleClick}
       {...dropAttributes}
       {...(cellChord ? dragAttributes : {})}
     >
