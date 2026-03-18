@@ -24,7 +24,6 @@ type GridCellProps = {
   isCurrentStep: boolean;
   isSelected: boolean;
   onClick: () => void;
-  onDoubleClick?: () => void;
 };
 
 export function GridCell({
@@ -37,7 +36,6 @@ export function GridCell({
   isCurrentStep,
   isSelected,
   onClick,
-  onDoubleClick,
 }: GridCellProps) {
   const setCell = useChordGridStore((s) => s.setCell);
   const clearCell = useChordGridStore((s) => s.clearCell);
@@ -59,29 +57,24 @@ export function GridCell({
       };
 
       if (data.gridPosition) {
-        // グリッド内ドラッグ: 入れ替え or 移動
         const src = data.gridPosition;
         const isSameCell = src.row === rowIndex && src.col === col;
         if (isSameCell) return;
 
         const targetChord = useChordGridStore.getState().rows[rowIndex]?.[col];
         if (targetChord) {
-          // 入れ替え: ドロップ先のコードをドラッグ元に移す
           setCell(src.row, src.col, targetChord);
         } else {
-          // 移動: ドラッグ元をクリア
           clearCell(src.row, src.col);
         }
         setCell(rowIndex, col, chord);
       } else {
-        // パレットからのドラッグ
         setCell(rowIndex, col, chord);
       }
       clearSelection();
     },
   });
 
-  // コードがあるセルはドラッグ可能
   const dragData: PaletteDragData | null = cellChord
     ? {
         rootName: cellChord.rootName,
@@ -125,7 +118,6 @@ export function GridCell({
             : cn("border-foreground/10 bg-background", isCurrentStep && "bg-surface-elevated")
       )}
       onClick={onClick}
-      onDoubleClick={onDoubleClick}
       {...dropAttributes}
       {...(cellChord ? dragAttributes : {})}
     >

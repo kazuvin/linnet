@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
+import { useChordGridStore } from "@/features/chord-grid/stores/chord-grid-store";
 import { useSelectedProgressionChord } from "@/features/chord-progression/stores/chord-progression-selectors";
-import { useFretboardStore } from "@/features/fretboard/stores/fretboard-store";
 import {
   type AvailableScaleInfo,
+  type ChordQuality,
+  type ChordSource,
   findScalesForChord,
   getDefaultScaleForSource,
   type ScaleType,
@@ -12,19 +14,27 @@ import {
   sortScalesWithDefault,
 } from "@/lib/music-theory";
 
+/**
+ * グリッドの選択セルに基づいてスケール情報を返す。
+ * セルに保存されたスケールを activeScaleType として使用する。
+ */
 export function useAvailableScales(): {
   availableScales: readonly AvailableScaleInfo[];
   activeScaleType: ScaleType | null;
   scaleRoot: string | null;
 } {
   const selectedChord = useSelectedProgressionChord();
-  const selectedScaleType = useFretboardStore((s) => s.selectedScaleType);
+  const selectedCell = useChordGridStore((s) => s.selectedCell);
+  const cellScales = useChordGridStore((s) => s.cellScales);
+
+  // セルに保存されたスケール
+  const cellScale =
+    selectedCell !== null ? (cellScales[selectedCell.row]?.[selectedCell.col] ?? null) : null;
 
   const isDominantSource =
     selectedChord?.source === "secondary-dominant" ||
     selectedChord?.source === "tritone-substitution";
 
-  // ソースモードから導出されるデフォルトスケール
   const sourceDefaultScaleType = useMemo(() => {
     if (!selectedChord) return null;
     return getDefaultScaleForSource(selectedChord.source, selectedChord.degree);
@@ -35,27 +45,57 @@ export function useAvailableScales(): {
     if (isDominantSource) {
       return SECONDARY_DOMINANT_SCALES;
     }
-    // コード・スケール検索と同じロジック（findScalesForChord）を使用
     const scales = findScalesForChord(selectedChord.rootName, selectedChord.quality);
-    // ソースモードに対応するスケールを先頭に配置
     if (sourceDefaultScaleType) {
       return sortScalesWithDefault(scales, sourceDefaultScaleType);
     }
     return scales;
   }, [selectedChord, isDominantSource, sourceDefaultScaleType]);
 
-  // activeScaleType: ユーザーが明示的に選択したスケール、またはコードのソースのデフォルト
+  // activeScaleType: セルに保存されたスケール → ソースデフォルト → 利用可能スケールの先頭
   const activeScaleType = useMemo(() => {
     if (!selectedChord) return null;
-    if (selectedScaleType !== null) return selectedScaleType;
-    // ソースモードのデフォルト、または availableScales の最初のエントリ
+    if (cellScale !== null) return cellScale;
     return (
       sourceDefaultScaleType ?? (availableScales.length > 0 ? availableScales[0].scaleType : null)
     );
-  }, [selectedChord, selectedScaleType, availableScales, sourceDefaultScaleType]);
+  }, [selectedChord, cellScale, availableScales, sourceDefaultScaleType]);
 
-  // スケールのルート: 常にコードのルート音を使う
   const scaleRoot = selectedChord?.rootName ?? null;
 
   return { availableScales, activeScaleType, scaleRoot };
+}
+
+/**
+ * 任意のコード情報からスケール一覧を返すフック。
+ * RowScaleSelector 等で使用。
+ */
+export function useAvailableScalesForCell(
+  rootName: string | null,
+  quality: ChordQuality | null,
+  source: ChordSource | null,
+  degree: number
+): {
+  availableScales: readonly AvailableScaleInfo[];
+} {
+  const isDominantSource = source === "secondary-dominant" || source === "tritone-substitution";
+
+  const sourceDefaultScaleType = useMemo(() => {
+    if (!source) return null;
+    return getDefaultScaleForSource(source, degree);
+  }, [source, degree]);
+
+  const availableScales = useMemo(() => {
+    if (!rootName || !quality) return [];
+    if (isDominantSource) {
+      return SECONDARY_DOMINANT_SCALES;
+    }
+    const scales = findScalesForChord(rootName, quality);
+    if (sourceDefaultScaleType) {
+      return sortScalesWithDefault(scales, sourceDefaultScaleType);
+    }
+    return scales;
+  }, [rootName, quality, isDominantSource, sourceDefaultScaleType]);
+
+  return { availableScales };
 }
