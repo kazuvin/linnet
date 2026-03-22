@@ -1,7 +1,13 @@
 "use client";
 
 import { Card } from "@/components";
-import { ChordSelector, ScaleCard, useChordScaleData, VoicingCard } from "./chord-scale-lookup";
+import {
+  ChordSelector,
+  ScaleCard,
+  ScaleSelector,
+  useChordScaleData,
+  VoicingCard,
+} from "./chord-scale-lookup";
 
 function VoicingSection({ data }: { data: ReturnType<typeof useChordScaleData> }) {
   const { chordSymbol, voicings, activeInstrument } = data;
@@ -25,7 +31,10 @@ export function ChordScalePageContent() {
       {/* コード選択（メイン入力） */}
       <ChordSelector data={data} />
 
-      {/* スケール表示（メイン結果） */}
+      {/* スケール選択 */}
+      <ScaleSelector data={data} />
+
+      {/* フレットボード表示 */}
       <Card>
         <ScaleCard data={data} />
       </Card>

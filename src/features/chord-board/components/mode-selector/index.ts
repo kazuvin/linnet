@@ -1,1 +1,1 @@
-export { ModeSelector } from "./mode-selector";
+export { type ModeOption, ModeSelector } from "./mode-selector";

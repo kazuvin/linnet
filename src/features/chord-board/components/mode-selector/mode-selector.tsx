@@ -15,7 +15,7 @@ type ModeOption = {
   label: string;
 };
 
-const MODE_OPTIONS: readonly ModeOption[] = [
+const DEFAULT_MODE_OPTIONS: readonly ModeOption[] = [
   { value: "diatonic", label: "Ionian" },
   { value: "secondary-dominant", label: "Sec.Dom" },
   { value: "tritone-substitution", label: "SubV" },
@@ -25,7 +25,13 @@ const MODE_OPTIONS: readonly ModeOption[] = [
   })),
 ];
 
-export function ModeSelector() {
+type ModeSelectorProps = {
+  modeOptions?: readonly ModeOption[];
+};
+
+export type { ModeOption };
+
+export function ModeSelector({ modeOptions = DEFAULT_MODE_OPTIONS }: ModeSelectorProps) {
   const selectedMode = useKeyStore((s) => s.selectedMode);
   const setSelectedMode = useKeyStore((s) => s.setSelectedMode);
 
@@ -33,11 +39,11 @@ export function ModeSelector() {
     <Select value={selectedMode} onValueChange={(value) => setSelectedMode(value as SelectedMode)}>
       <SelectTrigger>
         <SelectValue placeholder="選択">
-          {MODE_OPTIONS.find((o) => o.value === selectedMode)?.label}
+          {modeOptions.find((o) => o.value === selectedMode)?.label}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {MODE_OPTIONS.map((option) => (
+        {modeOptions.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>

@@ -1,1 +1,7 @@
-export { ChordBoard, ChordCard, type ChordCardData, ModeSelector } from "./components";
+export {
+  ChordBoard,
+  ChordCard,
+  type ChordCardData,
+  type ModeOption,
+  ModeSelector,
+} from "./components";
