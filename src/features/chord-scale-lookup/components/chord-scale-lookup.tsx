@@ -172,10 +172,10 @@ export function ScaleSelector({
 }: {
   data: Pick<
     ChordScaleData,
-    "rootName" | "chordSymbol" | "availableScales" | "activeScaleType" | "setSelectedScaleType"
+    "rootName" | "availableScales" | "activeScaleType" | "setSelectedScaleType"
   >;
 }) {
-  const { rootName, chordSymbol, availableScales, activeScaleType, setSelectedScaleType } = data;
+  const { rootName, availableScales, activeScaleType, setSelectedScaleType } = data;
 
   const [playingScaleType, setPlayingScaleType] = useState<ScaleType | null>(null);
 
@@ -204,9 +204,6 @@ export function ScaleSelector({
     <section className="flex flex-col items-center gap-3">
       <span className="text-muted text-xl">↓</span>
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <span className="shrink-0 font-medium text-muted text-sm">
-          <span className="font-bold text-foreground">{chordSymbol}</span> スケール
-        </span>
         <Select
           value={activeScaleType ?? "__none__"}
           onValueChange={(v) => setSelectedScaleType(v === "__none__" ? null : (v as ScaleType))}
