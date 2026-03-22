@@ -278,13 +278,15 @@ export function GridRow({
         </div>
       </div>
 
-      {/* スケール行（常に表示） */}
-      <ScaleRow
-        rowIndex={rowIndex}
-        rows={rows}
-        cellScales={cellScales}
-        isOutOfPlayRange={isOutOfPlayRange}
-      />
+      {/* スケール行（行にコードがある場合のみ表示） */}
+      {rowCells.some((cell) => cell !== null) && (
+        <ScaleRow
+          rowIndex={rowIndex}
+          rows={rows}
+          cellScales={cellScales}
+          isOutOfPlayRange={isOutOfPlayRange}
+        />
+      )}
     </div>
   );
 }

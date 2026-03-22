@@ -4,6 +4,7 @@ import {
   type ChordSource,
   type DiatonicChordInfo,
   filterNonDiatonicChords,
+  findAllChordsInScale,
   getAllModalInterchangeChords,
   getChordFunction,
   getDiatonicChords,
@@ -95,4 +96,78 @@ export function useCurrentModeChords(): readonly PaletteChordInfo[] {
       isAvailable: true,
     }));
   }, [rootName, selectedMode, seventh]);
+}
+
+/** ディグリーごとにスケール内の全コードを返すセレクター（スケールからコード検索用） */
+export type DegreeChordGroup = {
+  readonly degree: number;
+  readonly chords: readonly PaletteChordInfo[];
+};
+
+/** スケールモードをScaleTypeにマッピング */
+const MODE_TO_SCALE_TYPE: Record<string, ScaleType> = {
+  diatonic: "major",
+};
+
+export function useCurrentModeChordsAllByDegree(): readonly DegreeChordGroup[] {
+  const rootName = useKeyStore((s) => s.rootName);
+  const selectedMode = useKeyStore((s) => s.selectedMode);
+  return useMemo(() => {
+    // セカンダリードミナント・裏コードはスケールに基づかないため、triad+seventh で返す
+    if (selectedMode === "secondary-dominant" || selectedMode === "tritone-substitution") {
+      const getChords =
+        selectedMode === "secondary-dominant"
+          ? getSecondaryDominantChords
+          : getTritoneSubstitutionChords;
+
+      const triads = getChords(rootName, false);
+      const sevenths = getChords(rootName, true);
+
+      const degreeMap = new Map<number, PaletteChordInfo[]>();
+      for (const item of triads) {
+        const degree = "targetDegree" in item ? item.targetDegree : 0;
+        const group = degreeMap.get(degree) ?? [];
+        group.push({
+          degree,
+          romanNumeral: item.romanNumeral,
+          chord: item.chord,
+          chordFunction: "dominant" as const,
+          isAvailable: true,
+        });
+        degreeMap.set(degree, group);
+      }
+      for (const item of sevenths) {
+        const degree = "targetDegree" in item ? item.targetDegree : 0;
+        const group = degreeMap.get(degree) ?? [];
+        if (!group.some((c) => c.chord.symbol === item.chord.symbol)) {
+          group.push({
+            degree,
+            romanNumeral: item.romanNumeral,
+            chord: item.chord,
+            chordFunction: "dominant" as const,
+            isAvailable: true,
+          });
+        }
+        degreeMap.set(degree, group);
+      }
+      return Array.from(degreeMap.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([degree, chords]) => ({ degree, chords }));
+    }
+
+    // ダイアトニック・モーダルインターチェンジ: findAllChordsInScale を使用
+    const scaleType: ScaleType = MODE_TO_SCALE_TYPE[selectedMode] ?? (selectedMode as ScaleType);
+    const groups = findAllChordsInScale(rootName, scaleType);
+
+    return groups.map((g) => ({
+      degree: g.degree,
+      chords: g.chords.map((c) => ({
+        degree: c.degree,
+        romanNumeral: c.romanNumeral,
+        chord: c.chord,
+        chordFunction: c.chordFunction,
+        isAvailable: true,
+      })),
+    }));
+  }, [rootName, selectedMode]);
 }

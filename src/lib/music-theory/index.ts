@@ -110,6 +110,12 @@ export {
   type ScaleType,
   shouldPreferFlat,
 } from "./scale";
+// Scale Chords
+export {
+  type DegreeChordGroup,
+  findAllChordsInScale,
+  type ScaleChordInfo,
+} from "./scale-chords";
 // Secondary Dominant
 export {
   getSecondaryDominantChords,
