@@ -201,15 +201,8 @@ export function ScaleSelector({
   )?.displayName;
 
   return (
-    <section className="flex flex-col items-center gap-4">
-      <AnimatedText
-        text={
-          activeScaleType && activeScaleDisplayName
-            ? `${rootName} ${activeScaleDisplayName}`
-            : "---"
-        }
-        className="font-bold text-4xl tracking-tight lg:text-5xl"
-      />
+    <section className="flex flex-col items-center gap-3">
+      <span className="text-muted text-xl">↓</span>
       <div className="flex flex-wrap items-center justify-center gap-3">
         <span className="shrink-0 font-medium text-muted text-sm">
           <span className="font-bold text-foreground">{chordSymbol}</span> スケール
@@ -276,7 +269,7 @@ export function ScaleCard({
   } = data;
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col items-start gap-4">
       <TabNav
         value={activeInstrument}
         onValueChange={(v) => setActiveInstrument(v as InstrumentTab)}
