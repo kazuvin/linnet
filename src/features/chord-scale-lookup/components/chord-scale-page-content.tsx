@@ -35,7 +35,7 @@ export function ChordScalePageContent() {
       <ScaleSelector data={data} />
 
       {/* フレットボード表示 */}
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <ScaleCard data={data} />
       </Card>
 

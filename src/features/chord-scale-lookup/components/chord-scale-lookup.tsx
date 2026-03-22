@@ -266,7 +266,7 @@ export function ScaleCard({
   } = data;
 
   return (
-    <section className="flex flex-col items-start gap-4">
+    <section className="flex flex-col gap-4">
       <TabNav
         value={activeInstrument}
         onValueChange={(v) => setActiveInstrument(v as InstrumentTab)}
