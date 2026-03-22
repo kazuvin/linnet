@@ -25,7 +25,7 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "inline-flex select-none items-center gap-2 rounded-full border border-foreground/10 bg-background px-4 py-2.5 text-sm md:py-2",
+        "group inline-flex select-none items-center gap-2 rounded-full border border-foreground/10 bg-background px-4 py-2.5 text-sm md:py-2",
         "transition-all duration-300 ease-default",
         "hover:bg-foreground/5 focus:outline-none",
         "data-[placeholder]:text-foreground/50",
@@ -44,9 +44,9 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
           {children}
         </span>
       </span>
-      <SelectPrimitive.Icon>
-        <ChevronDownIcon className="h-4 w-4 opacity-50" />
-      </SelectPrimitive.Icon>
+      <span className="flex items-center justify-center transition-transform duration-300 ease-spring group-data-[state=open]:rotate-180">
+        <ChevronDownIcon className="h-3.5 w-3.5 text-foreground/40 transition-colors duration-200 group-hover:text-foreground/60" />
+      </span>
     </SelectPrimitive.Trigger>
   );
 }
@@ -81,7 +81,7 @@ export function SelectContent({ className, children, ...props }: SelectContentPr
         {...props}
       >
         <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center py-1">
-          <ChevronDownIcon className="h-4 w-4 rotate-180 opacity-50" />
+          <ChevronDownIcon className="h-3.5 w-3.5 rotate-180 text-foreground/40" />
         </SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport
           className="p-1"
@@ -92,7 +92,7 @@ export function SelectContent({ className, children, ...props }: SelectContentPr
           {children}
         </SelectPrimitive.Viewport>
         <SelectPrimitive.ScrollDownButton className="flex cursor-default items-center justify-center py-1">
-          <ChevronDownIcon className="h-4 w-4 opacity-50" />
+          <ChevronDownIcon className="h-3.5 w-3.5 text-foreground/40" />
         </SelectPrimitive.ScrollDownButton>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
