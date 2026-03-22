@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PlayIcon, StopIcon } from "@/components/icons";
+import { ChevronDownIcon, PlayIcon, StopIcon } from "@/components/icons";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { IconButton } from "@/components/ui/button";
 import {
@@ -202,7 +202,9 @@ export function ScaleSelector({
 
   return (
     <section className="flex flex-col items-center gap-3">
-      <span className="text-muted text-xl">↓</span>
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground/5">
+        <ChevronDownIcon className="h-4 w-4 text-foreground/30" />
+      </span>
       <div className="flex flex-wrap items-center justify-center gap-3">
         <Select
           value={activeScaleType ?? "__none__"}
