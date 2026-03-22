@@ -166,36 +166,16 @@ export function ChordSelector({
   );
 }
 
-/** スケール＋フレットボード/鍵盤カード */
-export function ScaleCard({
+/** スケールセレクター（コードセレクタの下に独立表示） */
+export function ScaleSelector({
   data,
 }: {
   data: Pick<
     ChordScaleData,
-    | "rootName"
-    | "chordSymbol"
-    | "availableScales"
-    | "activeScaleType"
-    | "positions"
-    | "showCharacteristicNotes"
-    | "showAvoidNotes"
-    | "activeInstrument"
-    | "setActiveInstrument"
-    | "setSelectedScaleType"
+    "rootName" | "chordSymbol" | "availableScales" | "activeScaleType" | "setSelectedScaleType"
   >;
 }) {
-  const {
-    rootName,
-    chordSymbol,
-    availableScales,
-    activeScaleType,
-    positions,
-    showCharacteristicNotes,
-    showAvoidNotes,
-    activeInstrument,
-    setActiveInstrument,
-    setSelectedScaleType,
-  } = data;
+  const { rootName, chordSymbol, availableScales, activeScaleType, setSelectedScaleType } = data;
 
   const [playingScaleType, setPlayingScaleType] = useState<ScaleType | null>(null);
 
@@ -221,56 +201,90 @@ export function ScaleCard({
   )?.displayName;
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <TabNav
-          value={activeInstrument}
-          onValueChange={(v) => setActiveInstrument(v as InstrumentTab)}
+    <section className="flex flex-col items-center gap-4">
+      <AnimatedText
+        text={
+          activeScaleType && activeScaleDisplayName
+            ? `${rootName} ${activeScaleDisplayName}`
+            : "---"
+        }
+        className="font-bold text-4xl tracking-tight lg:text-5xl"
+      />
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <span className="shrink-0 font-medium text-muted text-sm">
+          <span className="font-bold text-foreground">{chordSymbol}</span> スケール
+        </span>
+        <Select
+          value={activeScaleType ?? "__none__"}
+          onValueChange={(v) => setSelectedScaleType(v === "__none__" ? null : (v as ScaleType))}
+          disabled={availableScales.length === 0}
         >
-          <TabNavItem value="fretboard">フレットボード</TabNavItem>
-          <TabNavItem value="keyboard">鍵盤</TabNavItem>
-        </TabNav>
-        {/* スケール選択 */}
-        <div className="flex items-center gap-2">
-          <span className="shrink-0 text-muted text-sm">
-            <span className="font-bold text-foreground">{chordSymbol}</span> スケール
-          </span>
-          <Select
-            value={activeScaleType ?? "__none__"}
-            onValueChange={(v) => setSelectedScaleType(v === "__none__" ? null : (v as ScaleType))}
-            disabled={availableScales.length === 0}
+          <SelectTrigger>
+            <SelectValue>
+              {activeScaleType && activeScaleDisplayName
+                ? `${rootName} ${activeScaleDisplayName}`
+                : "---"}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {availableScales.map((scale) => (
+              <SelectItem key={scale.scaleType} value={scale.scaleType}>
+                {rootName} {scale.displayName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {activeScaleType && (
+          <IconButton
+            className={isPlaying ? "bg-foreground text-background hover:bg-foreground" : undefined}
+            onClick={handlePlayScale}
+            aria-label={isPlaying ? "スケール再生を停止" : "スケールを再生"}
+            title={isPlaying ? "スケール再生を停止" : "スケールを再生"}
           >
-            <SelectTrigger>
-              <SelectValue>
-                {activeScaleType && activeScaleDisplayName
-                  ? `${rootName} ${activeScaleDisplayName}`
-                  : "---"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {availableScales.map((scale) => (
-                <SelectItem key={scale.scaleType} value={scale.scaleType}>
-                  {rootName} {scale.displayName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {activeScaleType && (
-            <IconButton
-              className={
-                isPlaying ? "bg-foreground text-background hover:bg-foreground" : undefined
-              }
-              onClick={handlePlayScale}
-              aria-label={isPlaying ? "スケール再生を停止" : "スケールを再生"}
-              title={isPlaying ? "スケール再生を停止" : "スケールを再生"}
-            >
-              {isPlaying ? <StopIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
-            </IconButton>
-          )}
-        </div>
+            {isPlaying ? <StopIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
+          </IconButton>
+        )}
       </div>
+      {availableScales.length === 0 && (
+        <p className="text-center text-muted text-sm">
+          このコードに対応するスケールが見つかりません
+        </p>
+      )}
+    </section>
+  );
+}
 
-      {/* フレットボード / 鍵盤 */}
+/** フレットボード/鍵盤カード */
+export function ScaleCard({
+  data,
+}: {
+  data: Pick<
+    ChordScaleData,
+    | "positions"
+    | "showCharacteristicNotes"
+    | "showAvoidNotes"
+    | "activeInstrument"
+    | "setActiveInstrument"
+  >;
+}) {
+  const {
+    positions,
+    showCharacteristicNotes,
+    showAvoidNotes,
+    activeInstrument,
+    setActiveInstrument,
+  } = data;
+
+  return (
+    <section className="flex flex-col gap-4">
+      <TabNav
+        value={activeInstrument}
+        onValueChange={(v) => setActiveInstrument(v as InstrumentTab)}
+      >
+        <TabNavItem value="fretboard">フレットボード</TabNavItem>
+        <TabNavItem value="keyboard">鍵盤</TabNavItem>
+      </TabNav>
+
       {activeInstrument === "fretboard" ? (
         <FretboardGrid
           positions={positions}
@@ -286,12 +300,6 @@ export function ScaleCard({
         />
       )}
       <FretboardLegend />
-
-      {availableScales.length === 0 && (
-        <p className="text-center text-muted text-sm">
-          このコードに対応するスケールが見つかりません
-        </p>
-      )}
     </section>
   );
 }
@@ -316,6 +324,7 @@ export function ChordScaleLookup() {
   return (
     <div className="flex flex-col gap-6">
       <ChordSelector data={data} />
+      <ScaleSelector data={data} />
       <ScaleCard data={data} />
       <VoicingCard data={data} />
     </div>

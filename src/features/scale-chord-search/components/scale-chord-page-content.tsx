@@ -2,24 +2,29 @@
 
 import { Card } from "@/components";
 import { AnimatedText } from "@/components/ui/animated-text";
-import { ModeSelector } from "@/features/chord-board/components";
+import { type ModeOption, ModeSelector } from "@/features/chord-board/components";
 import { useChordProgressionStore } from "@/features/chord-progression/stores/chord-progression-store";
 import { Fretboard, GuitarVoicingCard } from "@/features/fretboard/components";
 import { RootNoteSelector } from "@/features/key-selection/components/root-note-selector";
+import type { SelectedMode } from "@/features/key-selection/stores/key-store";
 import { useKeyStore } from "@/features/key-selection/stores/key-store";
 import { changeKey } from "@/features/store-coordination";
-import { MODE_DISPLAY_NAMES } from "@/lib/music-theory";
+import { ALL_MODE_SOURCES, MODE_DISPLAY_NAMES } from "@/lib/music-theory";
 import { ScaleChordResults } from "./scale-chord-results";
 
-const SPECIAL_MODE_LABELS: Record<string, string> = {
-  diatonic: "Ionian",
-  "secondary-dominant": "Sec.Dom",
-  "tritone-substitution": "SubV",
-};
+const SCALE_CHORD_MODE_OPTIONS: readonly ModeOption[] = [
+  { value: "diatonic", label: "Ionian" },
+  ...ALL_MODE_SOURCES.map((source) => ({
+    value: source as SelectedMode,
+    label: MODE_DISPLAY_NAMES[source],
+  })),
+  { value: "locrian" as SelectedMode, label: "Locrian" },
+];
+
+const MODE_LABEL_MAP = Object.fromEntries(SCALE_CHORD_MODE_OPTIONS.map((o) => [o.value, o.label]));
 
 function getScaleDisplayText(rootName: string, selectedMode: string): string {
-  const label =
-    SPECIAL_MODE_LABELS[selectedMode] ?? MODE_DISPLAY_NAMES[selectedMode] ?? selectedMode;
+  const label = MODE_LABEL_MAP[selectedMode] ?? selectedMode;
   return `${rootName} ${label}`;
 }
 
@@ -40,7 +45,7 @@ export function ScaleChordPageContent() {
         <div className="flex flex-wrap items-center justify-center gap-3">
           <span className="shrink-0 font-medium text-muted text-sm">スケール</span>
           <RootNoteSelector value={rootName} onValueChange={changeKey} />
-          <ModeSelector />
+          <ModeSelector modeOptions={SCALE_CHORD_MODE_OPTIONS} />
         </div>
       </section>
 
